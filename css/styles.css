@@ -46,33 +46,47 @@ main {
 #calendar-nav {
   background: var(--color-card-bg);
   border-radius: 1rem;
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .calendar-nav-btn {
-  background: none;
+  background: transparent;
   border: none;
   color: var(--color-text);
-  padding: 0.5rem;
+  width: 2.5rem; 
+  height: 2.5rem; 
+  border-radius: 0.5rem;
   cursor: pointer;
+  flex-shrink: 0; 
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  font-size: 1.25rem;
 }
 
 .calendar-nav-btn:hover {
-  color: var(--color-accent);
+  background: var(--color-row-bg);
 }
 
 .dates-container {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+}
+
+.dates-container::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome/Safari */
 }
 
 .calendar-day {
@@ -81,6 +95,8 @@ main {
   cursor: pointer;
   white-space: nowrap;
   transition: background-color 0.2s;
+  min-width: 4.5rem;
+  text-align: center;
 }
 
 .calendar-day.selected {
@@ -132,7 +148,7 @@ main {
 .team-logo {
   width: 40px;
   height: 40px;
-  background-image: url('../assets/nba_sprite_sheet.png');
+  background-image: url('../assets/nba-sprite-sheet.png');
   background-repeat: no-repeat;
   background-size: 240px 160px;
 }

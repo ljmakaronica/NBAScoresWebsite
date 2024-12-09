@@ -47,7 +47,8 @@ class NBASchedule {
         } else if (width >= 768) {
             this.daysToShow = 7;
         } else {
-            this.daysToShow = 3;
+            // On mobile, show 5 dates and no arrows
+            this.daysToShow = 5;
         }
 
         this.scoreboard = document.getElementById('scoreboard');
@@ -55,14 +56,17 @@ class NBASchedule {
         this.weekContainer = document.getElementById('weekContainer');
         this.dateDisplay = document.getElementById('date-display');
 
-        document.getElementById('prevDate').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.changeWeek(-1);
-        });
-        document.getElementById('nextDate').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.changeWeek(1);
-        });
+        // Only attach arrow event listeners if not mobile
+        if (this.daysToShow > 5) {
+            document.getElementById('prevDate').addEventListener('click', (e) => {
+                e.preventDefault();
+                this.changeWeek(-1);
+            });
+            document.getElementById('nextDate').addEventListener('click', (e) => {
+                e.preventDefault();
+                this.changeWeek(1);
+            });
+        }
 
         this.initializeCalendar();
     }

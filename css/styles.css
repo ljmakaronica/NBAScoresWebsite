@@ -302,7 +302,10 @@ main {
     grid-template-columns: 1fr;
   }
 
-  /* Removed team-logo resizing and background-size change on mobile */
+  /* Hide arrows on mobile */
+  #prevDate, #nextDate {
+    display: none;
+  }
 
   .team-name {
     font-size: 0.875rem;

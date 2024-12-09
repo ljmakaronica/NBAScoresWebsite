@@ -13,12 +13,17 @@
   <div id="app">
     <main>
       <div id="calendar-nav">
-        <button class="calendar-nav-btn" id="prevDate">&lt;</button>
-        <div class="week-container" id="weekContainer">
-          <!-- 7-day range will be dynamically inserted here -->
+        <button class="calendar-nav-btn" id="prevDate" type="button">&lt;</button>
+        <div class="dates-container" id="weekContainer">
+          <!-- Dates will be dynamically inserted here -->
         </div>
-        <button class="calendar-nav-btn" id="nextDate">&gt;</button>
+        <button class="calendar-nav-btn" id="nextDate" type="button">&gt;</button>
       </div>
+
+      <div id="date-display" class="date-display">
+        <!-- Full date will be displayed here, e.g. "Sunday, December 8, 2024 (Today)" -->
+      </div>
+
       <div id="scoreboard">
         <!-- Game sections will be inserted here -->
       </div>

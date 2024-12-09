@@ -40,12 +40,16 @@ class NBASchedule {
         // Initialize state
         this.isLoading = false;
         this.selectedDate = null;
-        this.displayStartDate = null; // The start date of the 7-day window
+        this.displayStartDate = null; // The start date of the visible window of days
+
+        // Determine how many days to show based on screen width
+        this.daysToShow = window.innerWidth >= 1200 ? 14 : 7;
 
         // Get DOM elements
         this.scoreboard = document.getElementById('scoreboard');
         this.loadingOverlay = document.getElementById('loading-overlay');
         this.weekContainer = document.getElementById('weekContainer');
+        this.dateDisplay = document.getElementById('date-display');
 
         // Bind event handlers
         document.getElementById('prevDate').addEventListener('click', () => this.changeWeek(-1));
@@ -73,45 +77,47 @@ class NBASchedule {
         // The selectedDate will be today's date (within season bounds)
         this.selectedDate = initialDate;
 
-        // We want a 7-day window centered on selectedDate.
-        // selectedDate is in the middle, that means 3 days before and 3 days after
+        // Center the visible range on the selected date
+        const halfRange = Math.floor(this.daysToShow / 2);
         this.displayStartDate = new Date(this.selectedDate);
-        this.displayStartDate.setDate(this.displayStartDate.getDate() - 3);
+        this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
 
         this.renderCalendar();
         this.loadGamesForDate(this.formatDate(this.selectedDate));
     }
 
     changeWeek(delta) {
-        // Move the whole 7-day window by one week (7 days)
-        this.displayStartDate.setDate(this.displayStartDate.getDate() + delta * 7);
+        // Move the entire date range by the number of days displayed (like shifting by a full "window")
+        this.displayStartDate.setDate(this.displayStartDate.getDate() + delta * this.daysToShow);
 
-        // Adjust selected date accordingly (keep it in the middle)
-        this.selectedDate.setDate(this.selectedDate.getDate() + delta * 7);
+        // Adjust selected date accordingly to stay in the middle
+        this.selectedDate.setDate(this.selectedDate.getDate() + delta * this.daysToShow);
 
         // Clamp within season bounds
         if (this.selectedDate < SEASON_START) {
             this.selectedDate = new Date(SEASON_START);
+            const halfRange = Math.floor(this.daysToShow / 2);
             this.displayStartDate = new Date(this.selectedDate);
-            this.displayStartDate.setDate(this.displayStartDate.getDate() - 3);
+            this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
         } else if (this.selectedDate > SEASON_END) {
             this.selectedDate = new Date(SEASON_END);
+            const halfRange = Math.floor(this.daysToShow / 2);
             this.displayStartDate = new Date(this.selectedDate);
-            this.displayStartDate.setDate(this.displayStartDate.getDate() - 3);
+            this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
         }
 
         this.renderCalendar();
         this.loadGamesForDate(this.formatDate(this.selectedDate));
     }
 
-    // Renders the 7-day range in the calendar
+    // Renders the multiple-day range in the calendar
     renderCalendar() {
         this.weekContainer.innerHTML = '';
 
         const today = new Date();
         today.setHours(12,0,0,0);
-        
-        for (let i = 0; i < 7; i++) {
+
+        for (let i = 0; i < this.daysToShow; i++) {
             const dayDate = new Date(this.displayStartDate);
             dayDate.setDate(this.displayStartDate.getDate() + i);
 
@@ -141,7 +147,6 @@ class NBASchedule {
 
             // Click event to select that date
             dayEl.addEventListener('click', () => {
-                // When a day is clicked, update selectedDate
                 this.selectedDate = new Date(dayDate);
 
                 // Ensure selectedDate is within season
@@ -179,9 +184,11 @@ class NBASchedule {
             
             const data = await response.json();
             this.displayGames(data.data);
+            this.updateDateDisplay();
         } catch (error) {
             console.error('Error loading games:', error);
             this.showError('Failed to load games. Please try again later.');
+            this.updateDateDisplay();
         } finally {
             this.showLoading(false);
             this.isLoading = false;
@@ -281,6 +288,20 @@ class NBASchedule {
         errorDiv.className = 'error-message';
         errorDiv.textContent = message;
         this.scoreboard.appendChild(errorDiv);
+    }
+
+    updateDateDisplay() {
+        const dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+        const fullDateStr = this.selectedDate.toLocaleDateString('en-US', dateOptions);
+        const today = new Date();
+        today.setHours(12,0,0,0);
+        
+        let displayStr = fullDateStr;
+        if (this.selectedDate.toDateString() === today.toDateString()) {
+            displayStr += ' (Today)';
+        }
+
+        this.dateDisplay.textContent = displayStr;
     }
 }
 

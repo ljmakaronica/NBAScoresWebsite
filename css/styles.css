@@ -31,7 +31,17 @@ body {
 
 #app {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-unit);
   padding: var(--spacing-unit);
+  overflow: auto;
 }
 
 /* Calendar Styles */
@@ -39,34 +49,47 @@ body {
   background: var(--color-card-bg);
   border-radius: 1rem;
   padding: 1rem;
-  margin-bottom: 2rem;
   border: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
+  box-sizing: border-box;
 }
 
-.week-container {
+.dates-container {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
   justify-content: center;
   align-items: center;
   flex-wrap: nowrap;
+  overflow-x: auto; /* If too many dates, allow horizontal scroll */
+  scrollbar-width: thin;
+}
+
+.dates-container::-webkit-scrollbar {
+  height: 6px;
+}
+.dates-container::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+.dates-container::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
 }
 
 .calendar-day {
   background: var(--color-card-bg);
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 0.75rem;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 4rem;
+  min-width: 3.5rem;
 }
 
 .calendar-day:hover {
@@ -97,11 +120,6 @@ body {
   color: var(--color-text);
 }
 
-.calendar-header h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
 .calendar-nav-btn {
   background: none;
   border: 1px solid var(--color-border);
@@ -110,6 +128,7 @@ body {
   height: 2.5rem;
   border-radius: 0.5rem;
   cursor: pointer;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,15 +140,40 @@ body {
   border-color: var(--color-accent);
 }
 
-/* Game Cards */
+/* Date Display for Selected Date */
+.date-display {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+/* Scoreboard and Game Cards */
+#scoreboard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-unit);
+  overflow: auto;
+}
+
+/* Games Grid */
+.games-grid {
+  display: grid;
+  gap: var(--spacing-unit);
+  padding: 0 var(--spacing-unit);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
 .game-card {
   background: var(--color-card-bg);
   border-radius: 1rem;
-  padding: 1rem;
+  padding: 1.5rem;
   border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -142,7 +186,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .team-info {
@@ -153,19 +197,19 @@ body {
 }
 
 .team-logo {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
 }
 
 .team-name {
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 1rem;
 }
 
 .team-score {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   min-width: 3ch;
   text-align: right;
 }
@@ -177,7 +221,7 @@ body {
 /* Game Status */
 .game-status {
   text-align: center;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: var(--color-text-muted);
   padding-top: 0.5rem;
   border-top: 1px solid var(--color-border);
@@ -254,18 +298,10 @@ body {
   margin: 1rem 0;
 }
 
-/* Games Grid */
-.games-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--spacing-unit);
-  padding: 0 var(--spacing-unit);
-}
-
 /* NBA Team Logo Sprite Sheet */
 .team-logo {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background-image: url('../assets/nba-sprite-sheet.png');
   background-repeat: no-repeat;
 }
@@ -301,22 +337,26 @@ body {
 .team-logo.utah-jazz { background-position: -128px -128px; }
 .team-logo.washington-wizards { background-position: -160px -128px; }
 
-/* Responsive Design */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
   .games-grid {
     grid-template-columns: 1fr;
   }
 
   .game-card {
-    padding: 0.75rem;
+    padding: 1rem;
   }
 
   .team-logo {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
   }
 
   .team-name {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+  }
+
+  .team-score {
+    font-size: 1.25rem;
   }
 }

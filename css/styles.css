@@ -1,7 +1,7 @@
 :root {
-  --color-bg: #0a0c14;
-  --color-card-bg: #1a1d2a;
-  --color-text: #ffffff;
+  --color-bg: #0f1116;
+  --color-card-bg: #1a1c25;
+  --color-text: #f1f1f3;
   --color-text-muted: #9ca3af;
   --color-border: rgba(255, 255, 255, 0.1);
   --color-accent: #3b82f6;
@@ -189,50 +189,45 @@ main {
   flex: 1;
 }
 
+/* Team Logo Styles */
 .team-logo {
-  width: 48px;
-  height: 48px;
-  background-image: url('../assets/nba-sprite-sheet.png');
+  width: 150px;
+  height: 150px;
+  background-image: url('../assets/nba_sprite_sheet.png');
   background-repeat: no-repeat;
-  background-size: 240px 384px;
 }
 
-/* Team logo sprite positions */
-.team-logo.portland-trail-blazers { background-position: 0 0; }
-.team-logo.milwaukee-bucks { background-position: -48px 0; }
-.team-logo.memphis-grizzlies { background-position: -96px 0; }
-.team-logo.dallas-mavericks { background-position: -144px 0; }
-.team-logo.san-antonio-spurs { background-position: -192px 0; }
-
-.team-logo.chicago-bulls { background-position: 0 -48px; }
-.team-logo.cleveland-cavaliers { background-position: -48px -48px; }
-.team-logo.atlanta-hawks { background-position: -96px -48px; }
-.team-logo.brooklyn-nets { background-position: -144px -48px; }
-.team-logo.phoenix-suns { background-position: -192px -48px; }
-
-.team-logo.charlotte-hornets { background-position: 0 -96px; }
-.team-logo.boston-celtics { background-position: -48px -96px; }
-.team-logo.miami-heat { background-position: -96px -96px; }
-.team-logo.denver-nuggets { background-position: -144px -96px; }
-.team-logo.oklahoma-city-thunder { background-position: -192px -96px; }
-
-.team-logo.la-clippers { background-position: 0 -144px; }
-.team-logo.utah-jazz { background-position: -48px -144px; }
-.team-logo.sacramento-kings { background-position: -96px -144px; }
-.team-logo.indiana-pacers { background-position: -144px -144px; }
-.team-logo.minnesota-timberwolves { background-position: -192px -144px; }
-
-.team-logo.new-york-knicks { background-position: 0 -192px; }
-.team-logo.los-angeles-lakers { background-position: -48px -192px; }
-.team-logo.orlando-magic { background-position: -96px -192px; }
-.team-logo.new-orleans-pelicans { background-position: -144px -192px; }
-.team-logo.golden-state-warriors { background-position: -192px -192px; }
-
-.team-logo.detroit-pistons { background-position: 0 -240px; }
-.team-logo.toronto-raptors { background-position: -48px -240px; }
-.team-logo.houston-rockets { background-position: -96px -240px; }
-.team-logo.philadelphia-76ers { background-position: -144px -240px; }
-.team-logo.washington-wizards { background-position: -192px -240px; }
+/* Team Logo Positions */
+.team-logo.atlanta-hawks { background-position: -0px -0px; }
+.team-logo.boston-celtics { background-position: -150px -0px; }
+.team-logo.brooklyn-nets { background-position: -300px -0px; }
+.team-logo.charlotte-hornets { background-position: -450px -0px; }
+.team-logo.chicago-bulls { background-position: -600px -0px; }
+.team-logo.cleveland-cavaliers { background-position: -750px -0px; }
+.team-logo.dallas-mavericks { background-position: -0px -150px; }
+.team-logo.denver-nuggets { background-position: -150px -150px; }
+.team-logo.detroit-pistons { background-position: -300px -150px; }
+.team-logo.golden-state-warriors { background-position: -450px -150px; }
+.team-logo.houston-rockets { background-position: -600px -150px; }
+.team-logo.indiana-pacers { background-position: -750px -150px; }
+.team-logo.la-clippers { background-position: -0px -300px; }
+.team-logo.los-angeles-lakers { background-position: -150px -300px; }
+.team-logo.memphis-grizzlies { background-position: -300px -300px; }
+.team-logo.miami-heat { background-position: -450px -300px; }
+.team-logo.milwaukee-bucks { background-position: -600px -300px; }
+.team-logo.minnesota-timberwolves { background-position: -750px -300px; }
+.team-logo.new-orleans-pelicans { background-position: -0px -450px; }
+.team-logo.new-york-knicks { background-position: -150px -450px; }
+.team-logo.oklahoma-city-thunder { background-position: -300px -450px; }
+.team-logo.orlando-magic { background-position: -450px -450px; }
+.team-logo.philadelphia-76ers { background-position: -600px -450px; }
+.team-logo.phoenix-suns { background-position: -750px -450px; }
+.team-logo.portland-trail-blazers { background-position: -0px -600px; }
+.team-logo.sacramento-kings { background-position: -150px -600px; }
+.team-logo.san-antonio-spurs { background-position: -300px -600px; }
+.team-logo.toronto-raptors { background-position: -450px -600px; }
+.team-logo.utah-jazz { background-position: -600px -600px; }
+.team-logo.washington-wizards { background-position: -750px -600px; }
 
 .team-name {
   font-weight: 600;
@@ -372,19 +367,9 @@ main {
   }
 
   .team-logo {
-    width: 36px;
-    height: 36px;
-    background-size: 180px 288px;
+    width: 150px;
+    height: 150px;
   }
-
-  /* Adjust all positions by multiplying by 0.75 for mobile */
-  .team-logo.portland-trail-blazers { background-position: 0 0; }
-  .team-logo.milwaukee-bucks { background-position: -36px 0; }
-  .team-logo.memphis-grizzlies { background-position: -72px 0; }
-  .team-logo.dallas-mavericks { background-position: -108px 0; }
-  .team-logo.san-antonio-spurs { background-position: -144px 0; }
-  
-  /* Continue pattern for all teams... */
 
   .team-name {
     font-size: 1rem;

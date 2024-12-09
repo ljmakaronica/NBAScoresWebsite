@@ -47,9 +47,8 @@ class NBASchedule {
         } else if (this.width >= 768) {
             this.daysToShow = 7;
         } else {
-            // On mobile, we show the entire season range and allow horizontal scrolling.
-            // Only about 4 dates fit on screen at a time but user can scroll.
-            this.daysToShow = null; // Indicates full range mode on mobile
+            // On mobile, show full season range horizontally scrollable
+            this.daysToShow = null;
         }
 
         this.scoreboard = document.getElementById('scoreboard');
@@ -57,7 +56,7 @@ class NBASchedule {
         this.weekContainer = document.getElementById('weekContainer');
         this.dateDisplay = document.getElementById('date-display');
 
-        // Add arrow listeners only if we're not on mobile full range mode
+        // Add arrow listeners only if not in full-range mobile mode
         if (this.daysToShow !== null && this.daysToShow > 5) {
             document.getElementById('prevDate').addEventListener('click', (e) => {
                 e.preventDefault();
@@ -87,12 +86,10 @@ class NBASchedule {
         initialDate.setHours(12, 0, 0, 0);
         this.selectedDate = initialDate;
 
-        // If not mobile mode, use old range logic
         if (this.daysToShow !== null) {
             const halfRange = Math.floor(this.daysToShow / 2);
             this.displayStartDate = new Date(this.selectedDate);
             this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
-
             this.clampDisplayStartDate();
         }
         
@@ -101,9 +98,8 @@ class NBASchedule {
     }
 
     clampDisplayStartDate() {
-        if (this.daysToShow === null) return; // No clamping in mobile full range mode
+        if (this.daysToShow === null) return; // No clamping in full-range mode
 
-        // Ensure the visible range doesn't go before season start or after season end
         if (this.displayStartDate < SEASON_START) {
             this.displayStartDate = new Date(SEASON_START);
         }
@@ -121,9 +117,8 @@ class NBASchedule {
     }
 
     changeWeek(delta) {
-        if (this.daysToShow === null) return; // No week changing in mobile full range mode
+        if (this.daysToShow === null) return; // No week changing in full-range mode
 
-        // Move by daysToShow days
         const newStart = new Date(this.displayStartDate);
         newStart.setDate(newStart.getDate() + delta * this.daysToShow);
 
@@ -131,11 +126,9 @@ class NBASchedule {
         lastVisibleDay.setDate(lastVisibleDay.getDate() + this.daysToShow - 1);
 
         if (newStart < SEASON_START && lastVisibleDay < SEASON_START) {
-            // Can't move before start of season
             return;
         }
         if (lastVisibleDay > SEASON_END && newStart > SEASON_END) {
-            // Can't move beyond end of season
             return;
         }
 
@@ -150,16 +143,21 @@ class NBASchedule {
         const today = new Date();
         today.setHours(12,0,0,0);
 
+        let selectedDayEl = null;
+
         if (this.daysToShow === null) {
-            // Mobile full-range mode: Show all dates from SEASON_START to SEASON_END
+            // Full-range mode for mobile
             let currentDate = new Date(SEASON_START);
             while (currentDate <= SEASON_END) {
                 const dayEl = this.createDayElement(currentDate, today);
                 this.weekContainer.appendChild(dayEl);
+                if (this.selectedDate && currentDate.toDateString() === this.selectedDate.toDateString()) {
+                    selectedDayEl = dayEl;
+                }
                 currentDate.setDate(currentDate.getDate() + 1);
             }
         } else {
-            // Original logic for desktop/tablet
+            // Desktop/tablet mode
             for (let i = 0; i < this.daysToShow; i++) {
                 const dayDate = new Date(this.displayStartDate);
                 dayDate.setDate(this.displayStartDate.getDate() + i);
@@ -170,7 +168,16 @@ class NBASchedule {
 
                 const dayEl = this.createDayElement(dayDate, today);
                 this.weekContainer.appendChild(dayEl);
+                if (this.selectedDate && dayDate.toDateString() === this.selectedDate.toDateString()) {
+                    selectedDayEl = dayEl;
+                }
             }
+        }
+
+        // After rendering all days, if in full-range mode (mobile), scroll selected day into view
+        if (this.daysToShow === null && selectedDayEl) {
+            // Scroll to the selected date (today) in the center
+            selectedDayEl.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
         }
     }
 
@@ -227,26 +234,20 @@ class NBASchedule {
             const selectedDateObj = new Date(date);
             selectedDateObj.setHours(12,0,0,0);
 
-            // Check if date is in the past
             const isPastDate = selectedDateObj < today;
             let data;
 
             if (isPastDate) {
-                // Try loading from localStorage
                 const cachedData = localStorage.getItem('games_' + date);
                 if (cachedData) {
                     data = JSON.parse(cachedData);
                 } else {
-                    // Fetch from server if not in cache
                     const response = await fetch(`/api/games?start_date=${date}&end_date=${date}&per_page=100`);
                     if (!response.ok) throw new Error('Failed to fetch games');
                     data = await response.json();
-
-                    // Store in localStorage
                     localStorage.setItem('games_' + date, JSON.stringify(data));
                 }
             } else {
-                // For today's or future games, just fetch from server
                 const response = await fetch(`/api/games?start_date=${date}&end_date=${date}&per_page=100`);
                 if (!response.ok) throw new Error('Failed to fetch games');
                 data = await response.json();

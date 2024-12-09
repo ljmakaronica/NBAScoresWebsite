@@ -40,15 +40,16 @@ class NBASchedule {
         // Initialize state
         this.isLoading = false;
         this.selectedDate = null;
+        this.displayStartDate = null; // The start date of the 7-day window
 
         // Get DOM elements
         this.scoreboard = document.getElementById('scoreboard');
         this.loadingOverlay = document.getElementById('loading-overlay');
-        this.currentDateDisplay = document.getElementById('currentDate');
+        this.weekContainer = document.getElementById('weekContainer');
 
         // Bind event handlers
-        document.getElementById('prevDate').addEventListener('click', () => this.changeDate(-1));
-        document.getElementById('nextDate').addEventListener('click', () => this.changeDate(1));
+        document.getElementById('prevDate').addEventListener('click', () => this.changeWeek(-1));
+        document.getElementById('nextDate').addEventListener('click', () => this.changeWeek(1));
 
         // Initialize calendar
         this.initializeCalendar();
@@ -57,44 +58,105 @@ class NBASchedule {
     initializeCalendar() {
         const today = new Date();
         
-        // Set initial date based on current date and season bounds
+        // Clamp today within season
+        let initialDate;
         if (today < SEASON_START) {
-            this.selectedDate = new Date(SEASON_START);
+            initialDate = new Date(SEASON_START);
         } else if (today > SEASON_END) {
-            this.selectedDate = new Date(SEASON_END);
+            initialDate = new Date(SEASON_END);
         } else {
-            this.selectedDate = new Date(today);
+            initialDate = new Date(today);
         }
 
-        // Set time to noon to avoid timezone issues
-        this.selectedDate.setHours(12, 0, 0, 0);
+        initialDate.setHours(12, 0, 0, 0);
+
+        // The selectedDate will be today's date (within season bounds)
+        this.selectedDate = initialDate;
+
+        // We want a 7-day window centered on selectedDate.
+        // selectedDate is in the middle, that means 3 days before and 3 days after
+        this.displayStartDate = new Date(this.selectedDate);
+        this.displayStartDate.setDate(this.displayStartDate.getDate() - 3);
 
         this.renderCalendar();
         this.loadGamesForDate(this.formatDate(this.selectedDate));
     }
 
-    changeDate(delta) {
-        this.selectedDate.setDate(this.selectedDate.getDate() + delta);
+    changeWeek(delta) {
+        // Move the whole 7-day window by one week (7 days)
+        this.displayStartDate.setDate(this.displayStartDate.getDate() + delta * 7);
 
-        // Keep date within season bounds
+        // Adjust selected date accordingly (keep it in the middle)
+        this.selectedDate.setDate(this.selectedDate.getDate() + delta * 7);
+
+        // Clamp within season bounds
         if (this.selectedDate < SEASON_START) {
             this.selectedDate = new Date(SEASON_START);
+            this.displayStartDate = new Date(this.selectedDate);
+            this.displayStartDate.setDate(this.displayStartDate.getDate() - 3);
         } else if (this.selectedDate > SEASON_END) {
             this.selectedDate = new Date(SEASON_END);
+            this.displayStartDate = new Date(this.selectedDate);
+            this.displayStartDate.setDate(this.displayStartDate.getDate() - 3);
         }
 
         this.renderCalendar();
         this.loadGamesForDate(this.formatDate(this.selectedDate));
     }
 
+    // Renders the 7-day range in the calendar
     renderCalendar() {
-        // Update date display
-        this.currentDateDisplay.textContent = this.selectedDate.toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-        });
+        this.weekContainer.innerHTML = '';
+
+        const today = new Date();
+        today.setHours(12,0,0,0);
+        
+        for (let i = 0; i < 7; i++) {
+            const dayDate = new Date(this.displayStartDate);
+            dayDate.setDate(this.displayStartDate.getDate() + i);
+
+            const dayEl = document.createElement('div');
+            dayEl.className = 'calendar-day';
+
+            // Highlight today if it's that day
+            if (dayDate.toDateString() === today.toDateString()) {
+                dayEl.classList.add('today');
+            }
+
+            // Highlight selected day
+            if (dayDate.toDateString() === this.selectedDate.toDateString()) {
+                dayEl.classList.add('selected');
+            }
+
+            const dayName = document.createElement('div');
+            dayName.className = 'day-name';
+            dayName.textContent = dayDate.toLocaleDateString('en-US', { weekday: 'short' });
+
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = dayDate.getDate();
+
+            dayEl.appendChild(dayName);
+            dayEl.appendChild(dayNumber);
+
+            // Click event to select that date
+            dayEl.addEventListener('click', () => {
+                // When a day is clicked, update selectedDate
+                this.selectedDate = new Date(dayDate);
+
+                // Ensure selectedDate is within season
+                if (this.selectedDate < SEASON_START) {
+                    this.selectedDate = new Date(SEASON_START);
+                } else if (this.selectedDate > SEASON_END) {
+                    this.selectedDate = new Date(SEASON_END);
+                }
+
+                this.renderCalendar();
+                this.loadGamesForDate(this.formatDate(this.selectedDate));
+            });
+
+            this.weekContainer.appendChild(dayEl);
+        }
     }
 
     formatDate(date) {
@@ -157,7 +219,7 @@ class NBASchedule {
         card.innerHTML = `
             <div class="team-row">
                 <div class="team-info">
-                    <div class="team-logo ${TEAM_LOGOS[game.home_team.full_name]}"></div>
+                    <div class="${TEAM_LOGOS[game.home_team.full_name]}"></div>
                     <span class="team-name">${game.home_team.full_name}</span>
                 </div>
                 <div class="team-score ${status.isComplete && game.home_team_score > game.visitor_team_score ? 'winner' : ''}">
@@ -166,7 +228,7 @@ class NBASchedule {
             </div>
             <div class="team-row">
                 <div class="team-info">
-                    <div class="team-logo ${TEAM_LOGOS[game.visitor_team.full_name]}"></div>
+                    <div class="${TEAM_LOGOS[game.visitor_team.full_name]}"></div>
                     <span class="team-name">${game.visitor_team.full_name}</span>
                 </div>
                 <div class="team-score ${status.isComplete && game.visitor_team_score > game.home_team_score ? 'winner' : ''}">

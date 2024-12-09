@@ -42,13 +42,59 @@ body {
   margin-bottom: 2rem;
   border: 1px solid var(--color-border);
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 1rem;
 }
 
-.calendar-header {
+.week-container {
   display: flex;
+  gap: 0.5rem;
+  justify-content: center;
   align-items: center;
-  gap: 1rem;
+  flex-wrap: nowrap;
+}
+
+.calendar-day {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 4rem;
+}
+
+.calendar-day:hover {
+  background: var(--color-calendar-hover);
+  border-color: var(--color-accent);
+}
+
+.calendar-day.selected {
+  background: var(--color-calendar-selected);
+  color: #fff;
+  font-weight: 700;
+}
+
+.calendar-day.today:not(.selected) {
+  background: var(--color-calendar-today);
+}
+
+.calendar-day .day-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.calendar-day .day-number {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .calendar-header h2 {
@@ -224,7 +270,6 @@ body {
   background-repeat: no-repeat;
 }
 
-/* Team logo sprite positions */
 .team-logo.atlanta-hawks { background-position: -0px -0px; }
 .team-logo.boston-celtics { background-position: -32px -0px; }
 .team-logo.brooklyn-nets { background-position: -64px -0px; }

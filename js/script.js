@@ -32,37 +32,44 @@ const TEAM_LOGOS = {
     'Washington Wizards': 'team-logo washington-wizards'
 };
 
-const SEASON_START = new Date('2024-10-22');
-const SEASON_END = new Date('2025-04-13');
+const SEASON_START = new Date('2024-10-22T12:00:00');
+const SEASON_END = new Date('2025-04-13T12:00:00');
 
 class NBASchedule {
     constructor() {
-        // Initialize state
         this.isLoading = false;
         this.selectedDate = null;
-        this.displayStartDate = null; // The start date of the visible window of days
 
-        // Determine how many days to show based on screen width
-        this.daysToShow = window.innerWidth >= 1200 ? 14 : 7;
+        // Dynamically determine how many days to show based on screen width
+        const width = window.innerWidth;
+        if (width >= 1200) {
+            this.daysToShow = 14;
+        } else if (width >= 768) {
+            this.daysToShow = 7;
+        } else {
+            this.daysToShow = 3;
+        }
 
-        // Get DOM elements
         this.scoreboard = document.getElementById('scoreboard');
         this.loadingOverlay = document.getElementById('loading-overlay');
         this.weekContainer = document.getElementById('weekContainer');
         this.dateDisplay = document.getElementById('date-display');
 
-        // Bind event handlers
-        document.getElementById('prevDate').addEventListener('click', () => this.changeWeek(-1));
-        document.getElementById('nextDate').addEventListener('click', () => this.changeWeek(1));
+        document.getElementById('prevDate').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.changeWeek(-1);
+        });
+        document.getElementById('nextDate').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.changeWeek(1);
+        });
 
-        // Initialize calendar
         this.initializeCalendar();
     }
 
     initializeCalendar() {
         const today = new Date();
         
-        // Clamp today within season
         let initialDate;
         if (today < SEASON_START) {
             initialDate = new Date(SEASON_START);
@@ -74,43 +81,57 @@ class NBASchedule {
 
         initialDate.setHours(12, 0, 0, 0);
 
-        // The selectedDate will be today's date (within season bounds)
         this.selectedDate = initialDate;
 
-        // Center the visible range on the selected date
         const halfRange = Math.floor(this.daysToShow / 2);
         this.displayStartDate = new Date(this.selectedDate);
         this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
 
+        this.clampDisplayStartDate();
         this.renderCalendar();
         this.loadGamesForDate(this.formatDate(this.selectedDate));
+    }
+
+    clampDisplayStartDate() {
+        // Ensure the visible range doesn't go before season start or after season end
+        if (this.displayStartDate < SEASON_START) {
+            this.displayStartDate = new Date(SEASON_START);
+        }
+
+        const lastVisibleDay = new Date(this.displayStartDate);
+        lastVisibleDay.setDate(lastVisibleDay.getDate() + this.daysToShow - 1);
+
+        if (lastVisibleDay > SEASON_END) {
+            const diff = (lastVisibleDay - SEASON_END) / (24*60*60*1000);
+            this.displayStartDate.setDate(this.displayStartDate.getDate() - Math.ceil(diff));
+            if (this.displayStartDate < SEASON_START) {
+                this.displayStartDate = new Date(SEASON_START);
+            }
+        }
     }
 
     changeWeek(delta) {
-        // Move the entire date range by the number of days displayed (like shifting by a full "window")
-        this.displayStartDate.setDate(this.displayStartDate.getDate() + delta * this.daysToShow);
+        // Move by daysToShow days
+        const newStart = new Date(this.displayStartDate);
+        newStart.setDate(newStart.getDate() + delta * this.daysToShow);
 
-        // Adjust selected date accordingly to stay in the middle
-        this.selectedDate.setDate(this.selectedDate.getDate() + delta * this.daysToShow);
+        const lastVisibleDay = new Date(newStart);
+        lastVisibleDay.setDate(lastVisibleDay.getDate() + this.daysToShow - 1);
 
-        // Clamp within season bounds
-        if (this.selectedDate < SEASON_START) {
-            this.selectedDate = new Date(SEASON_START);
-            const halfRange = Math.floor(this.daysToShow / 2);
-            this.displayStartDate = new Date(this.selectedDate);
-            this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
-        } else if (this.selectedDate > SEASON_END) {
-            this.selectedDate = new Date(SEASON_END);
-            const halfRange = Math.floor(this.daysToShow / 2);
-            this.displayStartDate = new Date(this.selectedDate);
-            this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
+        if (newStart < SEASON_START && lastVisibleDay < SEASON_START) {
+            // Can't move before start of season
+            return;
+        }
+        if (lastVisibleDay > SEASON_END && newStart > SEASON_END) {
+            // Can't move beyond end of season
+            return;
         }
 
+        this.displayStartDate = newStart;
+        this.clampDisplayStartDate();
         this.renderCalendar();
-        this.loadGamesForDate(this.formatDate(this.selectedDate));
     }
 
-    // Renders the multiple-day range in the calendar
     renderCalendar() {
         this.weekContainer.innerHTML = '';
 
@@ -121,43 +142,40 @@ class NBASchedule {
             const dayDate = new Date(this.displayStartDate);
             dayDate.setDate(this.displayStartDate.getDate() + i);
 
+            // Don't render days beyond the season
+            if (dayDate < SEASON_START || dayDate > SEASON_END) {
+                continue;
+            }
+
             const dayEl = document.createElement('div');
             dayEl.className = 'calendar-day';
 
-            // Highlight today if it's that day
+            const weekday = dayDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+            const month = dayDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+            const dayNum = dayDate.getDate();
+
+            const dayTextEl = document.createElement('div');
+            dayTextEl.className = 'day-text';
+            // Ensure weekday on top and month/day below
+            dayTextEl.innerHTML = `<div>${weekday}</div><div>${month} ${dayNum}</div>`;
+
             if (dayDate.toDateString() === today.toDateString()) {
                 dayEl.classList.add('today');
             }
 
-            // Highlight selected day
-            if (dayDate.toDateString() === this.selectedDate.toDateString()) {
+            if (this.selectedDate && dayDate.toDateString() === this.selectedDate.toDateString()) {
                 dayEl.classList.add('selected');
             }
 
-            const dayName = document.createElement('div');
-            dayName.className = 'day-name';
-            dayName.textContent = dayDate.toLocaleDateString('en-US', { weekday: 'short' });
+            dayEl.appendChild(dayTextEl);
 
-            const dayNumber = document.createElement('div');
-            dayNumber.className = 'day-number';
-            dayNumber.textContent = dayDate.getDate();
-
-            dayEl.appendChild(dayName);
-            dayEl.appendChild(dayNumber);
-
-            // Click event to select that date
+            // Clicking a day changes selectedDate and loads games
             dayEl.addEventListener('click', () => {
-                this.selectedDate = new Date(dayDate);
-
-                // Ensure selectedDate is within season
-                if (this.selectedDate < SEASON_START) {
-                    this.selectedDate = new Date(SEASON_START);
-                } else if (this.selectedDate > SEASON_END) {
-                    this.selectedDate = new Date(SEASON_END);
+                if (dayDate >= SEASON_START && dayDate <= SEASON_END) {
+                    this.selectedDate = new Date(dayDate);
+                    this.renderCalendar();
+                    this.loadGamesForDate(this.formatDate(this.selectedDate));
                 }
-
-                this.renderCalendar();
-                this.loadGamesForDate(this.formatDate(this.selectedDate));
             });
 
             this.weekContainer.appendChild(dayEl);
@@ -179,12 +197,39 @@ class NBASchedule {
         this.isLoading = true;
 
         try {
-            const response = await fetch(`/api/games?start_date=${date}&end_date=${date}&per_page=100`);
-            if (!response.ok) throw new Error('Failed to fetch games');
-            
-            const data = await response.json();
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const selectedDateObj = new Date(date);
+            selectedDateObj.setHours(12,0,0,0);
+
+            // Check if date is in the past
+            const isPastDate = selectedDateObj < today;
+            let data;
+
+            if (isPastDate) {
+                // Try loading from localStorage
+                const cachedData = localStorage.getItem('games_' + date);
+                if (cachedData) {
+                    data = JSON.parse(cachedData);
+                } else {
+                    // Fetch from server if not in cache
+                    const response = await fetch(`/api/games?start_date=${date}&end_date=${date}&per_page=100`);
+                    if (!response.ok) throw new Error('Failed to fetch games');
+                    data = await response.json();
+
+                    // Store in localStorage
+                    localStorage.setItem('games_' + date, JSON.stringify(data));
+                }
+            } else {
+                // For today's or future games, just fetch from server
+                const response = await fetch(`/api/games?start_date=${date}&end_date=${date}&per_page=100`);
+                if (!response.ok) throw new Error('Failed to fetch games');
+                data = await response.json();
+            }
+
             this.displayGames(data.data);
             this.updateDateDisplay();
+
         } catch (error) {
             console.error('Error loading games:', error);
             this.showError('Failed to load games. Please try again later.');

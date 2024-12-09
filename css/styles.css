@@ -58,11 +58,11 @@ main {
   background: transparent;
   border: none;
   color: var(--color-text);
-  width: 2.5rem; 
-  height: 2.5rem; 
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 0.5rem;
   cursor: pointer;
-  flex-shrink: 0; 
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,12 +81,12 @@ main {
   justify-content: center;
   align-items: center;
   overflow-x: auto;
-  scrollbar-width: none; /* Hide scrollbar for Firefox */
-  -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .dates-container::-webkit-scrollbar {
-  display: none; /* Hide scrollbar for Chrome/Safari */
+  display: none;
 }
 
 .calendar-day {
@@ -121,15 +121,15 @@ main {
 
 .game-card {
   background: var(--color-card-bg);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   overflow: hidden;
 }
 
 .team-row {
   display: flex;
   align-items: center;
-  padding: 1rem;
-  gap: 1rem;
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
   background: var(--color-card-bg);
 }
 
@@ -144,50 +144,50 @@ main {
   flex: 1;
 }
 
-/* Team Logo Base Styles */
+/* Team Logo Styles - Using original 150px dimensions */
 .team-logo {
-  width: 40px;
-  height: 40px;
+  width: 28px;  /* Visual size */
+  height: 28px;  /* Visual size */
   background-image: url('../assets/nba-sprite-sheet.png');
   background-repeat: no-repeat;
-  background-size: 240px 160px;
+  background-size: 900px 750px;  /* 6 columns x 5 rows of 150px squares */
 }
 
-/* Team Logo Sprite Positions */
+/* Team Logo Positions - Using full 150px positions */
 .team-logo.atlanta-hawks { background-position: -0px -0px; }
-.team-logo.boston-celtics { background-position: -40px -0px; }
-.team-logo.brooklyn-nets { background-position: -80px -0px; }
-.team-logo.charlotte-hornets { background-position: -120px -0px; }
-.team-logo.chicago-bulls { background-position: -160px -0px; }
-.team-logo.cleveland-cavaliers { background-position: -200px -0px; }
+.team-logo.boston-celtics { background-position: -150px -0px; }
+.team-logo.brooklyn-nets { background-position: -300px -0px; }
+.team-logo.charlotte-hornets { background-position: -450px -0px; }
+.team-logo.chicago-bulls { background-position: -600px -0px; }
+.team-logo.cleveland-cavaliers { background-position: -750px -0px; }
 
-.team-logo.dallas-mavericks { background-position: -0px -40px; }
-.team-logo.denver-nuggets { background-position: -40px -40px; }
-.team-logo.detroit-pistons { background-position: -80px -40px; }
-.team-logo.golden-state-warriors { background-position: -120px -40px; }
-.team-logo.houston-rockets { background-position: -160px -40px; }
-.team-logo.indiana-pacers { background-position: -200px -40px; }
+.team-logo.dallas-mavericks { background-position: -0px -150px; }
+.team-logo.denver-nuggets { background-position: -150px -150px; }
+.team-logo.detroit-pistons { background-position: -300px -150px; }
+.team-logo.golden-state-warriors { background-position: -450px -150px; }
+.team-logo.houston-rockets { background-position: -600px -150px; }
+.team-logo.indiana-pacers { background-position: -750px -150px; }
 
-.team-logo.la-clippers { background-position: -0px -80px; }
-.team-logo.los-angeles-lakers { background-position: -40px -80px; }
-.team-logo.memphis-grizzlies { background-position: -80px -80px; }
-.team-logo.miami-heat { background-position: -120px -80px; }
-.team-logo.milwaukee-bucks { background-position: -160px -80px; }
-.team-logo.minnesota-timberwolves { background-position: -200px -80px; }
+.team-logo.la-clippers { background-position: -0px -300px; }
+.team-logo.los-angeles-lakers { background-position: -150px -300px; }
+.team-logo.memphis-grizzlies { background-position: -300px -300px; }
+.team-logo.miami-heat { background-position: -450px -300px; }
+.team-logo.milwaukee-bucks { background-position: -600px -300px; }
+.team-logo.minnesota-timberwolves { background-position: -750px -300px; }
 
-.team-logo.new-orleans-pelicans { background-position: -0px -120px; }
-.team-logo.new-york-knicks { background-position: -40px -120px; }
-.team-logo.oklahoma-city-thunder { background-position: -80px -120px; }
-.team-logo.orlando-magic { background-position: -120px -120px; }
-.team-logo.philadelphia-76ers { background-position: -160px -120px; }
-.team-logo.phoenix-suns { background-position: -200px -120px; }
+.team-logo.new-orleans-pelicans { background-position: -0px -450px; }
+.team-logo.new-york-knicks { background-position: -150px -450px; }
+.team-logo.oklahoma-city-thunder { background-position: -300px -450px; }
+.team-logo.orlando-magic { background-position: -450px -450px; }
+.team-logo.philadelphia-76ers { background-position: -600px -450px; }
+.team-logo.phoenix-suns { background-position: -750px -450px; }
 
-.team-logo.portland-trail-blazers { background-position: -0px -160px; }
-.team-logo.sacramento-kings { background-position: -40px -160px; }
-.team-logo.san-antonio-spurs { background-position: -80px -160px; }
-.team-logo.toronto-raptors { background-position: -120px -160px; }
-.team-logo.utah-jazz { background-position: -160px -160px; }
-.team-logo.washington-wizards { background-position: -200px -160px; }
+.team-logo.portland-trail-blazers { background-position: -0px -600px; }
+.team-logo.sacramento-kings { background-position: -150px -600px; }
+.team-logo.san-antonio-spurs { background-position: -300px -600px; }
+.team-logo.toronto-raptors { background-position: -450px -600px; }
+.team-logo.utah-jazz { background-position: -600px -600px; }
+.team-logo.washington-wizards { background-position: -750px -600px; }
 
 .team-name {
   font-size: 0.9375rem;
@@ -252,7 +252,6 @@ main {
   animation: spin 1s linear infinite;
 }
 
-/* Animations */
 @keyframes pulse {
   0% {
     transform: scale(0.95);
@@ -304,46 +303,10 @@ main {
   }
 
   .team-logo {
-    width: 32px;
-    height: 32px;
-    background-size: 192px 128px;
+    width: 24px;
+    height: 24px;
+    background-size: 900px 750px;  /* Maintain original sprite sheet size */
   }
-
-  /* Mobile Team Logo Positions */
-  .team-logo.atlanta-hawks { background-position: -0px -0px; }
-  .team-logo.boston-celtics { background-position: -32px -0px; }
-  .team-logo.brooklyn-nets { background-position: -64px -0px; }
-  .team-logo.charlotte-hornets { background-position: -96px -0px; }
-  .team-logo.chicago-bulls { background-position: -128px -0px; }
-  .team-logo.cleveland-cavaliers { background-position: -160px -0px; }
-
-  .team-logo.dallas-mavericks { background-position: -0px -32px; }
-  .team-logo.denver-nuggets { background-position: -32px -32px; }
-  .team-logo.detroit-pistons { background-position: -64px -32px; }
-  .team-logo.golden-state-warriors { background-position: -96px -32px; }
-  .team-logo.houston-rockets { background-position: -128px -32px; }
-  .team-logo.indiana-pacers { background-position: -160px -32px; }
-
-  .team-logo.la-clippers { background-position: -0px -64px; }
-  .team-logo.los-angeles-lakers { background-position: -32px -64px; }
-  .team-logo.memphis-grizzlies { background-position: -64px -64px; }
-  .team-logo.miami-heat { background-position: -96px -64px; }
-  .team-logo.milwaukee-bucks { background-position: -128px -64px; }
-  .team-logo.minnesota-timberwolves { background-position: -160px -64px; }
-
-  .team-logo.new-orleans-pelicans { background-position: -0px -96px; }
-  .team-logo.new-york-knicks { background-position: -32px -96px; }
-  .team-logo.oklahoma-city-thunder { background-position: -64px -96px; }
-  .team-logo.orlando-magic { background-position: -96px -96px; }
-  .team-logo.philadelphia-76ers { background-position: -128px -96px; }
-  .team-logo.phoenix-suns { background-position: -160px -96px; }
-
-  .team-logo.portland-trail-blazers { background-position: -0px -128px; }
-  .team-logo.sacramento-kings { background-position: -32px -128px; }
-  .team-logo.san-antonio-spurs { background-position: -64px -128px; }
-  .team-logo.toronto-raptors { background-position: -96px -128px; }
-  .team-logo.utah-jazz { background-position: -128px -128px; }
-  .team-logo.washington-wizards { background-position: -160px -128px; }
 
   .team-name {
     font-size: 0.875rem;

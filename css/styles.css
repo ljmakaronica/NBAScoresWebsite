@@ -78,11 +78,11 @@ main {
   display: flex;
   gap: 0.5rem;
   flex: 1;
-  justify-content: center;
   align-items: center;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  scroll-behavior: smooth;
 }
 
 .dates-container::-webkit-scrollbar {
@@ -144,7 +144,7 @@ main {
   flex: 1;
 }
 
-/* Team Logo Styles - Using original 150px dimensions */
+/* Team Logo Styles */
 .team-logo {
   width: 28px;
   height: 28px;
@@ -273,26 +273,7 @@ main {
   }
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-bg);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
-}
-
-/* Mobile Responsive Styles */
+/* On mobile, no arrows, full range of dates, horizontally scrollable */
 @media (max-width: 768px) {
   #app {
     padding: 0.5rem;
@@ -305,6 +286,13 @@ main {
   /* Hide arrows on mobile */
   #prevDate, #nextDate {
     display: none;
+  }
+
+  /* The container is scrollable; 
+     set date widths so approx 4 fit in screen width */
+  .calendar-day {
+    min-width: 4.5rem; /* Already set, ensures about 4 visible at a time */
+    flex-shrink: 0;
   }
 
   .team-name {

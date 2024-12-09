@@ -40,15 +40,16 @@ class NBASchedule {
         this.isLoading = false;
         this.selectedDate = null;
 
-        // Dynamically determine how many days to show based on screen width
-        const width = window.innerWidth;
-        if (width >= 1200) {
+        this.width = window.innerWidth;
+        // On desktop/tablet use old logic, on mobile show full range.
+        if (this.width >= 1200) {
             this.daysToShow = 14;
-        } else if (width >= 768) {
+        } else if (this.width >= 768) {
             this.daysToShow = 7;
         } else {
-            // On mobile, show 5 dates and no arrows
-            this.daysToShow = 5;
+            // On mobile, we show the entire season range and allow horizontal scrolling.
+            // Only about 4 dates fit on screen at a time but user can scroll.
+            this.daysToShow = null; // Indicates full range mode on mobile
         }
 
         this.scoreboard = document.getElementById('scoreboard');
@@ -56,8 +57,8 @@ class NBASchedule {
         this.weekContainer = document.getElementById('weekContainer');
         this.dateDisplay = document.getElementById('date-display');
 
-        // Only attach arrow event listeners if not mobile
-        if (this.daysToShow > 5) {
+        // Add arrow listeners only if we're not on mobile full range mode
+        if (this.daysToShow !== null && this.daysToShow > 5) {
             document.getElementById('prevDate').addEventListener('click', (e) => {
                 e.preventDefault();
                 this.changeWeek(-1);
@@ -84,19 +85,24 @@ class NBASchedule {
         }
 
         initialDate.setHours(12, 0, 0, 0);
-
         this.selectedDate = initialDate;
 
-        const halfRange = Math.floor(this.daysToShow / 2);
-        this.displayStartDate = new Date(this.selectedDate);
-        this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
+        // If not mobile mode, use old range logic
+        if (this.daysToShow !== null) {
+            const halfRange = Math.floor(this.daysToShow / 2);
+            this.displayStartDate = new Date(this.selectedDate);
+            this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
 
-        this.clampDisplayStartDate();
+            this.clampDisplayStartDate();
+        }
+        
         this.renderCalendar();
         this.loadGamesForDate(this.formatDate(this.selectedDate));
     }
 
     clampDisplayStartDate() {
+        if (this.daysToShow === null) return; // No clamping in mobile full range mode
+
         // Ensure the visible range doesn't go before season start or after season end
         if (this.displayStartDate < SEASON_START) {
             this.displayStartDate = new Date(SEASON_START);
@@ -115,6 +121,8 @@ class NBASchedule {
     }
 
     changeWeek(delta) {
+        if (this.daysToShow === null) return; // No week changing in mobile full range mode
+
         // Move by daysToShow days
         const newStart = new Date(this.displayStartDate);
         newStart.setDate(newStart.getDate() + delta * this.daysToShow);
@@ -142,48 +150,61 @@ class NBASchedule {
         const today = new Date();
         today.setHours(12,0,0,0);
 
-        for (let i = 0; i < this.daysToShow; i++) {
-            const dayDate = new Date(this.displayStartDate);
-            dayDate.setDate(this.displayStartDate.getDate() + i);
-
-            // Don't render days beyond the season
-            if (dayDate < SEASON_START || dayDate > SEASON_END) {
-                continue;
+        if (this.daysToShow === null) {
+            // Mobile full-range mode: Show all dates from SEASON_START to SEASON_END
+            let currentDate = new Date(SEASON_START);
+            while (currentDate <= SEASON_END) {
+                const dayEl = this.createDayElement(currentDate, today);
+                this.weekContainer.appendChild(dayEl);
+                currentDate.setDate(currentDate.getDate() + 1);
             }
+        } else {
+            // Original logic for desktop/tablet
+            for (let i = 0; i < this.daysToShow; i++) {
+                const dayDate = new Date(this.displayStartDate);
+                dayDate.setDate(this.displayStartDate.getDate() + i);
 
-            const dayEl = document.createElement('div');
-            dayEl.className = 'calendar-day';
-
-            const weekday = dayDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
-            const month = dayDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-            const dayNum = dayDate.getDate();
-
-            const dayTextEl = document.createElement('div');
-            dayTextEl.className = 'day-text';
-            // Ensure weekday on top and month/day below
-            dayTextEl.innerHTML = `<div>${weekday}</div><div>${month} ${dayNum}</div>`;
-
-            if (dayDate.toDateString() === today.toDateString()) {
-                dayEl.classList.add('today');
-            }
-
-            if (this.selectedDate && dayDate.toDateString() === this.selectedDate.toDateString()) {
-                dayEl.classList.add('selected');
-            }
-
-            dayEl.appendChild(dayTextEl);
-
-            // Clicking a day changes selectedDate and loads games
-            dayEl.addEventListener('click', () => {
-                if (dayDate >= SEASON_START && dayDate <= SEASON_END) {
-                    this.selectedDate = new Date(dayDate);
-                    this.renderCalendar();
-                    this.loadGamesForDate(this.formatDate(this.selectedDate));
+                if (dayDate < SEASON_START || dayDate > SEASON_END) {
+                    continue;
                 }
-            });
 
-            this.weekContainer.appendChild(dayEl);
+                const dayEl = this.createDayElement(dayDate, today);
+                this.weekContainer.appendChild(dayEl);
+            }
         }
+    }
+
+    createDayElement(dayDate, today) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+
+        const weekday = dayDate.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+        const month = dayDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+        const dayNum = dayDate.getDate();
+
+        const dayTextEl = document.createElement('div');
+        dayTextEl.className = 'day-text';
+        dayTextEl.innerHTML = `<div>${weekday}</div><div>${month} ${dayNum}</div>`;
+
+        if (dayDate.toDateString() === today.toDateString()) {
+            dayEl.classList.add('today');
+        }
+
+        if (this.selectedDate && dayDate.toDateString() === this.selectedDate.toDateString()) {
+            dayEl.classList.add('selected');
+        }
+
+        dayEl.appendChild(dayTextEl);
+
+        dayEl.addEventListener('click', () => {
+            if (dayDate >= SEASON_START && dayDate <= SEASON_END) {
+                this.selectedDate = new Date(dayDate);
+                this.renderCalendar();
+                this.loadGamesForDate(this.formatDate(this.selectedDate));
+            }
+        });
+
+        return dayEl;
     }
 
     formatDate(date) {

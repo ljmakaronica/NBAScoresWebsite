@@ -193,7 +193,7 @@ main {
 .team-logo {
   width: 150px;
   height: 150px;
-  background-image: url('../assets/nba_sprite_sheet.png');
+  background-image: url('../assets/nba-sprite-sheet.png');
   background-repeat: no-repeat;
 }
 

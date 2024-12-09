@@ -275,7 +275,14 @@ main {
   }
 }
 
-/* On mobile, no arrows, lazy load dates around today, allow horizontal scroll. */
+/* Desktop/Tablet: Center the displayed dates */
+@media (min-width: 768px) {
+  .dates-container {
+    justify-content: center;
+  }
+}
+
+/* Mobile: no arrows, lazy load dates, allow horizontal scroll */
 @media (max-width: 768px) {
   #app {
     padding: 0.5rem;
@@ -304,5 +311,10 @@ main {
 
   .calendar-day {
     padding: 0.375rem 0.75rem;
+  }
+
+  /* On mobile, we do not center all dates since user can scroll through them */
+  .dates-container {
+    justify-content: flex-start;
   }
 }

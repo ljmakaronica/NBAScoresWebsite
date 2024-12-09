@@ -35,10 +35,9 @@ const TEAM_LOGOS = {
 const SEASON_START = new Date('2024-10-22T12:00:00');
 const SEASON_END = new Date('2025-04-13T12:00:00');
 
-// For mobile lazy-loading: How many days on each side initially?
-// Let's show a window of ±30 days from today at initial load.
+// For mobile lazy-loading:
 const MOBILE_INITIAL_RANGE = 30; 
-const MOBILE_LOAD_INCREMENT = 30; // When nearing edges, load 30 more days in that direction.
+const MOBILE_LOAD_INCREMENT = 30; 
 
 class NBASchedule {
     constructor() {
@@ -49,7 +48,7 @@ class NBASchedule {
         this.dateDisplay = document.getElementById('date-display');
 
         this.width = window.innerWidth;
-        // On desktop/tablet use old logic, on mobile we do lazy loading.
+        // Determine daysToShow or lazy mode
         if (this.width >= 1200) {
             this.daysToShow = 14;
         } else if (this.width >= 768) {
@@ -83,7 +82,6 @@ class NBASchedule {
         });
 
         if (this.daysToShow === null) {
-            // Mobile lazy loading scroll handling
             this.weekContainer.addEventListener('scroll', () => this.handleScroll());
         }
 
@@ -101,11 +99,10 @@ class NBASchedule {
             initialDate = new Date(today);
         }
         initialDate.setHours(12, 0, 0, 0);
-        this.selectedDate = initialDate;
+        this.selectedDate = initialDate; // Ensuring selectedDate is "today" if in range
 
         if (this.daysToShow === null) {
             // Mobile: lazy loading mode
-            // Start with a window around 'today'
             this.currentStartDate = new Date(this.selectedDate);
             this.currentStartDate.setDate(this.currentStartDate.getDate() - MOBILE_INITIAL_RANGE);
             if (this.currentStartDate < SEASON_START) {
@@ -118,6 +115,7 @@ class NBASchedule {
                 this.currentEndDate = new Date(SEASON_END);
             }
         } else {
+            // Desktop/Tablet
             const halfRange = Math.floor(this.daysToShow / 2);
             this.displayStartDate = new Date(this.selectedDate);
             this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
@@ -175,7 +173,7 @@ class NBASchedule {
         let selectedDayEl = null;
 
         if (this.daysToShow === null) {
-            // Mobile lazy loading: render only from currentStartDate to currentEndDate
+            // Mobile lazy loading
             let currentDate = new Date(this.currentStartDate);
             while (currentDate <= this.currentEndDate) {
                 const dayEl = this.createDayElement(currentDate, today);
@@ -186,7 +184,7 @@ class NBASchedule {
                 currentDate.setDate(currentDate.getDate() + 1);
             }
         } else {
-            // Desktop/Tablet mode
+            // Desktop/Tablet
             for (let i = 0; i < this.daysToShow; i++) {
                 const dayDate = new Date(this.displayStartDate);
                 dayDate.setDate(this.displayStartDate.getDate() + i);
@@ -203,11 +201,13 @@ class NBASchedule {
             }
         }
 
-        // Scroll the selected date (today) into view on initial load
-        // Use requestAnimationFrame to ensure DOM is ready
+        // Ensure we scroll to the selected (today) date once the DOM is ready
         if (selectedDayEl) {
+            // Use a double requestAnimationFrame or a small timeout to ensure element is in DOM
             requestAnimationFrame(() => {
-                selectedDayEl.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+                requestAnimationFrame(() => {
+                    selectedDayEl.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+                });
             });
         }
     }
@@ -246,7 +246,7 @@ class NBASchedule {
         const scrollWidth = container.scrollWidth;
         const clientWidth = container.clientWidth;
 
-        // If near the left edge and not at season start, load more days to the left
+        // Near left edge, load more days to the left
         if (scrollLeft < 50 && this.currentStartDate > SEASON_START) {
             const oldStart = new Date(this.currentStartDate);
             this.currentStartDate.setDate(this.currentStartDate.getDate() - MOBILE_LOAD_INCREMENT);
@@ -254,26 +254,22 @@ class NBASchedule {
                 this.currentStartDate = new Date(SEASON_START);
             }
 
-            // Add new days to the left
             const fragment = document.createDocumentFragment();
             let insertDate = new Date(this.currentStartDate);
-            // Add days until the day before oldStart
             while (insertDate < oldStart) {
                 const dayEl = this.createDayElement(insertDate, new Date());
                 fragment.appendChild(dayEl);
                 insertDate.setDate(insertDate.getDate() + 1);
             }
 
-            // Remember scroll position in date terms
             const prevScrollLeft = container.scrollLeft;
-            // Prepend days
             this.weekContainer.insertBefore(fragment, this.weekContainer.firstChild);
             // Adjust scroll so the view doesn't jump
-            container.scrollLeft = prevScrollLeft + (fragment.childNodes.length * 60); 
-            // Approximate width per day ~60px (4.5rem ~ 72px, minus gaps); adjust if needed.
+            // Approximate width per day ~60px
+            container.scrollLeft = prevScrollLeft + (fragment.childNodes.length * 60);
         }
 
-        // If near the right edge and not at season end, load more days to the right
+        // Near right edge, load more days to the right
         if (scrollLeft + clientWidth > scrollWidth - 50 && this.currentEndDate < SEASON_END) {
             const oldEnd = new Date(this.currentEndDate);
             this.currentEndDate.setDate(this.currentEndDate.getDate() + MOBILE_LOAD_INCREMENT);
@@ -281,7 +277,6 @@ class NBASchedule {
                 this.currentEndDate = new Date(SEASON_END);
             }
 
-            // Add new days to the right
             const fragment = document.createDocumentFragment();
             let insertDate = new Date(oldEnd);
             insertDate.setDate(insertDate.getDate() + 1);
@@ -292,7 +287,6 @@ class NBASchedule {
             }
 
             this.weekContainer.appendChild(fragment);
-            // No scroll adjustment needed since we're adding to the right end
         }
     }
 

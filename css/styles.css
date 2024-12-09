@@ -83,6 +83,7 @@ main {
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-behavior: smooth;
+  position: relative;
 }
 
 .dates-container::-webkit-scrollbar {
@@ -97,6 +98,7 @@ main {
   transition: background-color 0.2s;
   min-width: 4.5rem;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .calendar-day.selected {
@@ -273,7 +275,7 @@ main {
   }
 }
 
-/* On mobile, no arrows, full range of dates, horizontally scrollable */
+/* On mobile, no arrows, lazy load dates around today, allow horizontal scroll. */
 @media (max-width: 768px) {
   #app {
     padding: 0.5rem;
@@ -283,16 +285,8 @@ main {
     grid-template-columns: 1fr;
   }
 
-  /* Hide arrows on mobile */
   #prevDate, #nextDate {
     display: none;
-  }
-
-  /* The container is scrollable; 
-     set date widths so approx 4 fit in screen width */
-  .calendar-day {
-    min-width: 4.5rem; /* Already set, ensures about 4 visible at a time */
-    flex-shrink: 0;
   }
 
   .team-name {

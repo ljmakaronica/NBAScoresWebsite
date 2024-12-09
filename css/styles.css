@@ -150,11 +150,10 @@ main {
   height: 28px;
   background-image: url('../assets/nba-sprite-sheet.png');
   background-repeat: no-repeat;
-  /* Scale down the sprite sheet proportionally to match our display size */
-  background-size: 168px 140px;  /* 900px/5.357 = 168px, 750px/5.357 = 140px */
+  background-size: 168px 140px;
 }
 
-/* Team Logo Positions - Using full 150px positions */
+/* Team Logo Positions */
 .team-logo.atlanta-hawks { background-position: 0 0; }
 .team-logo.boston-celtics { background-position: -28px 0; }
 .team-logo.brooklyn-nets { background-position: -56px 0; }
@@ -303,11 +302,7 @@ main {
     grid-template-columns: 1fr;
   }
 
-  .team-logo {
-    width: 24px;
-    height: 24px;
-    background-size: 144px 120px;  /* Maintain original sprite sheet size */
-  }
+  /* Removed team-logo resizing and background-size change on mobile */
 
   .team-name {
     font-size: 0.875rem;

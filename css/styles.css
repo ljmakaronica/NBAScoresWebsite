@@ -306,7 +306,7 @@ main {
   .team-logo {
     width: 24px;
     height: 24px;
-    background-size: 900px 750px;  /* Maintain original sprite sheet size */
+    background-size: 144px 120px;  /* Maintain original sprite sheet size */
   }
 
   .team-name {

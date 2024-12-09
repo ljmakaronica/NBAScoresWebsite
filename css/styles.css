@@ -206,8 +206,41 @@ main {
 .team-logo {
   width: 36px;
   height: 36px;
-  object-fit: contain;
+  background-image: url('../assets/nba-sprite-sheet.png');
+  background-repeat: no-repeat;
 }
+
+/* Team logo sprite positions */
+.team-logo.atlanta-hawks { background-position: -0px -0px; }
+.team-logo.boston-celtics { background-position: -32px -0px; }
+.team-logo.brooklyn-nets { background-position: -64px -0px; }
+.team-logo.charlotte-hornets { background-position: -96px -0px; }
+.team-logo.chicago-bulls { background-position: -128px -0px; }
+.team-logo.cleveland-cavaliers { background-position: -160px -0px; }
+.team-logo.dallas-mavericks { background-position: -0px -32px; }
+.team-logo.denver-nuggets { background-position: -32px -32px; }
+.team-logo.detroit-pistons { background-position: -64px -32px; }
+.team-logo.golden-state-warriors { background-position: -96px -32px; }
+.team-logo.houston-rockets { background-position: -128px -32px; }
+.team-logo.indiana-pacers { background-position: -160px -32px; }
+.team-logo.la-clippers { background-position: -0px -64px; }
+.team-logo.los-angeles-lakers { background-position: -32px -64px; }
+.team-logo.memphis-grizzlies { background-position: -64px -64px; }
+.team-logo.miami-heat { background-position: -96px -64px; }
+.team-logo.milwaukee-bucks { background-position: -128px -64px; }
+.team-logo.minnesota-timberwolves { background-position: -160px -64px; }
+.team-logo.new-orleans-pelicans { background-position: -0px -96px; }
+.team-logo.new-york-knicks { background-position: -32px -96px; }
+.team-logo.oklahoma-city-thunder { background-position: -64px -96px; }
+.team-logo.orlando-magic { background-position: -96px -96px; }
+.team-logo.philadelphia-76ers { background-position: -128px -96px; }
+.team-logo.phoenix-suns { background-position: -160px -96px; }
+.team-logo.portland-trail-blazers { background-position: -0px -128px; }
+.team-logo.sacramento-kings { background-position: -32px -128px; }
+.team-logo.san-antonio-spurs { background-position: -64px -128px; }
+.team-logo.toronto-raptors { background-position: -96px -128px; }
+.team-logo.utah-jazz { background-position: -128px -128px; }
+.team-logo.washington-wizards { background-position: -160px -128px; }
 
 .team-name {
   font-weight: 600;
@@ -299,13 +332,6 @@ main {
   border-radius: 1rem;
   color: #ef4444;
   margin: 1rem 0;
-}
-
-.team-logo {
-  width: 36px;
-  height: 36px;
-  background-image: url('../assets/nba-sprite-sheet.png');
-  background-repeat: no-repeat;
 }
 
 @media (max-width: 768px) {

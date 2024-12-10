@@ -1,53 +1,64 @@
 # 2024-25 NBA Scores
 
-A sleek, modern web application that displays NBA game schedules and scores for the 2024-25 season. The website provides an interactive calendar to navigate through game days, along with real-time scoring updates.
+A sleek, modern web application that displays NBA game schedules and scores for the 2024-25 season. The website provides an interactive calendar to navigate through game days, with real-time scoring updates and smart caching strategies to ensure fast, efficient performance.
 
 **Live Site:** [2024-25-nba-scores.vercel.app](https://2024-25-nba-scores.vercel.app/)
 
 ## Features
 
 - **Modern UI & Styling:**  
-  Enjoy a clean, dark-themed interface with a minimalist layout.
-  
+  Enjoy a clean, dark-themed interface with a minimalist layout for easy browsing.
+
 - **Responsive Design:**  
-  Fully optimized for desktop and mobile. On desktop/tablet devices, you can navigate weeks at a time with arrows. On mobile devices, swipe horizontally to scroll through dates.
-  
-- **Automatic "Today" Highlighting:**  
-  The calendar loads centered on the current date, making it easy to find and view today's scheduled games at a glance.
-  
-- **Real-Time Updates:**  
-  Scores and game statuses update dynamically. Past games, current games (live), and future matchups are displayed clearly.
-  
-- **Lazy Loading on Mobile:**  
-  To ensure fast load times on mobile, the calendar initially loads a window of dates around today. As you scroll, more dates are seamlessly fetched to prevent performance slowdowns.
+  Fully optimized for desktop and mobile devices. On larger screens, navigate by week using arrow buttons. On mobile, horizontally scroll (swipe) through dates, with lazy-loading to keep everything snappy.
+
+- **“Today” Centered on Load:**  
+  The calendar automatically positions itself to the current date, making it simple to view today’s games at a glance.
+
+- **Real-Time Score Updates:**  
+  Scores and game statuses update dynamically, indicating final results, live action, and future matchups.
+
+- **Efficient Caching & Performance:**
+  - **Daily Cache:** Frequently requested past dates are cached in `localStorage`, reducing the need for repeated network requests.
+  - **On-Demand Fetching:** Only the currently viewed date is fetched from the API on load; no massive data downloads.
+  - **Incremental Lazy Loading on Mobile:** Instead of loading the entire season at once, the calendar loads a window of dates around the current day and seamlessly fetches more as you scroll.
+
+- **Loading Indicators:**
+  - A smooth loading overlay is displayed while fetching new data, ensuring a polished user experience.
 
 ## Technologies Used
 
-- **Front-End:**  
-  - HTML, CSS (Poppins font, Font Awesome for icons, custom dark theme)
-  - Vanilla JavaScript for interactivity and data fetching.
+- **Front-End:**
+  - HTML, CSS (custom dark theme, Poppins font, Font Awesome icons)
+  - Vanilla JavaScript for dynamic content, data fetching, and event handling
   
-- **Data Source:**  
-  - Uses an NBA schedule and scores API ([Ball Dont Lie API](https://www.balldontlie.io/)) to fetch game data.
-  
-- **Deployment:**  
-  - Hosted on Vercel for fast, reliable performance.
+- **Data Source:**
+  - [Ball Dont Lie API](https://www.balldontlie.io/) for NBA schedule and game data
+
+- **Deployment:**
+  - Hosted on Vercel for fast, reliable performance
 
 ## How to Use
 
-1. **Explore the Calendar:**  
-   On desktop/tablet, navigate using the arrow buttons. On mobile, swipe left/right to scroll through the dates.
+1. **Browse the Calendar:**
+   - On desktop/tablet, use the arrow buttons to navigate weeks.
+   - On mobile, swipe left or right to scroll through available dates.
    
-2. **Select a Date:**  
-   Clicking (or tapping) on a date highlights it and loads the games for that day in the scoreboard below.
-   
-3. **View Scores & Statuses:**  
-   The scoreboard shows each matchup’s teams, logos, and final or live scores. Completed games display their final scores, while upcoming games show the scheduled time.
+2. **Select a Date:**
+   - Click or tap a date to highlight it. The day’s games will load below.
+
+3. **View Scores & Statuses:**
+   - The scoreboard displays each matchup’s teams, logos, and final scores.
+   - Live games show current status, and future games display their scheduled start times.
+
+4. **Experience Faster Loading Over Time:**
+   - Recently viewed past dates will load quicker on subsequent visits due to local caching.
+   - As you scroll through dates on mobile, more days load seamlessly in the background.
 
 ## Credits
 
-- [Ball Dont Lie API](https://www.balldontlie.io/) for providing NBA game data.
+- [Ball Dont Lie API](https://www.balldontlie.io/) for real-time NBA game data.
 - [Font Awesome](https://fontawesome.com/) for icons.
 - [Google Fonts](https://fonts.google.com/) for the Poppins font.
 
-**Enjoy the games!**
+**Enjoy the season and stay updated with the latest NBA scores!**

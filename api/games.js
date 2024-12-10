@@ -1,4 +1,3 @@
-// Server-side cache objects (Removed permanentCache, only using temporaryCache now)
 let temporaryCache = new Map();
 const TEMP_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
@@ -41,13 +40,11 @@ export default async function handler(req, res) {
 
         const data = await response.json();
         
-        // Prepare response data
         const responseData = {
             data: data.data,
             meta: { next_cursor: null }
         };
 
-        // Store in temporary cache only
         temporaryCache.set(start_date, {
             data: responseData,
             timestamp: Date.now()

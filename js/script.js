@@ -35,8 +35,8 @@ const TEAM_LOGOS = {
 const SEASON_START = new Date('2024-10-22T12:00:00');
 const SEASON_END = new Date('2025-04-13T12:00:00');
 
-// For mobile lazy-loading:
-const MOBILE_INITIAL_RANGE = 30; 
+// Increase initial range to 60 days so "today" is guaranteed to be visible on mobile
+const MOBILE_INITIAL_RANGE = 60; 
 const MOBILE_LOAD_INCREMENT = 30; 
 
 class NBASchedule {
@@ -48,7 +48,7 @@ class NBASchedule {
         this.dateDisplay = document.getElementById('date-display');
 
         this.width = window.innerWidth;
-        // Determine daysToShow or lazy mode
+        // On desktop/tablet use old logic, on mobile lazy load
         if (this.width >= 1200) {
             this.daysToShow = 14;
         } else if (this.width >= 768) {
@@ -99,10 +99,10 @@ class NBASchedule {
             initialDate = new Date(today);
         }
         initialDate.setHours(12, 0, 0, 0);
-        this.selectedDate = initialDate; // Ensuring selectedDate is "today" if in range
+        this.selectedDate = initialDate; // Ensure selectedDate = today if in range
 
         if (this.daysToShow === null) {
-            // Mobile: lazy loading mode
+            // Mobile lazy load
             this.currentStartDate = new Date(this.selectedDate);
             this.currentStartDate.setDate(this.currentStartDate.getDate() - MOBILE_INITIAL_RANGE);
             if (this.currentStartDate < SEASON_START) {
@@ -201,12 +201,14 @@ class NBASchedule {
             }
         }
 
-        // Ensure we scroll to the selected (today) date once the DOM is ready
+        // Ensure we scroll to today's date on mobile as well
         if (selectedDayEl) {
-            // Use a double requestAnimationFrame or a small timeout to ensure element is in DOM
+            // Give the browser a moment to render before scrolling
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    selectedDayEl.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+                    setTimeout(() => {
+                        selectedDayEl.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+                    }, 50);
                 });
             });
         }
@@ -264,8 +266,6 @@ class NBASchedule {
 
             const prevScrollLeft = container.scrollLeft;
             this.weekContainer.insertBefore(fragment, this.weekContainer.firstChild);
-            // Adjust scroll so the view doesn't jump
-            // Approximate width per day ~60px
             container.scrollLeft = prevScrollLeft + (fragment.childNodes.length * 60);
         }
 

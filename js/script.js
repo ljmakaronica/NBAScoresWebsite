@@ -32,8 +32,8 @@ const TEAM_LOGOS = {
     'LA Clippers': 'team-logo la-clippers'
 };
 
-const SEASON_START = new Date('2024-10-22T12:00:00');
-const SEASON_END = new Date('2025-06-13T12:00:00');
+const SEASON_START = new Date('2025-10-01T12:00:00');
+const SEASON_END = new Date('2026-06-13T12:00:00');
 
 // Increase initial range to 60 days so "today" is guaranteed to be visible on mobile
 const MOBILE_INITIAL_RANGE = 60; 

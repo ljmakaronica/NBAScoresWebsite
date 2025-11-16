@@ -12,52 +12,51 @@ export default async function handler(req, res) {
 
         const leadersData = {};
 
-        // ESPN scoreboard includes current season leaders
-        const url = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard';
+        // Fetch leaders from ESPN stats API
+        const categories = [
+            { key: 'points', endpoint: 'avgPoints' },
+            { key: 'rebounds', endpoint: 'avgRebounds' },
+            { key: 'assists', endpoint: 'avgAssists' },
+            { key: 'steals', endpoint: 'avgSteals' },
+            { key: 'blocks', endpoint: 'avgBlocks' }
+        ];
 
-        try {
-            const response = await fetch(url, {
-                headers: {
-                    'Accept': 'application/json',
-                    'User-Agent': 'Mozilla/5.0'
+        const fetchPromises = categories.map(async ({ key, endpoint }) => {
+            try {
+                const url = `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete?region=us&lang=en&contentorigin=espn&limit=10&sort=${endpoint}:desc`;
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'User-Agent': 'Mozilla/5.0'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.athletes && data.athletes.length > 0) {
+                        leadersData[key] = data.athletes.slice(0, 10).map(athlete => {
+                            const statValue = athlete.categories?.[0]?.totals?.find(t => t.name === endpoint);
+                            return {
+                                athlete: {
+                                    displayName: athlete.athlete?.displayName || 'Unknown',
+                                    team: {
+                                        abbreviation: athlete.athlete?.team?.abbreviation || ''
+                                    }
+                                },
+                                displayValue: statValue?.displayValue || '0.0',
+                                value: parseFloat(statValue?.displayValue || '0')
+                            };
+                        });
+                    }
                 }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-
-                // Leaders data is in the scoreboard response
-                if (data.leaders) {
-                    data.leaders.forEach(category => {
-                        const leaders = category.leaders.map(leader => ({
-                            athlete: {
-                                displayName: leader.athlete.displayName,
-                                team: {
-                                    abbreviation: leader.athlete.team?.abbreviation || ''
-                                }
-                            },
-                            displayValue: leader.displayValue,
-                            value: parseFloat(leader.displayValue)
-                        }));
-
-                        const name = category.name.toLowerCase();
-                        if (name.includes('point') || name.includes('scoring')) {
-                            leadersData.points = leaders;
-                        } else if (name.includes('rebound')) {
-                            leadersData.rebounds = leaders;
-                        } else if (name.includes('assist')) {
-                            leadersData.assists = leaders;
-                        } else if (name.includes('steal')) {
-                            leadersData.steals = leaders;
-                        } else if (name.includes('block')) {
-                            leadersData.blocks = leaders;
-                        }
-                    });
-                }
+            } catch (error) {
+                console.error(`Error fetching ${key} leaders:`, error);
             }
-        } catch (error) {
-            console.error('Error fetching leaders:', error);
-        }
+        });
+
+        await Promise.all(fetchPromises);
 
         const responseData = {
             data: leadersData,

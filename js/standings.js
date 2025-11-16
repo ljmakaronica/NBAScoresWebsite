@@ -100,12 +100,12 @@ class NBAStandings {
         const eastern = teams.filter(team => team.conference === 'East').sort(sortTeams);
         const western = teams.filter(team => team.conference === 'West').sort(sortTeams);
 
-        // Create conference tables
+        // Create conference tables (West on left, East on right)
         const easternSection = this.createConferenceTable('Eastern Conference', eastern);
         const westernSection = this.createConferenceTable('Western Conference', western);
 
-        this.container.appendChild(easternSection);
         this.container.appendChild(westernSection);
+        this.container.appendChild(easternSection);
     }
 
     createConferenceTable(conferenceName, teams) {

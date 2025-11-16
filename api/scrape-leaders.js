@@ -11,9 +11,10 @@ export default async function handler(req, res) {
         }
 
         const leadersData = {};
+        const debug = {};
 
         // Scrape ESPN stats page for leaders
-        const url = 'https://www.espn.com/nba/stats/player';
+        const url = 'https://www.espn.com/nba/stats';
 
         try {
             const response = await fetch(url, {
@@ -22,22 +23,30 @@ export default async function handler(req, res) {
                 }
             });
 
+            debug.fetchStatus = response.status;
+
             if (!response.ok) {
                 throw new Error(`ESPN responded with status: ${response.status}`);
             }
 
             const html = await response.text();
+            debug.htmlLength = html.length;
 
             // ESPN embeds data in window['__espnfitt__']
             const dataMatch = html.match(/window\['__espnfitt__'\]\s*=\s*({[\s\S]*?});?\s*<\/script>/);
+            debug.foundData = !!dataMatch;
 
             if (dataMatch) {
                 const pageData = JSON.parse(dataMatch[1]);
+                debug.pageDataKeys = Object.keys(pageData);
 
                 // Try to find stats data in the page structure
                 const statsData = pageData?.page?.content?.stats?.athletes;
+                debug.hasStatsData = !!statsData;
+                debug.isArray = Array.isArray(statsData);
 
                 if (statsData && Array.isArray(statsData)) {
+                    debug.statsCount = statsData.length;
                     // Sort by each stat category
                     const sortByStat = (statKey) => {
                         return statsData
@@ -79,7 +88,8 @@ export default async function handler(req, res) {
             meta: {
                 last_updated: new Date().toISOString(),
                 source: 'ESPN'
-            }
+            },
+            debug
         };
 
         temporaryCache.set(cacheKey, {

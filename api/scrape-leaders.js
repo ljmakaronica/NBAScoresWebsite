@@ -12,51 +12,60 @@ export default async function handler(req, res) {
 
         const leadersData = {};
 
-        // Fetch leaders from ESPN stats API
-        const categories = [
-            { key: 'points', endpoint: 'avgPoints' },
-            { key: 'rebounds', endpoint: 'avgRebounds' },
-            { key: 'assists', endpoint: 'avgAssists' },
-            { key: 'steals', endpoint: 'avgSteals' },
-            { key: 'blocks', endpoint: 'avgBlocks' }
-        ];
+        // Scrape ESPN stats page HTML
+        const url = 'https://www.espn.com/nba/stats';
 
-        const fetchPromises = categories.map(async ({ key, endpoint }) => {
-            try {
-                const url = `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/statistics/byathlete?region=us&lang=en&contentorigin=espn&limit=10&sort=${endpoint}:desc`;
-
-                const response = await fetch(url, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'User-Agent': 'Mozilla/5.0'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    if (data.athletes && data.athletes.length > 0) {
-                        leadersData[key] = data.athletes.slice(0, 10).map(athlete => {
-                            const statValue = athlete.categories?.[0]?.totals?.find(t => t.name === endpoint);
-                            return {
-                                athlete: {
-                                    displayName: athlete.athlete?.displayName || 'Unknown',
-                                    team: {
-                                        abbreviation: athlete.athlete?.team?.abbreviation || ''
-                                    }
-                                },
-                                displayValue: statValue?.displayValue || '0.0',
-                                value: parseFloat(statValue?.displayValue || '0')
-                            };
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error(`Error fetching ${key} leaders:`, error);
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
         });
 
-        await Promise.all(fetchPromises);
+        if (!response.ok) {
+            throw new Error(`ESPN responded with status: ${response.status}`);
+        }
+
+        const html = await response.text();
+
+        // Extract JSON data embedded in the page
+        const scriptMatch = html.match(/window\['__espnfitt__'\]\s*=\s*({.*?});/s);
+
+        if (scriptMatch) {
+            const pageData = JSON.parse(scriptMatch[1]);
+
+            // Navigate through the data structure to find leaders
+            const leaders = pageData?.page?.content?.leaders?.leaders;
+
+            if (leaders && Array.isArray(leaders)) {
+                leaders.forEach(category => {
+                    const categoryName = category.displayName?.toLowerCase() || '';
+                    const leadersList = category.leaders || [];
+
+                    const formattedLeaders = leadersList.map(leader => ({
+                        athlete: {
+                            displayName: leader.athlete?.displayName || 'Unknown',
+                            team: {
+                                abbreviation: leader.athlete?.team?.abbreviation || ''
+                            }
+                        },
+                        displayValue: leader.displayValue || '0.0',
+                        value: parseFloat(leader.displayValue || '0')
+                    }));
+
+                    if (categoryName.includes('point') || categoryName.includes('scoring')) {
+                        leadersData.points = formattedLeaders;
+                    } else if (categoryName.includes('rebound')) {
+                        leadersData.rebounds = formattedLeaders;
+                    } else if (categoryName.includes('assist')) {
+                        leadersData.assists = formattedLeaders;
+                    } else if (categoryName.includes('steal')) {
+                        leadersData.steals = formattedLeaders;
+                    } else if (categoryName.includes('block')) {
+                        leadersData.blocks = formattedLeaders;
+                    }
+                });
+            }
+        }
 
         const responseData = {
             data: leadersData,

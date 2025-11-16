@@ -42,12 +42,31 @@ export default async function handler(req, res) {
 
                     if (grid && grid.rows && grid.columns) {
                         const nameColIndex = grid.columns.findIndex(col => col.title === 'NAME');
-                        const teamColIndex = grid.columns.findIndex(col => col.title === 'TEAM');
-                        const statColIndex = grid.columns.findIndex(col =>
-                            col.title.includes('PG') || col.title.includes('PPG') ||
-                            col.title.includes('RPG') || col.title.includes('APG') ||
-                            col.title.includes('SPG') || col.title.includes('BPG')
-                        );
+                        const teamColIndex = grid.columns.findIndex(col => col.title === 'TM');
+
+                        // Find the per-game stat column based on category
+                        let statColIndex = -1;
+                        if (key === 'points') {
+                            statColIndex = grid.columns.findIndex(col => col.title === 'PPG');
+                        } else if (key === 'rebounds') {
+                            statColIndex = grid.columns.findIndex(col => col.title === 'RPG');
+                        } else if (key === 'assists') {
+                            statColIndex = grid.columns.findIndex(col => col.title === 'APG');
+                        } else if (key === 'steals') {
+                            statColIndex = grid.columns.findIndex(col => col.title === 'SPG');
+                        } else if (key === 'blocks') {
+                            statColIndex = grid.columns.findIndex(col => col.title === 'BPG');
+                        }
+
+                        if (nameColIndex === -1 || teamColIndex === -1 || statColIndex === -1) {
+                            console.error(`Column not found for ${key}:`, {
+                                nameColIndex,
+                                teamColIndex,
+                                statColIndex,
+                                columns: grid.columns.map(c => c.title)
+                            });
+                            return [];
+                        }
 
                         return grid.rows.slice(0, 10).map(row => ({
                             athlete: {
@@ -56,7 +75,7 @@ export default async function handler(req, res) {
                                     abbreviation: row[teamColIndex] || ''
                                 }
                             },
-                            displayValue: row[statColIndex] || '0.0',
+                            displayValue: String(row[statColIndex] || '0.0'),
                             value: parseFloat(row[statColIndex]) || 0
                         }));
                     }

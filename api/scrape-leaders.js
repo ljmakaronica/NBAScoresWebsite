@@ -42,16 +42,44 @@ export default async function handler(req, res) {
                 const html = await response.text();
                 debugInfo[key].htmlLength = html.length;
 
-                // StatMuse embeds data in a script tag
-                const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s);
+                // Try different patterns to find the data
+                let nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s);
+
+                if (!nextDataMatch) {
+                    // Try without the type attribute
+                    nextDataMatch = html.match(/<script id="__NEXT_DATA__">(.*?)<\/script>/s);
+                }
+
+                if (!nextDataMatch) {
+                    // Try to find any script tag with JSON data
+                    nextDataMatch = html.match(/<script[^>]*>self\.__next_f\.push\(\[1,"(.*?)"\]\)<\/script>/s);
+                }
+
                 debugInfo[key].foundNextData = !!nextDataMatch;
 
                 if (nextDataMatch) {
-                    const data = JSON.parse(nextDataMatch[1]);
-                    const grid = data?.props?.pageProps?.entity?.grid;
-                    debugInfo[key].hasGrid = !!grid;
+                    let data;
+                    try {
+                        // Try parsing the matched data
+                        const jsonStr = nextDataMatch[1];
+                        // Unescape if needed
+                        const unescaped = jsonStr.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                        data = JSON.parse(unescaped);
+                    } catch (e) {
+                        // If first group doesn't work, try the whole match
+                        try {
+                            data = JSON.parse(nextDataMatch[1]);
+                        } catch (e2) {
+                            debugInfo[key].parseError = e2.message;
+                        }
+                    }
 
-                    if (grid && grid.rows && grid.columns) {
+                    if (data) {
+                        const grid = data?.props?.pageProps?.entity?.grid;
+                        debugInfo[key].hasGrid = !!grid;
+                        debugInfo[key].dataKeys = Object.keys(data);
+
+                        if (grid && grid.rows && grid.columns) {
                         const nameColIndex = grid.columns.findIndex(col => col.title === 'NAME');
                         const teamColIndex = grid.columns.findIndex(col => col.title === 'TM');
 
@@ -94,6 +122,7 @@ export default async function handler(req, res) {
                         debugInfo[key].success = true;
                         debugInfo[key].resultCount = result.length;
                         return result;
+                        }
                     }
                 }
             } catch (error) {

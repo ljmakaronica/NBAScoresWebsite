@@ -37,14 +37,25 @@ const TEAM_INFO = {
 
 async function fetchAllGames(apiKey, startDate, endDate) {
     const allGames = [];
-    let currentDate = new Date(startDate);
+
+    // Fetch in weekly chunks to reduce API calls
+    let currentStart = new Date(startDate);
     const end = new Date(endDate);
 
-    while (currentDate <= end) {
-        const dateStr = currentDate.toISOString().split('T')[0];
+    while (currentStart <= end) {
+        let currentEnd = new Date(currentStart);
+        currentEnd.setDate(currentEnd.getDate() + 6); // 7 days at a time
+
+        if (currentEnd > end) {
+            currentEnd = end;
+        }
+
+        const startStr = currentStart.toISOString().split('T')[0];
+        const endStr = currentEnd.toISOString().split('T')[0];
+
         const url = new URL('https://api.balldontlie.io/v1/games');
-        url.searchParams.set('start_date', dateStr);
-        url.searchParams.set('end_date', dateStr);
+        url.searchParams.set('start_date', startStr);
+        url.searchParams.set('end_date', endStr);
         url.searchParams.set('per_page', '100');
 
         try {
@@ -58,15 +69,20 @@ async function fetchAllGames(apiKey, startDate, endDate) {
 
             if (response.ok) {
                 const data = await response.json();
-                allGames.push(...data.data);
+                if (data.data && data.data.length > 0) {
+                    allGames.push(...data.data);
+                }
+            } else {
+                console.error(`API error for ${startStr} to ${endStr}: ${response.status}`);
             }
         } catch (error) {
-            console.error(`Error fetching games for ${dateStr}:`, error);
+            console.error(`Error fetching games for ${startStr} to ${endStr}:`, error);
         }
 
-        currentDate.setDate(currentDate.getDate() + 1);
+        currentStart.setDate(currentStart.getDate() + 7);
     }
 
+    console.log(`Fetched ${allGames.length} total games`);
     return allGames;
 }
 
@@ -91,7 +107,10 @@ function calculateStandings(games) {
     });
 
     // Process all completed games
-    games.filter(game => game.status === 'Final').forEach(game => {
+    const completedGames = games.filter(game => game.status === 'Final');
+    console.log(`Processing ${completedGames.length} completed games out of ${games.length} total games`);
+
+    completedGames.forEach(game => {
         const homeTeam = game.home_team.full_name;
         const awayTeam = game.visitor_team.full_name;
         const homeScore = game.home_team_score;

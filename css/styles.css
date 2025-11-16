@@ -41,8 +41,12 @@ body {
 
 .footer-content a {
   color: var(--color-accent);
-  text-decoration: none; 
-  transition: color 0.2s ease; 
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer-content a:visited {
+  color: var(--color-accent);
 }
 
 .footer-content a:hover {
@@ -341,5 +345,238 @@ main {
   /* On mobile, do not center all dates since user can scroll */
   .dates-container {
     justify-content: flex-start;
+  }
+}
+
+/* Navigation */
+.main-nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.nav-link {
+  padding: 0.75rem 2rem;
+  background: var(--color-card-bg);
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.nav-link:hover {
+  background: var(--color-row-bg);
+}
+
+.nav-link.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Standings Page */
+.standings-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.standings-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+}
+
+.season-info {
+  font-size: 1.125rem;
+  color: var(--color-text-muted);
+}
+
+#standings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.conference-section {
+  background: var(--color-card-bg);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.conference-header {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.standings-table-wrapper {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.standings-table thead {
+  background: var(--color-row-bg);
+}
+
+.standings-table th {
+  padding: 1rem 0.75rem;
+  text-align: left;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.standings-table tbody tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.2s ease;
+}
+
+.standings-table tbody tr:hover {
+  background: var(--color-row-bg);
+}
+
+.standings-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.standings-table td {
+  padding: 1rem 0.75rem;
+  color: var(--color-text);
+}
+
+.rank-col {
+  text-align: center;
+  font-weight: 600;
+  width: 50px;
+}
+
+.team-col {
+  min-width: 200px;
+}
+
+.stat-col {
+  text-align: center;
+  font-weight: 500;
+  min-width: 60px;
+}
+
+/* Playoff indicators */
+.playoff-spot {
+  border-left: 3px solid var(--color-win);
+}
+
+.playin-spot {
+  border-left: 3px solid #f59e0b;
+}
+
+/* Legend */
+.standings-legend {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.legend-indicator {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.playoff-indicator {
+  background: var(--color-win);
+}
+
+.playin-indicator {
+  background: #f59e0b;
+}
+
+.no-data,
+.error-message {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+}
+
+.error-message {
+  color: var(--color-live);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .standings-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .season-info {
+    font-size: 1rem;
+  }
+
+  .conference-section {
+    padding: 1rem;
+  }
+
+  .conference-header {
+    font-size: 1.5rem;
+  }
+
+  .standings-table {
+    font-size: 0.875rem;
+  }
+
+  .standings-table th,
+  .standings-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .mobile-hide {
+    display: none;
+  }
+
+  .team-col {
+    min-width: 150px;
+  }
+
+  .team-name {
+    font-size: 0.8125rem;
+  }
+
+  .standings-legend {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .nav-link {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.875rem;
   }
 }

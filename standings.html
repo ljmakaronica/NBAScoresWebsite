@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NBA Schedule</title>
+  <title>NBA Standings</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" referrerpolicy="no-referrer" />
 
   <link rel="stylesheet" href="css/styles.css"/>
@@ -15,29 +15,21 @@
 <body>
   <div id="app">
     <nav class="main-nav">
-      <a href="index.html" class="nav-link active">Schedule</a>
-      <a href="standings.html" class="nav-link">Standings</a>
+      <a href="index.html" class="nav-link">Schedule</a>
+      <a href="standings.html" class="nav-link active">Standings</a>
     </nav>
 
     <main>
-      <div id="calendar-nav">
-        <button class="calendar-nav-btn" id="prevDate" type="button">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="dates-container" id="weekContainer">
-          <!-- Dates will be dynamically inserted here -->
-        </div>
-        <button class="calendar-nav-btn" id="nextDate" type="button">
-          <i class="fas fa-chevron-right"></i>
-        </button>
+      <div class="standings-header">
+        <h1>NBA Standings</h1>
+        <div class="season-info">2025-26 Season</div>
       </div>
 
-      <div id="date-display" class="date-display"></div>
-
-      <div id="scoreboard">
-        <!-- Game sections will be inserted here -->
+      <div id="standings-container">
+        <!-- Standings will be dynamically inserted here -->
       </div>
     </main>
+
     <div id="loading-overlay" class="loading-overlay">
       <div class="loader"></div>
     </div>
@@ -53,6 +45,6 @@
       </p>
     </div>
   </footer>
-  <script src="js/script.js"></script>
+  <script src="js/standings.js"></script>
 </body>
 </html>

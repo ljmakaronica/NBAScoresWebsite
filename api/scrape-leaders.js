@@ -10,45 +10,41 @@ export default async function handler(req, res) {
             return res.status(200).json(cachedData.data);
         }
 
-        // ESPN's leaders API
-        const categories = ['points', 'rebounds', 'assists', 'steals', 'blocks'];
+        // ESPN's leaders API - single request returns all categories
+        const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/leaders?limit=10`;
         const leadersData = {};
 
-        for (const category of categories) {
-            const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/leaders?limit=10`;
-
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'User-Agent': 'Mozilla/5.0'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    // ESPN returns leaders organized by categories
-                    if (data.categories) {
-                        data.categories.forEach(cat => {
-                            const catName = cat.displayName.toLowerCase();
-                            if (catName.includes('point') || catName.includes('scoring')) {
-                                leadersData.points = cat.leaders || [];
-                            } else if (catName.includes('rebound')) {
-                                leadersData.rebounds = cat.leaders || [];
-                            } else if (catName.includes('assist')) {
-                                leadersData.assists = cat.leaders || [];
-                            } else if (catName.includes('steal')) {
-                                leadersData.steals = cat.leaders || [];
-                            } else if (catName.includes('block')) {
-                                leadersData.blocks = cat.leaders || [];
-                            }
-                        });
-                    }
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'User-Agent': 'Mozilla/5.0'
                 }
-            } catch (error) {
-                console.error(`Error fetching ${category} leaders:`, error);
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // ESPN returns leaders organized by categories
+                if (data.categories) {
+                    data.categories.forEach(cat => {
+                        const catName = cat.displayName.toLowerCase();
+                        if (catName.includes('point') || catName.includes('scoring')) {
+                            leadersData.points = cat.leaders || [];
+                        } else if (catName.includes('rebound')) {
+                            leadersData.rebounds = cat.leaders || [];
+                        } else if (catName.includes('assist')) {
+                            leadersData.assists = cat.leaders || [];
+                        } else if (catName.includes('steal')) {
+                            leadersData.steals = cat.leaders || [];
+                        } else if (catName.includes('block')) {
+                            leadersData.blocks = cat.leaders || [];
+                        }
+                    });
+                }
             }
+        } catch (error) {
+            console.error('Error fetching leaders:', error);
         }
 
         const responseData = {

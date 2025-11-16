@@ -75,32 +75,9 @@ main {
 #calendar-nav {
   background: var(--color-card-bg);
   border-radius: 1rem;
-  padding: 0.75rem 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
+  padding: 1rem;
   margin-bottom: 1rem;
-}
-
-.calendar-nav-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-text);
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  font-size: 1.25rem;
-}
-
-.calendar-nav-btn:hover {
-  background: var(--color-row-bg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .dates-container {
@@ -120,19 +97,33 @@ main {
 }
 
 .calendar-day {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.625rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.2s;
-  min-width: 4.5rem;
+  transition: all 0.2s ease;
+  min-width: 5rem;
   text-align: center;
   flex-shrink: 0;
+  border: 2px solid transparent;
+  font-weight: 500;
+}
+
+.calendar-day:hover {
+  background: var(--color-row-bg);
+  transform: translateY(-1px);
+}
+
+.calendar-day.today {
+  border-color: var(--color-accent);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .calendar-day.selected {
   background: var(--color-accent);
   color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 /* Date Display */
@@ -319,10 +310,6 @@ main {
 
   .games-grid {
     grid-template-columns: 1fr;
-  }
-
-  #prevDate, #nextDate {
-    display: none;
   }
 
   .team-name {

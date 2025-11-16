@@ -51,7 +51,7 @@ class NBAStandings {
         this.isLoading = true;
 
         try {
-            const response = await fetch('/api/standings?season=2025');
+            const response = await fetch('/api/scrape-standings');
             if (!response.ok) throw new Error('Failed to fetch standings');
 
             const data = await response.json();
@@ -77,24 +77,11 @@ class NBAStandings {
             return;
         }
 
-        // Separate teams by conference and sort by NBA tiebreaker rules
-        // 1. Win percentage, 2. Conference win %, 3. Point differential
+        // Separate teams by conference and sort by win percentage
+        // ESPN data already has proper tiebreakers applied
         const sortTeams = (a, b) => {
-            const pctA = a.wins / (a.wins + a.losses);
-            const pctB = b.wins / (b.wins + b.losses);
-
-            // Primary: Win percentage
-            if (pctB !== pctA) {
-                return pctB - pctA;
-            }
-
-            // Tiebreaker 1: Conference win percentage
-            if (b.conf_pct !== a.conf_pct) {
-                return b.conf_pct - a.conf_pct;
-            }
-
-            // Tiebreaker 2: Point differential
-            return b.point_diff - a.point_diff;
+            // ESPN already provides win_pct, use that
+            return (b.win_pct || 0) - (a.win_pct || 0);
         };
 
         const eastern = teams.filter(team => team.conference === 'East').sort(sortTeams);

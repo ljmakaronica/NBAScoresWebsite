@@ -35,10 +35,6 @@ const TEAM_LOGOS = {
 const SEASON_START = new Date('2025-10-15T12:00:00');
 const SEASON_END = new Date('2026-06-13T12:00:00');
 
-// Increase initial range to 60 days so "today" is guaranteed to be visible on mobile
-const MOBILE_INITIAL_RANGE = 60; 
-const MOBILE_LOAD_INCREMENT = 30; 
-
 class NBASchedule {
     constructor() {
         this.isLoading = false;
@@ -47,43 +43,16 @@ class NBASchedule {
         this.weekContainer = document.getElementById('weekContainer');
         this.dateDisplay = document.getElementById('date-display');
 
-        this.width = window.innerWidth;
-        // On desktop/tablet use old logic, on mobile lazy load
-        if (this.width >= 1200) {
-            this.daysToShow = 14;
-        } else if (this.width >= 768) {
-            this.daysToShow = 7;
-        } else {
-            this.daysToShow = null; // Mobile: lazy loading mode
-        }
-
-        if (this.daysToShow !== null && this.daysToShow > 5) {
-            document.getElementById('prevDate').addEventListener('click', (e) => {
-                e.preventDefault();
-                this.changeWeek(-1);
-            });
-            document.getElementById('nextDate').addEventListener('click', (e) => {
-                e.preventDefault();
-                this.changeWeek(1);
-            });
-        }
-
         // Event delegation for date clicks
         this.weekContainer.addEventListener('click', (e) => {
             const dayEl = e.target.closest('.calendar-day');
             if (dayEl && dayEl.dataset.date) {
                 const dayDate = new Date(dayEl.dataset.date);
-                if (dayDate >= SEASON_START && dayDate <= SEASON_END) {
-                    this.selectedDate = dayDate;
-                    this.renderCalendar();
-                    this.loadGamesForDate(this.formatDate(this.selectedDate));
-                }
+                this.selectedDate = dayDate;
+                this.renderCalendar();
+                this.loadGamesForDate(this.formatDate(this.selectedDate));
             }
         });
-
-        if (this.daysToShow === null) {
-            this.weekContainer.addEventListener('scroll', () => this.handleScroll());
-        }
 
         this.initializeCalendar();
     }
@@ -99,118 +68,38 @@ class NBASchedule {
             initialDate = new Date(today);
         }
         initialDate.setHours(12, 0, 0, 0);
-        this.selectedDate = initialDate; // Ensure selectedDate = today if in range
-
-        if (this.daysToShow === null) {
-            // Mobile lazy load
-            this.currentStartDate = new Date(this.selectedDate);
-            this.currentStartDate.setDate(this.currentStartDate.getDate() - MOBILE_INITIAL_RANGE);
-            if (this.currentStartDate < SEASON_START) {
-                this.currentStartDate = new Date(SEASON_START);
-            }
-
-            this.currentEndDate = new Date(this.selectedDate);
-            this.currentEndDate.setDate(this.currentEndDate.getDate() + MOBILE_INITIAL_RANGE);
-            if (this.currentEndDate > SEASON_END) {
-                this.currentEndDate = new Date(SEASON_END);
-            }
-        } else {
-            // Desktop/Tablet
-            const halfRange = Math.floor(this.daysToShow / 2);
-            this.displayStartDate = new Date(this.selectedDate);
-            this.displayStartDate.setDate(this.displayStartDate.getDate() - halfRange);
-            this.clampDisplayStartDate();
-        }
+        this.selectedDate = initialDate;
 
         this.renderCalendar();
         this.loadGamesForDate(this.formatDate(this.selectedDate));
-    }
-
-    clampDisplayStartDate() {
-        if (this.daysToShow === null) return;
-        if (this.displayStartDate < SEASON_START) {
-            this.displayStartDate = new Date(SEASON_START);
-        }
-
-        const lastVisibleDay = new Date(this.displayStartDate);
-        lastVisibleDay.setDate(lastVisibleDay.getDate() + this.daysToShow - 1);
-
-        if (lastVisibleDay > SEASON_END) {
-            const diff = (lastVisibleDay - SEASON_END) / (24*60*60*1000);
-            this.displayStartDate.setDate(this.displayStartDate.getDate() - Math.ceil(diff));
-            if (this.displayStartDate < SEASON_START) {
-                this.displayStartDate = new Date(SEASON_START);
-            }
-        }
-    }
-
-    changeWeek(delta) {
-        if (this.daysToShow === null) return;
-        const newStart = new Date(this.displayStartDate);
-        newStart.setDate(newStart.getDate() + delta * this.daysToShow);
-
-        const lastVisibleDay = new Date(newStart);
-        lastVisibleDay.setDate(lastVisibleDay.getDate() + this.daysToShow - 1);
-
-        if (newStart < SEASON_START && lastVisibleDay < SEASON_START) {
-            return;
-        }
-        if (lastVisibleDay > SEASON_END && newStart > SEASON_END) {
-            return;
-        }
-
-        this.displayStartDate = newStart;
-        this.clampDisplayStartDate();
-        this.renderCalendar();
     }
 
     renderCalendar() {
         this.weekContainer.innerHTML = '';
 
         const today = new Date();
-        today.setHours(12,0,0,0);
+        today.setHours(12, 0, 0, 0);
 
         let selectedDayEl = null;
+        let currentDate = new Date(SEASON_START);
 
-        if (this.daysToShow === null) {
-            // Mobile lazy loading
-            let currentDate = new Date(this.currentStartDate);
-            while (currentDate <= this.currentEndDate) {
-                const dayEl = this.createDayElement(currentDate, today);
-                this.weekContainer.appendChild(dayEl);
-                if (this.selectedDate && currentDate.toDateString() === this.selectedDate.toDateString()) {
-                    selectedDayEl = dayEl;
-                }
-                currentDate.setDate(currentDate.getDate() + 1);
+        // Render ALL dates from season start to end
+        while (currentDate <= SEASON_END) {
+            const dayEl = this.createDayElement(currentDate, today);
+            this.weekContainer.appendChild(dayEl);
+
+            if (this.selectedDate && currentDate.toDateString() === this.selectedDate.toDateString()) {
+                selectedDayEl = dayEl;
             }
-        } else {
-            // Desktop/Tablet
-            for (let i = 0; i < this.daysToShow; i++) {
-                const dayDate = new Date(this.displayStartDate);
-                dayDate.setDate(this.displayStartDate.getDate() + i);
 
-                if (dayDate < SEASON_START || dayDate > SEASON_END) {
-                    continue;
-                }
-
-                const dayEl = this.createDayElement(dayDate, today);
-                this.weekContainer.appendChild(dayEl);
-                if (this.selectedDate && dayDate.toDateString() === this.selectedDate.toDateString()) {
-                    selectedDayEl = dayEl;
-                }
-            }
+            currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        // Ensure we scroll to today's date on mobile as well
+        // Scroll to selected date
         if (selectedDayEl) {
-            // Give the browser a moment to render before scrolling
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        selectedDayEl.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
-                    }, 50);
-                });
-            });
+            setTimeout(() => {
+                selectedDayEl.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+            }, 100);
         }
     }
 
@@ -238,56 +127,6 @@ class NBASchedule {
         dayEl.appendChild(dayTextEl);
 
         return dayEl;
-    }
-
-    handleScroll() {
-        if (this.daysToShow !== null) return; // Not mobile lazy mode
-
-        const container = this.weekContainer;
-        const scrollLeft = container.scrollLeft;
-        const scrollWidth = container.scrollWidth;
-        const clientWidth = container.clientWidth;
-
-        // Near left edge, load more days to the left
-        if (scrollLeft < 50 && this.currentStartDate > SEASON_START) {
-            const oldStart = new Date(this.currentStartDate);
-            this.currentStartDate.setDate(this.currentStartDate.getDate() - MOBILE_LOAD_INCREMENT);
-            if (this.currentStartDate < SEASON_START) {
-                this.currentStartDate = new Date(SEASON_START);
-            }
-
-            const fragment = document.createDocumentFragment();
-            let insertDate = new Date(this.currentStartDate);
-            while (insertDate < oldStart) {
-                const dayEl = this.createDayElement(insertDate, new Date());
-                fragment.appendChild(dayEl);
-                insertDate.setDate(insertDate.getDate() + 1);
-            }
-
-            const prevScrollLeft = container.scrollLeft;
-            this.weekContainer.insertBefore(fragment, this.weekContainer.firstChild);
-            container.scrollLeft = prevScrollLeft + (fragment.childNodes.length * 60);
-        }
-
-        // Near right edge, load more days to the right
-        if (scrollLeft + clientWidth > scrollWidth - 50 && this.currentEndDate < SEASON_END) {
-            const oldEnd = new Date(this.currentEndDate);
-            this.currentEndDate.setDate(this.currentEndDate.getDate() + MOBILE_LOAD_INCREMENT);
-            if (this.currentEndDate > SEASON_END) {
-                this.currentEndDate = new Date(SEASON_END);
-            }
-
-            const fragment = document.createDocumentFragment();
-            let insertDate = new Date(oldEnd);
-            insertDate.setDate(insertDate.getDate() + 1);
-            while (insertDate <= this.currentEndDate) {
-                const dayEl = this.createDayElement(insertDate, new Date());
-                fragment.appendChild(dayEl);
-                insertDate.setDate(insertDate.getDate() + 1);
-            }
-
-            this.weekContainer.appendChild(fragment);
-        }
     }
 
     formatDate(date) {
@@ -318,13 +157,13 @@ class NBASchedule {
                 if (cachedData) {
                     data = JSON.parse(cachedData);
                 } else {
-                    const response = await fetch(`/api/games?start_date=${date}&end_date=${date}&per_page=100`);
+                    const response = await fetch(`/api/scrape-games?date=${date}`);
                     if (!response.ok) throw new Error('Failed to fetch games');
                     data = await response.json();
                     localStorage.setItem('games_' + date, JSON.stringify(data));
                 }
             } else {
-                const response = await fetch(`/api/games?start_date=${date}&end_date=${date}&per_page=100`);
+                const response = await fetch(`/api/scrape-games?date=${date}`);
                 if (!response.ok) throw new Error('Failed to fetch games');
                 data = await response.json();
             }

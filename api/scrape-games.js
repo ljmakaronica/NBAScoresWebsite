@@ -1,0 +1,105 @@
+let temporaryCache = new Map();
+const TEMP_CACHE_DURATION = 1 * 60 * 1000; // 1 minute cache for live scores
+
+export default async function handler(req, res) {
+    try {
+        const { date } = req.query;
+
+        if (!date) {
+            return res.status(400).json({ error: 'Date parameter is required (format: YYYY-MM-DD)' });
+        }
+
+        const cacheKey = `espn_games_${date}`;
+        const cachedData = temporaryCache.get(cacheKey);
+
+        if (cachedData && (Date.now() - cachedData.timestamp) < TEMP_CACHE_DURATION) {
+            return res.status(200).json(cachedData.data);
+        }
+
+        // Convert YYYY-MM-DD to YYYYMMDD for ESPN API
+        const espnDate = date.replace(/-/g, '');
+
+        // ESPN's scoreboard API
+        const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${espnDate}`;
+
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`ESPN API responded with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Parse ESPN data into our format
+        const games = [];
+
+        if (data.events) {
+            data.events.forEach(event => {
+                const competition = event.competitions[0];
+                const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
+                const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
+
+                // Determine game status
+                let status = competition.status.type.detail;
+                if (competition.status.type.completed) {
+                    status = 'Final';
+                } else if (competition.status.type.state === 'in') {
+                    status = competition.status.type.shortDetail; // "3rd Qtr", etc.
+                }
+
+                games.push({
+                    id: event.id,
+                    date: event.date,
+                    status: status,
+                    home_team: {
+                        id: homeTeam.id,
+                        full_name: homeTeam.team.displayName,
+                        abbreviation: homeTeam.team.abbreviation
+                    },
+                    visitor_team: {
+                        id: awayTeam.id,
+                        full_name: awayTeam.team.displayName,
+                        abbreviation: awayTeam.team.abbreviation
+                    },
+                    home_team_score: parseInt(homeTeam.score) || 0,
+                    visitor_team_score: parseInt(awayTeam.score) || 0
+                });
+            });
+        }
+
+        const responseData = {
+            data: games,
+            meta: {
+                date: date,
+                last_updated: new Date().toISOString(),
+                source: 'ESPN'
+            }
+        };
+
+        temporaryCache.set(cacheKey, {
+            data: responseData,
+            timestamp: Date.now()
+        });
+
+        // Cleanup old cache entries
+        for (const [key, value] of temporaryCache.entries()) {
+            if (Date.now() - value.timestamp > TEMP_CACHE_DURATION) {
+                temporaryCache.delete(key);
+            }
+        }
+
+        res.status(200).json(responseData);
+
+    } catch (error) {
+        console.error('Error scraping games:', error);
+        res.status(500).json({
+            error: 'Failed to fetch games',
+            message: error.message
+        });
+    }
+}

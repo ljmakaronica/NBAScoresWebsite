@@ -77,11 +77,19 @@ class NBAStandings {
             return;
         }
 
-        // Separate teams by conference
+        // Separate teams by conference and sort by win percentage
         const eastern = teams.filter(team => team.conference === 'East')
-                             .sort((a, b) => b.wins - a.wins);
+                             .sort((a, b) => {
+                                 const pctA = a.wins / (a.wins + a.losses);
+                                 const pctB = b.wins / (b.wins + b.losses);
+                                 return pctB - pctA;
+                             });
         const western = teams.filter(team => team.conference === 'West')
-                             .sort((a, b) => b.wins - a.wins);
+                             .sort((a, b) => {
+                                 const pctA = a.wins / (a.wins + a.losses);
+                                 const pctB = b.wins / (b.wins + b.losses);
+                                 return pctB - pctA;
+                             });
 
         // Create conference tables
         const easternSection = this.createConferenceTable('Eastern Conference', eastern);

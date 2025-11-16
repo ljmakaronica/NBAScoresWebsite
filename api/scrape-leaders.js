@@ -11,6 +11,7 @@ export default async function handler(req, res) {
         }
 
         const leadersData = {};
+        const debugInfo = {};
 
         // Scrape StatMuse for NBA leaders
         const categories = [
@@ -22,6 +23,8 @@ export default async function handler(req, res) {
         ];
 
         const scrapeCategory = async ({ key, url }) => {
+            debugInfo[key] = { step: 'starting' };
+
             try {
                 const response = await fetch(url, {
                     headers: {
@@ -29,16 +32,24 @@ export default async function handler(req, res) {
                     }
                 });
 
-                if (!response.ok) return [];
+                debugInfo[key].fetchStatus = response.status;
+
+                if (!response.ok) {
+                    debugInfo[key].error = 'Fetch failed';
+                    return [];
+                }
 
                 const html = await response.text();
+                debugInfo[key].htmlLength = html.length;
 
                 // StatMuse embeds data in a script tag
                 const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s);
+                debugInfo[key].foundNextData = !!nextDataMatch;
 
                 if (nextDataMatch) {
                     const data = JSON.parse(nextDataMatch[1]);
                     const grid = data?.props?.pageProps?.entity?.grid;
+                    debugInfo[key].hasGrid = !!grid;
 
                     if (grid && grid.rows && grid.columns) {
                         const nameColIndex = grid.columns.findIndex(col => col.title === 'NAME');
@@ -58,17 +69,18 @@ export default async function handler(req, res) {
                             statColIndex = grid.columns.findIndex(col => col.title === 'BPG');
                         }
 
+                        debugInfo[key].columns = grid.columns.map(c => c.title);
+                        debugInfo[key].nameColIndex = nameColIndex;
+                        debugInfo[key].teamColIndex = teamColIndex;
+                        debugInfo[key].statColIndex = statColIndex;
+                        debugInfo[key].rowCount = grid.rows.length;
+
                         if (nameColIndex === -1 || teamColIndex === -1 || statColIndex === -1) {
-                            console.error(`Column not found for ${key}:`, {
-                                nameColIndex,
-                                teamColIndex,
-                                statColIndex,
-                                columns: grid.columns.map(c => c.title)
-                            });
+                            debugInfo[key].error = 'Column not found';
                             return [];
                         }
 
-                        return grid.rows.slice(0, 10).map(row => ({
+                        const result = grid.rows.slice(0, 10).map(row => ({
                             athlete: {
                                 displayName: row[nameColIndex] || 'Unknown',
                                 team: {
@@ -78,10 +90,15 @@ export default async function handler(req, res) {
                             displayValue: String(row[statColIndex] || '0.0'),
                             value: parseFloat(row[statColIndex]) || 0
                         }));
+
+                        debugInfo[key].success = true;
+                        debugInfo[key].resultCount = result.length;
+                        return result;
                     }
                 }
             } catch (error) {
-                console.error(`Error scraping ${key}:`, error);
+                debugInfo[key].error = error.message;
+                debugInfo[key].stack = error.stack;
             }
             return [];
         };
@@ -97,8 +114,9 @@ export default async function handler(req, res) {
             data: leadersData,
             meta: {
                 last_updated: new Date().toISOString(),
-                source: 'ESPN'
-            }
+                source: 'StatMuse'
+            },
+            debug: debugInfo
         };
 
         temporaryCache.set(cacheKey, {

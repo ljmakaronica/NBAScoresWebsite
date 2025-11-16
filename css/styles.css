@@ -408,30 +408,14 @@ main {
   gap: 2rem;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.logo-icon {
-  font-size: 2rem;
-  animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-.logo-text {
-  font-size: 1.5rem;
+.site-title {
+  font-size: 1.75rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 50%, var(--color-gold) 100%);
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.05em;
 }
 
 /* Tab Navigation */
@@ -445,22 +429,14 @@ main {
 }
 
 .tab-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.25rem;
   color: var(--color-text-muted);
   text-decoration: none;
   border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.9375rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.tab-icon {
-  font-size: 1.125rem;
-  transition: transform 0.3s ease;
+  white-space: nowrap;
 }
 
 .tab-link:hover {
@@ -468,18 +444,10 @@ main {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.tab-link:hover .tab-icon {
-  transform: scale(1.15);
-}
-
 .tab-link.active {
   background: var(--color-accent);
   color: white;
   box-shadow: 0 2px 12px rgba(99, 102, 241, 0.4);
-}
-
-.tab-link.active .tab-icon {
-  transform: scale(1.1);
 }
 
 /* Standings Page */
@@ -669,40 +637,24 @@ main {
 
   .header-content {
     padding: 0.875rem 1rem;
-    flex-direction: column;
     gap: 1rem;
   }
 
-  .logo {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .logo-icon {
-    font-size: 1.75rem;
-  }
-
-  .logo-text {
-    font-size: 1.25rem;
+  .site-title {
+    font-size: 1.5rem;
   }
 
   .tab-nav {
-    width: 100%;
+    gap: 0.375rem;
+    padding: 0.25rem;
+    flex: 1;
   }
 
   .tab-link {
     flex: 1;
-    justify-content: center;
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-  }
-
-  .tab-label {
-    display: none;
-  }
-
-  .tab-icon {
-    font-size: 1.5rem;
+    padding: 0.625rem 0.5rem;
+    font-size: 0.8125rem;
+    text-align: center;
   }
 
   #calendar-nav {
@@ -746,8 +698,43 @@ main {
   .team-logo {
     width: 24px;
     height: 24px;
-    background-size: 144px 120px;
   }
+
+  /* Scale sprite positions for smaller logos */
+  .team-logo.atlanta-hawks { background-position: 0 0; background-size: 144px 120px; }
+  .team-logo.boston-celtics { background-position: -24px 0; background-size: 144px 120px; }
+  .team-logo.brooklyn-nets { background-position: -48px 0; background-size: 144px 120px; }
+  .team-logo.charlotte-hornets { background-position: -72px 0; background-size: 144px 120px; }
+  .team-logo.chicago-bulls { background-position: -96px 0; background-size: 144px 120px; }
+  .team-logo.cleveland-cavaliers { background-position: -120px 0; background-size: 144px 120px; }
+
+  .team-logo.dallas-mavericks { background-position: 0 -24px; background-size: 144px 120px; }
+  .team-logo.denver-nuggets { background-position: -24px -24px; background-size: 144px 120px; }
+  .team-logo.detroit-pistons { background-position: -48px -24px; background-size: 144px 120px; }
+  .team-logo.golden-state-warriors { background-position: -72px -24px; background-size: 144px 120px; }
+  .team-logo.houston-rockets { background-position: -96px -24px; background-size: 144px 120px; }
+  .team-logo.indiana-pacers { background-position: -120px -24px; background-size: 144px 120px; }
+
+  .team-logo.la-clippers { background-position: 0 -48px; background-size: 144px 120px; }
+  .team-logo.los-angeles-lakers { background-position: -24px -48px; background-size: 144px 120px; }
+  .team-logo.memphis-grizzlies { background-position: -48px -48px; background-size: 144px 120px; }
+  .team-logo.miami-heat { background-position: -72px -48px; background-size: 144px 120px; }
+  .team-logo.milwaukee-bucks { background-position: -96px -48px; background-size: 144px 120px; }
+  .team-logo.minnesota-timberwolves { background-position: -120px -48px; background-size: 144px 120px; }
+
+  .team-logo.new-orleans-pelicans { background-position: 0 -72px; background-size: 144px 120px; }
+  .team-logo.new-york-knicks { background-position: -24px -72px; background-size: 144px 120px; }
+  .team-logo.oklahoma-city-thunder { background-position: -48px -72px; background-size: 144px 120px; }
+  .team-logo.orlando-magic { background-position: -72px -72px; background-size: 144px 120px; }
+  .team-logo.philadelphia-76ers { background-position: -96px -72px; background-size: 144px 120px; }
+  .team-logo.phoenix-suns { background-position: -120px -72px; background-size: 144px 120px; }
+
+  .team-logo.portland-trail-blazers { background-position: 0 -96px; background-size: 144px 120px; }
+  .team-logo.sacramento-kings { background-position: -24px -96px; background-size: 144px 120px; }
+  .team-logo.san-antonio-spurs { background-position: -48px -96px; background-size: 144px 120px; }
+  .team-logo.toronto-raptors { background-position: -72px -96px; background-size: 144px 120px; }
+  .team-logo.utah-jazz { background-position: -96px -96px; background-size: 144px 120px; }
+  .team-logo.washington-wizards { background-position: -120px -96px; background-size: 144px 120px; }
 
   .team-name {
     font-size: 0.9375rem;

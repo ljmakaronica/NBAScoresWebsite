@@ -239,34 +239,40 @@ class NBASchedule {
 
     formatGameStatus(game) {
         if (game.status === 'Final') {
-            return { 
-                text: 'Final', 
+            return {
+                text: 'Final',
                 isComplete: true,
                 isLive: false
             };
-        } else if (game.status.includes('T')) {
-            const gameTime = new Date(game.status);
-            return { 
-                text: gameTime.toLocaleTimeString('en-US', { 
-                    hour: 'numeric', 
-                    minute: '2-digit',
-                    timeZone: 'America/Chicago'
-                }), 
-                isComplete: false,
-                isLive: false
-            };
-        } else if (game.status.includes('Qtr')) {
-            return { 
-                text: game.status, 
+        } else if (game.status.includes('Qtr') || game.status.includes('Half')) {
+            return {
+                text: game.status,
                 isComplete: false,
                 isLive: true
             };
+        } else {
+            // For upcoming games, use the game.date field
+            const gameTime = new Date(game.date);
+
+            // Check if it's a valid date
+            if (!isNaN(gameTime.getTime())) {
+                return {
+                    text: gameTime.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    }),
+                    isComplete: false,
+                    isLive: false
+                };
+            } else {
+                // Fallback to status text
+                return {
+                    text: game.status,
+                    isComplete: false,
+                    isLive: false
+                };
+            }
         }
-        return { 
-            text: game.status, 
-            isComplete: false,
-            isLive: false
-        };
     }
 
     showError(message) {

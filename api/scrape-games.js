@@ -46,15 +46,19 @@ export default async function handler(req, res) {
 
                 // Determine game status
                 let status = competition.status.type.detail;
+                let gameDate = event.date;
+
                 if (competition.status.type.completed) {
                     status = 'Final';
                 } else if (competition.status.type.state === 'in') {
                     status = competition.status.type.shortDetail; // "3rd Qtr", etc.
                 }
+                // For upcoming games, status will be time like "7:30 PM ET"
+                // We'll pass the actual game date separately for parsing
 
                 games.push({
                     id: event.id,
-                    date: event.date,
+                    date: gameDate,
                     status: status,
                     home_team: {
                         id: homeTeam.id,

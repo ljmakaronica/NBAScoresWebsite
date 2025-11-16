@@ -10,9 +10,10 @@ export default async function handler(req, res) {
             return res.status(200).json(cachedData.data);
         }
 
-        // ESPN's leaders API - single request returns all categories
-        const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/leaders?limit=10`;
         const leadersData = {};
+
+        // ESPN scoreboard includes current season leaders
+        const url = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard';
 
         try {
             const response = await fetch(url, {
@@ -25,20 +26,31 @@ export default async function handler(req, res) {
             if (response.ok) {
                 const data = await response.json();
 
-                // ESPN returns leaders organized by categories
-                if (data.categories) {
-                    data.categories.forEach(cat => {
-                        const catName = cat.displayName.toLowerCase();
-                        if (catName.includes('point') || catName.includes('scoring')) {
-                            leadersData.points = cat.leaders || [];
-                        } else if (catName.includes('rebound')) {
-                            leadersData.rebounds = cat.leaders || [];
-                        } else if (catName.includes('assist')) {
-                            leadersData.assists = cat.leaders || [];
-                        } else if (catName.includes('steal')) {
-                            leadersData.steals = cat.leaders || [];
-                        } else if (catName.includes('block')) {
-                            leadersData.blocks = cat.leaders || [];
+                // Leaders data is in the scoreboard response
+                if (data.leaders) {
+                    data.leaders.forEach(category => {
+                        const leaders = category.leaders.map(leader => ({
+                            athlete: {
+                                displayName: leader.athlete.displayName,
+                                team: {
+                                    abbreviation: leader.athlete.team?.abbreviation || ''
+                                }
+                            },
+                            displayValue: leader.displayValue,
+                            value: parseFloat(leader.displayValue)
+                        }));
+
+                        const name = category.name.toLowerCase();
+                        if (name.includes('point') || name.includes('scoring')) {
+                            leadersData.points = leaders;
+                        } else if (name.includes('rebound')) {
+                            leadersData.rebounds = leaders;
+                        } else if (name.includes('assist')) {
+                            leadersData.assists = leaders;
+                        } else if (name.includes('steal')) {
+                            leadersData.steals = leaders;
+                        } else if (name.includes('block')) {
+                            leadersData.blocks = leaders;
                         }
                     });
                 }

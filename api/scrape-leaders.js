@@ -12,84 +12,73 @@ export default async function handler(req, res) {
 
         const leadersData = {};
 
-        // Use NBA.com stats API
-        const season = '2025-26';
+        // Scrape ESPN stats page for leaders
+        const url = 'https://www.espn.com/nba/stats/player';
 
-        const categories = [
-            { key: 'points', stat: 'PTS' },
-            { key: 'rebounds', stat: 'REB' },
-            { key: 'assists', stat: 'AST' },
-            { key: 'steals', stat: 'STL' },
-            { key: 'blocks', stat: 'BLK' }
-        ];
-
-        const fetchLeaders = async ({ key, stat }) => {
-            try {
-                // NBA.com stats API endpoint
-                const url = `https://stats.nba.com/stats/leagueLeaders?LeagueID=00&PerMode=PerGame&Scope=S&Season=${season}&SeasonType=Regular+Season&StatCategory=${stat}`;
-
-                const response = await fetch(url, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Accept-Language': 'en-US,en;q=0.9',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                        'Referer': 'https://www.nba.com/',
-                        'x-nba-stats-origin': 'stats',
-                        'x-nba-stats-token': 'true'
-                    }
-                });
-
-                if (!response.ok) {
-                    console.error(`NBA.com API error for ${key}:`, response.status);
-                    return [];
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 }
+            });
 
-                const data = await response.json();
-
-                if (!data.resultSet || !data.resultSet.rowSet) {
-                    return [];
-                }
-
-                const headers = data.resultSet.headers;
-                const rows = data.resultSet.rowSet;
-
-                const nameIdx = headers.indexOf('PLAYER');
-                const teamIdx = headers.indexOf('TEAM_ABBREVIATION');
-                const statIdx = headers.indexOf(stat);
-
-                if (nameIdx === -1 || teamIdx === -1 || statIdx === -1) {
-                    console.error(`Column not found for ${key}`);
-                    return [];
-                }
-
-                return rows.slice(0, 10).map(row => ({
-                    athlete: {
-                        displayName: row[nameIdx] || 'Unknown',
-                        team: {
-                            abbreviation: row[teamIdx] || ''
-                        }
-                    },
-                    displayValue: String(row[statIdx] || '0.0'),
-                    value: parseFloat(row[statIdx]) || 0
-                }));
-
-            } catch (error) {
-                console.error(`Error fetching ${key}:`, error);
-                return [];
+            if (!response.ok) {
+                throw new Error(`ESPN responded with status: ${response.status}`);
             }
-        };
 
-        const results = await Promise.all(categories.map(fetchLeaders));
+            const html = await response.text();
 
-        categories.forEach((category, index) => {
-            leadersData[category.key] = results[index];
-        });
+            // ESPN embeds data in window['__espnfitt__']
+            const dataMatch = html.match(/window\['__espnfitt__'\]\s*=\s*({[\s\S]*?});?\s*<\/script>/);
+
+            if (dataMatch) {
+                const pageData = JSON.parse(dataMatch[1]);
+
+                // Try to find stats data in the page structure
+                const statsData = pageData?.page?.content?.stats?.athletes;
+
+                if (statsData && Array.isArray(statsData)) {
+                    // Sort by each stat category
+                    const sortByStat = (statKey) => {
+                        return statsData
+                            .filter(a => a.categories && a.categories[0] && a.categories[0].totals)
+                            .map(athlete => {
+                                const total = athlete.categories[0].totals.find(t => t.abbreviation === statKey);
+                                return {
+                                    name: athlete.athlete?.displayName || 'Unknown',
+                                    team: athlete.athlete?.team?.abbreviation || '',
+                                    value: total ? parseFloat(total.displayValue) : 0,
+                                    displayValue: total ? total.displayValue : '0.0'
+                                };
+                            })
+                            .sort((a, b) => b.value - a.value)
+                            .slice(0, 10)
+                            .map(p => ({
+                                athlete: {
+                                    displayName: p.name,
+                                    team: { abbreviation: p.team }
+                                },
+                                displayValue: p.displayValue,
+                                value: p.value
+                            }));
+                    };
+
+                    leadersData.points = sortByStat('PPG');
+                    leadersData.rebounds = sortByStat('RPG');
+                    leadersData.assists = sortByStat('APG');
+                    leadersData.steals = sortByStat('SPG');
+                    leadersData.blocks = sortByStat('BPG');
+                }
+            }
+        } catch (error) {
+            console.error('Error scraping ESPN:', error);
+        }
 
         const responseData = {
             data: leadersData,
             meta: {
                 last_updated: new Date().toISOString(),
-                source: 'NBA.com'
+                source: 'ESPN'
             }
         };
 

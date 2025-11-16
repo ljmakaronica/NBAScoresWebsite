@@ -12,73 +12,74 @@ export default async function handler(req, res) {
 
         const leadersData = {};
 
-        // Scrape StatMuse with simpler URLs
+        // Use NBA.com stats API
+        const season = '2025-26';
+
         const categories = [
-            { key: 'points', url: 'https://www.statmuse.com/nba/ask/nba-points-leader' },
-            { key: 'rebounds', url: 'https://www.statmuse.com/nba/ask/nba-rebounds-leader' },
-            { key: 'assists', url: 'https://www.statmuse.com/nba/ask/nba-assists-leader' },
-            { key: 'steals', url: 'https://www.statmuse.com/nba/ask/nba-steals-leader' },
-            { key: 'blocks', url: 'https://www.statmuse.com/nba/ask/nba-blocks-leader' }
+            { key: 'points', stat: 'PTS' },
+            { key: 'rebounds', stat: 'REB' },
+            { key: 'assists', stat: 'AST' },
+            { key: 'steals', stat: 'STL' },
+            { key: 'blocks', stat: 'BLK' }
         ];
 
-        const scrapeCategory = async ({ key, url }) => {
+        const fetchLeaders = async ({ key, stat }) => {
             try {
+                // NBA.com stats API endpoint
+                const url = `https://stats.nba.com/stats/leagueLeaders?LeagueID=00&PerMode=PerGame&Scope=S&Season=${season}&SeasonType=Regular+Season&StatCategory=${stat}`;
+
                 const response = await fetch(url, {
                     headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                        'Accept': 'application/json',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Referer': 'https://www.nba.com/',
+                        'x-nba-stats-origin': 'stats',
+                        'x-nba-stats-token': 'true'
                     }
                 });
 
-                if (!response.ok) return [];
-
-                const html = await response.text();
-
-                // Try to find __NEXT_DATA__
-                let nextDataMatch = html.match(/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s);
-
-                if (nextDataMatch) {
-                    const data = JSON.parse(nextDataMatch[1]);
-                    const grid = data?.props?.pageProps?.entity?.grid;
-
-                    if (grid && grid.rows && grid.columns) {
-                        const nameColIndex = grid.columns.findIndex(col => col.title === 'NAME');
-                        const teamColIndex = grid.columns.findIndex(col => col.title === 'TM');
-
-                        // Find the per-game stat column
-                        let statColIndex = -1;
-                        if (key === 'points') {
-                            statColIndex = grid.columns.findIndex(col => col.title === 'PPG');
-                        } else if (key === 'rebounds') {
-                            statColIndex = grid.columns.findIndex(col => col.title === 'RPG');
-                        } else if (key === 'assists') {
-                            statColIndex = grid.columns.findIndex(col => col.title === 'APG');
-                        } else if (key === 'steals') {
-                            statColIndex = grid.columns.findIndex(col => col.title === 'SPG');
-                        } else if (key === 'blocks') {
-                            statColIndex = grid.columns.findIndex(col => col.title === 'BPG');
-                        }
-
-                        if (nameColIndex !== -1 && teamColIndex !== -1 && statColIndex !== -1) {
-                            return grid.rows.slice(0, 10).map(row => ({
-                                athlete: {
-                                    displayName: row[nameColIndex] || 'Unknown',
-                                    team: {
-                                        abbreviation: row[teamColIndex] || ''
-                                    }
-                                },
-                                displayValue: String(row[statColIndex] || '0.0'),
-                                value: parseFloat(row[statColIndex]) || 0
-                            }));
-                        }
-                    }
+                if (!response.ok) {
+                    console.error(`NBA.com API error for ${key}:`, response.status);
+                    return [];
                 }
+
+                const data = await response.json();
+
+                if (!data.resultSet || !data.resultSet.rowSet) {
+                    return [];
+                }
+
+                const headers = data.resultSet.headers;
+                const rows = data.resultSet.rowSet;
+
+                const nameIdx = headers.indexOf('PLAYER');
+                const teamIdx = headers.indexOf('TEAM_ABBREVIATION');
+                const statIdx = headers.indexOf(stat);
+
+                if (nameIdx === -1 || teamIdx === -1 || statIdx === -1) {
+                    console.error(`Column not found for ${key}`);
+                    return [];
+                }
+
+                return rows.slice(0, 10).map(row => ({
+                    athlete: {
+                        displayName: row[nameIdx] || 'Unknown',
+                        team: {
+                            abbreviation: row[teamIdx] || ''
+                        }
+                    },
+                    displayValue: String(row[statIdx] || '0.0'),
+                    value: parseFloat(row[statIdx]) || 0
+                }));
+
             } catch (error) {
-                console.error(`Error scraping ${key}:`, error);
+                console.error(`Error fetching ${key}:`, error);
+                return [];
             }
-            return [];
         };
 
-        const results = await Promise.all(categories.map(scrapeCategory));
+        const results = await Promise.all(categories.map(fetchLeaders));
 
         categories.forEach((category, index) => {
             leadersData[category.key] = results[index];
@@ -88,7 +89,7 @@ export default async function handler(req, res) {
             data: leadersData,
             meta: {
                 last_updated: new Date().toISOString(),
-                source: 'StatMuse'
+                source: 'NBA.com'
             }
         };
 

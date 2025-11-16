@@ -37,26 +37,21 @@ const TEAM_INFO = {
 
 async function fetchAllGames(apiKey, startDate, endDate) {
     const allGames = [];
+    const startStr = new Date(startDate).toISOString().split('T')[0];
+    const endStr = new Date(endDate).toISOString().split('T')[0];
 
-    // Fetch in weekly chunks to reduce API calls
-    let currentStart = new Date(startDate);
-    const end = new Date(endDate);
+    let cursor = null;
+    let pageCount = 0;
 
-    while (currentStart <= end) {
-        let currentEnd = new Date(currentStart);
-        currentEnd.setDate(currentEnd.getDate() + 6); // 7 days at a time
-
-        if (currentEnd > end) {
-            currentEnd = end;
-        }
-
-        const startStr = currentStart.toISOString().split('T')[0];
-        const endStr = currentEnd.toISOString().split('T')[0];
-
+    do {
         const url = new URL('https://api.balldontlie.io/v1/games');
         url.searchParams.set('start_date', startStr);
         url.searchParams.set('end_date', endStr);
         url.searchParams.set('per_page', '100');
+
+        if (cursor) {
+            url.searchParams.set('cursor', cursor);
+        }
 
         try {
             const response = await fetch(url.toString(), {
@@ -71,18 +66,22 @@ async function fetchAllGames(apiKey, startDate, endDate) {
                 const data = await response.json();
                 if (data.data && data.data.length > 0) {
                     allGames.push(...data.data);
+                    pageCount++;
                 }
+
+                // Check for next page
+                cursor = data.meta?.next_cursor || null;
             } else {
-                console.error(`API error for ${startStr} to ${endStr}: ${response.status}`);
+                console.error(`API error: ${response.status}`);
+                break;
             }
         } catch (error) {
-            console.error(`Error fetching games for ${startStr} to ${endStr}:`, error);
+            console.error(`Error fetching games:`, error);
+            break;
         }
+    } while (cursor);
 
-        currentStart.setDate(currentStart.getDate() + 7);
-    }
-
-    console.log(`Fetched ${allGames.length} total games`);
+    console.log(`Fetched ${allGames.length} total games in ${pageCount} pages from ${startStr} to ${endStr}`);
     return allGames;
 }
 

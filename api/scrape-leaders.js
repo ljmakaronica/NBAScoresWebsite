@@ -12,60 +12,67 @@ export default async function handler(req, res) {
 
         const leadersData = {};
 
-        // Scrape ESPN stats page HTML
-        const url = 'https://www.espn.com/nba/stats';
+        // Scrape StatMuse for NBA leaders
+        const categories = [
+            { key: 'points', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-points-per-game-this-season' },
+            { key: 'rebounds', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-rebounds-per-game-this-season' },
+            { key: 'assists', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-assists-per-game-this-season' },
+            { key: 'steals', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-steals-per-game-this-season' },
+            { key: 'blocks', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-blocks-per-game-this-season' }
+        ];
 
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`ESPN responded with status: ${response.status}`);
-        }
-
-        const html = await response.text();
-
-        // Extract JSON data embedded in the page
-        const scriptMatch = html.match(/window\['__espnfitt__'\]\s*=\s*({.*?});/s);
-
-        if (scriptMatch) {
-            const pageData = JSON.parse(scriptMatch[1]);
-
-            // Navigate through the data structure to find leaders
-            const leaders = pageData?.page?.content?.leaders?.leaders;
-
-            if (leaders && Array.isArray(leaders)) {
-                leaders.forEach(category => {
-                    const categoryName = category.displayName?.toLowerCase() || '';
-                    const leadersList = category.leaders || [];
-
-                    const formattedLeaders = leadersList.map(leader => ({
-                        athlete: {
-                            displayName: leader.athlete?.displayName || 'Unknown',
-                            team: {
-                                abbreviation: leader.athlete?.team?.abbreviation || ''
-                            }
-                        },
-                        displayValue: leader.displayValue || '0.0',
-                        value: parseFloat(leader.displayValue || '0')
-                    }));
-
-                    if (categoryName.includes('point') || categoryName.includes('scoring')) {
-                        leadersData.points = formattedLeaders;
-                    } else if (categoryName.includes('rebound')) {
-                        leadersData.rebounds = formattedLeaders;
-                    } else if (categoryName.includes('assist')) {
-                        leadersData.assists = formattedLeaders;
-                    } else if (categoryName.includes('steal')) {
-                        leadersData.steals = formattedLeaders;
-                    } else if (categoryName.includes('block')) {
-                        leadersData.blocks = formattedLeaders;
+        const scrapeCategory = async ({ key, url }) => {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                     }
                 });
+
+                if (!response.ok) return [];
+
+                const html = await response.text();
+
+                // StatMuse embeds data in a script tag
+                const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s);
+
+                if (nextDataMatch) {
+                    const data = JSON.parse(nextDataMatch[1]);
+                    const grid = data?.props?.pageProps?.entity?.grid;
+
+                    if (grid && grid.rows && grid.columns) {
+                        const nameColIndex = grid.columns.findIndex(col => col.title === 'NAME');
+                        const teamColIndex = grid.columns.findIndex(col => col.title === 'TEAM');
+                        const statColIndex = grid.columns.findIndex(col =>
+                            col.title.includes('PG') || col.title.includes('PPG') ||
+                            col.title.includes('RPG') || col.title.includes('APG') ||
+                            col.title.includes('SPG') || col.title.includes('BPG')
+                        );
+
+                        return grid.rows.slice(0, 10).map(row => ({
+                            athlete: {
+                                displayName: row[nameColIndex] || 'Unknown',
+                                team: {
+                                    abbreviation: row[teamColIndex] || ''
+                                }
+                            },
+                            displayValue: row[statColIndex] || '0.0',
+                            value: parseFloat(row[statColIndex]) || 0
+                        }));
+                    }
+                }
+            } catch (error) {
+                console.error(`Error scraping ${key}:`, error);
             }
-        }
+            return [];
+        };
+
+        // Scrape all categories in parallel
+        const results = await Promise.all(categories.map(scrapeCategory));
+
+        categories.forEach((category, index) => {
+            leadersData[category.key] = results[index];
+        });
 
         const responseData = {
             data: leadersData,

@@ -77,19 +77,28 @@ class NBAStandings {
             return;
         }
 
-        // Separate teams by conference and sort by win percentage
-        const eastern = teams.filter(team => team.conference === 'East')
-                             .sort((a, b) => {
-                                 const pctA = a.wins / (a.wins + a.losses);
-                                 const pctB = b.wins / (b.wins + b.losses);
-                                 return pctB - pctA;
-                             });
-        const western = teams.filter(team => team.conference === 'West')
-                             .sort((a, b) => {
-                                 const pctA = a.wins / (a.wins + a.losses);
-                                 const pctB = b.wins / (b.wins + b.losses);
-                                 return pctB - pctA;
-                             });
+        // Separate teams by conference and sort by NBA tiebreaker rules
+        // 1. Win percentage, 2. Conference win %, 3. Point differential
+        const sortTeams = (a, b) => {
+            const pctA = a.wins / (a.wins + a.losses);
+            const pctB = b.wins / (b.wins + b.losses);
+
+            // Primary: Win percentage
+            if (pctB !== pctA) {
+                return pctB - pctA;
+            }
+
+            // Tiebreaker 1: Conference win percentage
+            if (b.conf_pct !== a.conf_pct) {
+                return b.conf_pct - a.conf_pct;
+            }
+
+            // Tiebreaker 2: Point differential
+            return b.point_diff - a.point_diff;
+        };
+
+        const eastern = teams.filter(team => team.conference === 'East').sort(sortTeams);
+        const western = teams.filter(team => team.conference === 'West').sort(sortTeams);
 
         // Create conference tables
         const easternSection = this.createConferenceTable('Eastern Conference', eastern);

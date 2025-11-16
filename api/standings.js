@@ -101,7 +101,9 @@ function calculateStandings(games) {
             road_wins: 0,
             road_losses: 0,
             conf_wins: 0,
-            conf_losses: 0
+            conf_losses: 0,
+            points_scored: 0,
+            points_allowed: 0
         };
     });
 
@@ -119,6 +121,12 @@ function calculateStandings(games) {
 
         const homeWon = homeScore > awayScore;
         const sameConference = TEAM_INFO[homeTeam].conference === TEAM_INFO[awayTeam].conference;
+
+        // Track points for both teams
+        standings[homeTeam].points_scored += homeScore;
+        standings[homeTeam].points_allowed += awayScore;
+        standings[awayTeam].points_scored += awayScore;
+        standings[awayTeam].points_allowed += homeScore;
 
         if (homeWon) {
             // Home team won
@@ -146,16 +154,24 @@ function calculateStandings(games) {
     });
 
     // Format standings data
-    return Object.values(standings).map(team => ({
-        full_name: team.full_name,
-        conference: team.conference,
-        division: team.division,
-        wins: team.wins,
-        losses: team.losses,
-        home_record: `${team.home_wins}-${team.home_losses}`,
-        road_record: `${team.road_wins}-${team.road_losses}`,
-        conference_record: `${team.conf_wins}-${team.conf_losses}`
-    }));
+    return Object.values(standings).map(team => {
+        const confTotal = team.conf_wins + team.conf_losses;
+        const conf_pct = confTotal > 0 ? team.conf_wins / confTotal : 0;
+        const point_diff = team.points_scored - team.points_allowed;
+
+        return {
+            full_name: team.full_name,
+            conference: team.conference,
+            division: team.division,
+            wins: team.wins,
+            losses: team.losses,
+            home_record: `${team.home_wins}-${team.home_losses}`,
+            road_record: `${team.road_wins}-${team.road_losses}`,
+            conference_record: `${team.conf_wins}-${team.conf_losses}`,
+            conf_pct: conf_pct,
+            point_diff: point_diff
+        };
+    });
 }
 
 export default async function handler(req, res) {

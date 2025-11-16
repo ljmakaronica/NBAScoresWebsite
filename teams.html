@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NBA Teams</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" referrerpolicy="no-referrer" />
+
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+  <div id="app">
+    <header class="site-header">
+      <div class="header-content">
+        <h1 class="site-title">NBA</h1>
+        <nav class="tab-nav">
+          <a href="index.html" class="tab-link">Schedule</a>
+          <a href="standings.html" class="tab-link">Standings</a>
+          <a href="leaders.html" class="tab-link">Leaders</a>
+          <a href="teams.html" class="tab-link active">Teams</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="teams-header">
+        <h2>Team Statistics</h2>
+        <p class="season-info">2025-26 Season</p>
+      </div>
+
+      <div id="teams-container">
+        <!-- Teams will be dynamically inserted here -->
+      </div>
+    </main>
+
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="loader"></div>
+    </div>
+  </div>
+  <footer class="footer">
+    <div class="footer-content">
+      <p>
+        This website is a fan project and is not affiliated with or endorsed by the NBA. All team names, logos, and trademarks are the property of their respective owners.
+        Data provided by the <a href="https://www.balldontlie.io/" target="_blank" rel="noopener noreferrer">BallDontLie API</a>.
+      </p>
+      <p>
+        Created by <a href="https://markoljuboja.com" target="_blank" rel="noopener noreferrer">markoljuboja.com</a>
+      </p>
+    </div>
+  </footer>
+  <script src="js/teams.js"></script>
+</body>
+</html>

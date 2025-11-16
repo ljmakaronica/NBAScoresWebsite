@@ -11,20 +11,17 @@ export default async function handler(req, res) {
         }
 
         const leadersData = {};
-        const debugInfo = {};
 
-        // Scrape StatMuse for NBA leaders
+        // Scrape StatMuse with simpler URLs
         const categories = [
-            { key: 'points', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-points-per-game-this-season' },
-            { key: 'rebounds', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-rebounds-per-game-this-season' },
-            { key: 'assists', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-assists-per-game-this-season' },
-            { key: 'steals', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-steals-per-game-this-season' },
-            { key: 'blocks', url: 'https://www.statmuse.com/nba/ask/nba-leaders-in-blocks-per-game-this-season' }
+            { key: 'points', url: 'https://www.statmuse.com/nba/ask/nba-points-leader' },
+            { key: 'rebounds', url: 'https://www.statmuse.com/nba/ask/nba-rebounds-leader' },
+            { key: 'assists', url: 'https://www.statmuse.com/nba/ask/nba-assists-leader' },
+            { key: 'steals', url: 'https://www.statmuse.com/nba/ask/nba-steals-leader' },
+            { key: 'blocks', url: 'https://www.statmuse.com/nba/ask/nba-blocks-leader' }
         ];
 
         const scrapeCategory = async ({ key, url }) => {
-            debugInfo[key] = { step: 'starting' };
-
             try {
                 const response = await fetch(url, {
                     headers: {
@@ -32,58 +29,22 @@ export default async function handler(req, res) {
                     }
                 });
 
-                debugInfo[key].fetchStatus = response.status;
-
-                if (!response.ok) {
-                    debugInfo[key].error = 'Fetch failed';
-                    return [];
-                }
+                if (!response.ok) return [];
 
                 const html = await response.text();
-                debugInfo[key].htmlLength = html.length;
 
-                // Try different patterns to find the data
-                let nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s);
-
-                if (!nextDataMatch) {
-                    // Try without the type attribute
-                    nextDataMatch = html.match(/<script id="__NEXT_DATA__">(.*?)<\/script>/s);
-                }
-
-                if (!nextDataMatch) {
-                    // Try to find any script tag with JSON data
-                    nextDataMatch = html.match(/<script[^>]*>self\.__next_f\.push\(\[1,"(.*?)"\]\)<\/script>/s);
-                }
-
-                debugInfo[key].foundNextData = !!nextDataMatch;
+                // Try to find __NEXT_DATA__
+                let nextDataMatch = html.match(/<script id="__NEXT_DATA__"[^>]*>(.*?)<\/script>/s);
 
                 if (nextDataMatch) {
-                    let data;
-                    try {
-                        // Try parsing the matched data
-                        const jsonStr = nextDataMatch[1];
-                        // Unescape if needed
-                        const unescaped = jsonStr.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-                        data = JSON.parse(unescaped);
-                    } catch (e) {
-                        // If first group doesn't work, try the whole match
-                        try {
-                            data = JSON.parse(nextDataMatch[1]);
-                        } catch (e2) {
-                            debugInfo[key].parseError = e2.message;
-                        }
-                    }
+                    const data = JSON.parse(nextDataMatch[1]);
+                    const grid = data?.props?.pageProps?.entity?.grid;
 
-                    if (data) {
-                        const grid = data?.props?.pageProps?.entity?.grid;
-                        debugInfo[key].hasGrid = !!grid;
-                        debugInfo[key].dataKeys = Object.keys(data);
-
-                        if (grid && grid.rows && grid.columns) {
+                    if (grid && grid.rows && grid.columns) {
                         const nameColIndex = grid.columns.findIndex(col => col.title === 'NAME');
                         const teamColIndex = grid.columns.findIndex(col => col.title === 'TM');
 
-                        // Find the per-game stat column based on category
+                        // Find the per-game stat column
                         let statColIndex = -1;
                         if (key === 'points') {
                             statColIndex = grid.columns.findIndex(col => col.title === 'PPG');
@@ -97,42 +58,26 @@ export default async function handler(req, res) {
                             statColIndex = grid.columns.findIndex(col => col.title === 'BPG');
                         }
 
-                        debugInfo[key].columns = grid.columns.map(c => c.title);
-                        debugInfo[key].nameColIndex = nameColIndex;
-                        debugInfo[key].teamColIndex = teamColIndex;
-                        debugInfo[key].statColIndex = statColIndex;
-                        debugInfo[key].rowCount = grid.rows.length;
-
-                        if (nameColIndex === -1 || teamColIndex === -1 || statColIndex === -1) {
-                            debugInfo[key].error = 'Column not found';
-                            return [];
-                        }
-
-                        const result = grid.rows.slice(0, 10).map(row => ({
-                            athlete: {
-                                displayName: row[nameColIndex] || 'Unknown',
-                                team: {
-                                    abbreviation: row[teamColIndex] || ''
-                                }
-                            },
-                            displayValue: String(row[statColIndex] || '0.0'),
-                            value: parseFloat(row[statColIndex]) || 0
-                        }));
-
-                        debugInfo[key].success = true;
-                        debugInfo[key].resultCount = result.length;
-                        return result;
+                        if (nameColIndex !== -1 && teamColIndex !== -1 && statColIndex !== -1) {
+                            return grid.rows.slice(0, 10).map(row => ({
+                                athlete: {
+                                    displayName: row[nameColIndex] || 'Unknown',
+                                    team: {
+                                        abbreviation: row[teamColIndex] || ''
+                                    }
+                                },
+                                displayValue: String(row[statColIndex] || '0.0'),
+                                value: parseFloat(row[statColIndex]) || 0
+                            }));
                         }
                     }
                 }
             } catch (error) {
-                debugInfo[key].error = error.message;
-                debugInfo[key].stack = error.stack;
+                console.error(`Error scraping ${key}:`, error);
             }
             return [];
         };
 
-        // Scrape all categories in parallel
         const results = await Promise.all(categories.map(scrapeCategory));
 
         categories.forEach((category, index) => {
@@ -144,8 +89,7 @@ export default async function handler(req, res) {
             meta: {
                 last_updated: new Date().toISOString(),
                 source: 'StatMuse'
-            },
-            debug: debugInfo
+            }
         };
 
         temporaryCache.set(cacheKey, {

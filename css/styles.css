@@ -931,3 +931,154 @@ main {
     font-size: 1rem;
   }
 }
+
+/* Box Score Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    width: 90%;
+    max-width: 1000px;
+    border-radius: 12px;
+    position: relative;
+    color: var(--text-primary);
+}
+
+.close-modal {
+    color: var(--text-secondary);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: var(--text-primary);
+}
+
+.box-score-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.team-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.team-logo-large {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+.score-large {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.game-info-large {
+    text-align: center;
+    flex: 1;
+}
+
+.game-status-large {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    margin-bottom: 5px;
+}
+
+.game-clock-large {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+.stats-container {
+    display: flex;
+    gap: 20px;
+}
+
+.team-stats-column {
+    flex: 1;
+}
+
+.team-stats-column h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 5px;
+    display: inline-block;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.stats-table th, .stats-table td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stats-table th {
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.stats-table td.player-name {
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.stats-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 768px) {
+    .stats-container {
+        flex-direction: column;
+    }
+    
+    .box-score-header {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .team-header {
+        flex-direction: row;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .score-large {
+        font-size: 2rem;
+    }
+}

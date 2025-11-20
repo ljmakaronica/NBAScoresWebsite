@@ -328,7 +328,127 @@ class NBASchedule {
             </div>
         `;
 
+        // Add click event for box score
+        card.onclick = () => this.showBoxScore(game.id);
+        card.style.cursor = 'pointer';
+
         return card;
+    }
+
+    async showBoxScore(gameId) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('box-score-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'box-score-modal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <div id="modal-body">Loading...</div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Close button logic
+            modal.querySelector('.close-modal').onclick = () => {
+                modal.style.display = 'none';
+            };
+
+            // Click outside to close
+            window.onclick = (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        }
+
+        modal.style.display = 'block';
+        const modalBody = document.getElementById('modal-body');
+        modalBody.innerHTML = '<div class="loading-spinner"></div>';
+
+        try {
+            const response = await fetch(`/api/game-details?gameId=${gameId}&t=${Date.now()}`);
+            if (!response.ok) throw new Error('Failed to fetch game details');
+            const data = await response.json();
+
+            this.renderBoxScore(data, modalBody);
+        } catch (error) {
+            console.error('Error loading box score:', error);
+            modalBody.innerHTML = '<div class="error-message">Failed to load box score.</div>';
+        }
+    }
+
+    renderBoxScore(data, container) {
+        const { homeTeam, awayTeam, gameInfo } = data;
+
+        const renderPlayerTable = (players) => {
+            return `
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>MIN</th>
+                            <th>PTS</th>
+                            <th>REB</th>
+                            <th>AST</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${players.map(p => {
+                // Find stats in the stats array
+                const getStat = (abbr) => {
+                    const statIndex = p.names.indexOf(abbr);
+                    return statIndex !== -1 ? p.stats[statIndex] : '-';
+                };
+                // Check if player played (has minutes)
+                const min = getStat('MIN');
+                if (!min || min === '0' || min === '--') return ''; // Skip DNP
+
+                return `
+                                <tr>
+                                    <td class="player-name">${p.athlete.displayName}</td>
+                                    <td>${min}</td>
+                                    <td>${getStat('PTS')}</td>
+                                    <td>${getStat('REB')}</td>
+                                    <td>${getStat('AST')}</td>
+                                </tr>
+                            `;
+            }).join('')}
+                    </tbody>
+                </table>
+            `;
+        };
+
+        container.innerHTML = `
+            <div class="box-score-header">
+                <div class="team-header">
+                    <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
+                    <h2>${homeTeam.info.displayName}</h2>
+                    <div class="score-large">${homeTeam.info.score || '0'}</div>
+                </div>
+                <div class="game-info-large">
+                    <div class="game-status-large">${gameInfo.status}</div>
+                    <div class="game-clock-large">${gameInfo.clock || ''}</div>
+                </div>
+                <div class="team-header">
+                    <div class="score-large">${awayTeam.info.score || '0'}</div>
+                    <h2>${awayTeam.info.displayName}</h2>
+                    <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
+                </div>
+            </div>
+            
+            <div class="stats-container">
+                <div class="team-stats-column">
+                    <h3>${homeTeam.info.abbreviation} Stats</h3>
+                    ${renderPlayerTable(homeTeam.players)}
+                </div>
+                <div class="team-stats-column">
+                    <h3>${awayTeam.info.abbreviation} Stats</h3>
+                    ${renderPlayerTable(awayTeam.players)}
+                </div>
+            </div>
+        `;
     }
 
     formatGameStatus(game) {

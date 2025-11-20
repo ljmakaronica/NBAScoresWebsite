@@ -325,8 +325,8 @@ class NBASchedule {
             <div class="game-status">
                 ${status.isLive ? '<div class="live-indicator"></div>' : ''}
                 <span>${status.text}</span>
-                ${hasStarted ? '<svg class="stats-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3v18h18v-2H5V3H3zm4 12h2v4H7v-4zm4-6h2v10h-2V9zm4 3h2v7h-2v-7zm4-6h2v13h-2V6z"/></svg>' : ''}
             </div>
+            ${hasStarted ? '<div class="box-score-btn">View Stats</div>' : ''}
         `;
 
         // Add click event for box score only if game has started

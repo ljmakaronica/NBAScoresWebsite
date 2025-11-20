@@ -385,15 +385,18 @@ main {
   box-shadow: 0 0 8px var(--color-live);
 }
 
-.stats-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--color-text-muted);
+.box-score-btn {
+  text-align: center;
+  padding: 0.75rem;
+  background: var(--color-accent);
+  color: white;
+  font-size: 0.8125rem;
+  font-weight: 600;
   transition: all 0.2s ease;
 }
 
-.game-card:hover .stats-icon {
-  color: var(--color-accent);
+.game-card:hover .box-score-btn {
+  background: var(--color-accent-hover);
 }
 
 .loading-overlay {

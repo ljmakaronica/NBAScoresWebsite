@@ -170,6 +170,7 @@ main {
   box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
+  min-height: 160px;
 }
 
 .matchup {
@@ -178,6 +179,7 @@ main {
   justify-content: space-between;
   padding: 1.5rem;
   gap: 1rem;
+  flex: 1;
 }
 
 .team-side {
@@ -185,17 +187,17 @@ main {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  min-width: 70px;
+  min-width: 80px;
 }
 
 .team-logo-card {
-  width: 48px;
-  height: 48px;
-  background-size: 288px 240px;
+  width: 56px;
+  height: 56px;
+  background-size: 336px 280px;
 }
 
 .team-abbr {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-muted);
 }
@@ -398,18 +400,22 @@ main {
 
 /* Mobile styles for new card design */
 @media (max-width: 768px) {
+  .game-card {
+    min-height: 140px;
+  }
+
   .matchup {
     padding: 1rem;
   }
 
   .team-logo-card {
-    width: 36px;
-    height: 36px;
-    background-size: 216px 180px;
+    width: 44px;
+    height: 44px;
+    background-size: 264px 220px;
   }
 
   .team-abbr {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
   }
 
   .score {

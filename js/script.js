@@ -326,6 +326,7 @@ class NBASchedule {
                 ${status.isLive ? '<div class="live-indicator"></div>' : ''}
                 <span>${status.text}</span>
             </div>
+            <div class="box-score-btn">Box Score</div>
         `;
 
         // Add click event for box score

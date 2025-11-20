@@ -46,6 +46,47 @@ body {
   border-top: 1px solid var(--color-border);
 }
 
+/* Bottom Navigation - Mobile Only */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-card-bg);
+  border-top: 1px solid var(--color-border);
+  padding: 0.5rem 0;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  z-index: 1000;
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.bottom-nav-item svg {
+  width: 24px;
+  height: 24px;
+}
+
+.bottom-nav-item.active {
+  color: var(--color-accent);
+}
+
+.bottom-nav-item:hover {
+  color: var(--color-text);
+}
+
 .footer-content p {
   margin: 0.5rem 0;
   line-height: 1.5;
@@ -781,16 +822,19 @@ main {
   }
 
   .tab-nav {
-    gap: 0.375rem;
-    padding: 0.25rem;
-    flex: 1;
+    display: none;
   }
 
-  .tab-link {
-    flex: 1;
-    padding: 0.625rem 0.5rem;
-    font-size: 0.8125rem;
-    text-align: center;
+  .bottom-nav {
+    display: flex;
+  }
+
+  main {
+    padding-bottom: 5rem;
+  }
+
+  .footer {
+    padding-bottom: 5rem;
   }
 
   #calendar-nav {

@@ -521,74 +521,73 @@ class NBASchedule {
             });
         });
     }
-}
 
-formatGameStatus(game) {
-    if (game.status === 'Final') {
-        return {
-            text: 'Final',
-            isComplete: true,
-            isLive: false
-        };
-    } else if (
-        game.status.includes('Qtr') ||
-        game.status.includes('Half') ||
-        game.status.includes('OT') ||
-        game.status.includes('1st') ||
-        game.status.includes('2nd') ||
-        game.status.includes('3rd') ||
-        game.status.includes('4th')
-    ) {
-        return {
-            text: game.status,
-            isComplete: false,
-            isLive: true
-        };
-    } else {
-        // For upcoming games, use the game.date field
-        const gameTime = new Date(game.date);
-
-        // Check if it's a valid date
-        if (!isNaN(gameTime.getTime())) {
+    formatGameStatus(game) {
+        if (game.status === 'Final') {
             return {
-                text: gameTime.toLocaleTimeString('en-US', {
-                    hour: 'numeric',
-                    minute: '2-digit'
-                }),
-                isComplete: false,
+                text: 'Final',
+                isComplete: true,
                 isLive: false
             };
-        } else {
-            // Fallback to status text
+        } else if (
+            game.status.includes('Qtr') ||
+            game.status.includes('Half') ||
+            game.status.includes('OT') ||
+            game.status.includes('1st') ||
+            game.status.includes('2nd') ||
+            game.status.includes('3rd') ||
+            game.status.includes('4th')
+        ) {
             return {
                 text: game.status,
                 isComplete: false,
-                isLive: false
+                isLive: true
             };
+        } else {
+            // For upcoming games, use the game.date field
+            const gameTime = new Date(game.date);
+
+            // Check if it's a valid date
+            if (!isNaN(gameTime.getTime())) {
+                return {
+                    text: gameTime.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit'
+                    }),
+                    isComplete: false,
+                    isLive: false
+                };
+            } else {
+                // Fallback to status text
+                return {
+                    text: game.status,
+                    isComplete: false,
+                    isLive: false
+                };
+            }
         }
     }
-}
 
-showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.textContent = message;
-    this.scoreboard.appendChild(errorDiv);
-}
-
-updateDateDisplay() {
-    const dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-    const fullDateStr = this.selectedDate.toLocaleDateString('en-US', dateOptions);
-    const today = new Date();
-    today.setHours(12, 0, 0, 0);
-
-    let displayStr = fullDateStr;
-    if (this.selectedDate.toDateString() === today.toDateString()) {
-        displayStr += ' (Today)';
+    showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        this.scoreboard.appendChild(errorDiv);
     }
 
-    this.dateDisplay.textContent = displayStr;
-}
+    updateDateDisplay() {
+        const dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+        const fullDateStr = this.selectedDate.toLocaleDateString('en-US', dateOptions);
+        const today = new Date();
+        today.setHours(12, 0, 0, 0);
+
+        let displayStr = fullDateStr;
+        if (this.selectedDate.toDateString() === today.toDateString()) {
+            displayStr += ' (Today)';
+        }
+
+        this.dateDisplay.textContent = displayStr;
+    }
 }
 
 // Initialize app when DOM is ready

@@ -130,7 +130,7 @@ main {
   background: var(--color-card-bg);
   backdrop-filter: blur(10px);
   border-radius: var(--border-radius);
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   margin-bottom: 1.5rem;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
@@ -168,19 +168,16 @@ main {
 
 .calendar-day:hover {
   background: var(--color-row-bg);
-  transform: translateY(-1px);
 }
 
 .calendar-day.today {
   border-color: var(--color-accent);
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(99, 102, 241, 0.1);
 }
 
 .calendar-day.selected {
   background: var(--color-accent);
   color: white;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 /* Date Display */

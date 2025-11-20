@@ -340,7 +340,15 @@ class NBASchedule {
                 isComplete: true,
                 isLive: false
             };
-        } else if (game.status.includes('Qtr') || game.status.includes('Half') || game.status.includes('OT')) {
+        } else if (
+            game.status.includes('Qtr') ||
+            game.status.includes('Half') ||
+            game.status.includes('OT') ||
+            game.status.includes('1st') ||
+            game.status.includes('2nd') ||
+            game.status.includes('3rd') ||
+            game.status.includes('4th')
+        ) {
             return {
                 text: game.status,
                 isComplete: false,

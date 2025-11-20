@@ -151,13 +151,10 @@ class NBASchedule {
         this.stopLiveUpdates();
 
         try {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const selectedDateObj = new Date(date);
-            selectedDateObj.setHours(12, 0, 0, 0);
-
-            const isPastDate = selectedDateObj < today;
-            const isToday = selectedDateObj.toDateString() === today.toDateString();
+            // Use string comparison for dates to avoid timezone issues
+            const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
+            const isToday = date === todayStr;
+            const isPastDate = date < todayStr;
             let data;
 
             if (isPastDate) {

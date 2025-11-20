@@ -390,18 +390,29 @@ class NBASchedule {
             const { names, athletes } = statsGroup;
 
             return `
-                <table class="stats-table">
-                    <thead>
-                        <tr>
-                            <th>Player</th>
-                            <th>MIN</th>
-                            <th>PTS</th>
-                            <th>REB</th>
-                            <th>AST</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${athletes.map(athleteEntry => {
+                <div class="stats-table-wrapper">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th class="sticky-col">Player</th>
+                                <th>MIN</th>
+                                <th>FG</th>
+                                <th>3PT</th>
+                                <th>FT</th>
+                                <th>OREB</th>
+                                <th>DREB</th>
+                                <th>REB</th>
+                                <th>AST</th>
+                                <th>STL</th>
+                                <th>BLK</th>
+                                <th>TO</th>
+                                <th>PF</th>
+                                <th>+/-</th>
+                                <th>PTS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${athletes.map(athleteEntry => {
                 const p = athleteEntry.athlete;
                 const stats = athleteEntry.stats;
 
@@ -416,17 +427,31 @@ class NBASchedule {
                 if (!min || min === '0' || min === '--' || athleteEntry.didNotPlay) return '';
 
                 return `
-                                <tr>
-                                    <td class="player-name">${p.displayName}</td>
-                                    <td>${min}</td>
-                                    <td>${getStat('PTS')}</td>
-                                    <td>${getStat('REB')}</td>
-                                    <td>${getStat('AST')}</td>
-                                </tr>
-                            `;
+                                    <tr>
+                                        <td class="player-name sticky-col">
+                                            <span class="player-short">${p.shortName}</span>
+                                            <span class="player-full">${p.displayName}</span>
+                                        </td>
+                                        <td>${min}</td>
+                                        <td>${getStat('FG')}</td>
+                                        <td>${getStat('3PT')}</td>
+                                        <td>${getStat('FT')}</td>
+                                        <td>${getStat('OREB')}</td>
+                                        <td>${getStat('DREB')}</td>
+                                        <td>${getStat('REB')}</td>
+                                        <td>${getStat('AST')}</td>
+                                        <td>${getStat('STL')}</td>
+                                        <td>${getStat('BLK')}</td>
+                                        <td>${getStat('TO')}</td>
+                                        <td>${getStat('PF')}</td>
+                                        <td>${getStat('+/-')}</td>
+                                        <td class="stat-pts">${getStat('PTS')}</td>
+                                    </tr>
+                                `;
             }).join('')}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             `;
         };
 

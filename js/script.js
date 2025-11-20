@@ -304,27 +304,26 @@ class NBASchedule {
         const hasStarted = status.isComplete || status.isLive;
 
         card.innerHTML = `
-            <div class="team-row">
-                <div class="team-info">
-                    <div class="${TEAM_LOGOS[game.home_team.full_name]}"></div>
-                    <span class="team-name">${game.home_team.full_name}</span>
+            <div class="matchup">
+                <div class="team-side">
+                    <div class="${TEAM_LOGOS[game.home_team.full_name]} team-logo-card"></div>
+                    <span class="team-abbr">${game.home_team.abbreviation}</span>
                 </div>
-                <div class="team-score ${status.isComplete && game.home_team_score < game.visitor_team_score ? 'loser' : ''}">
-                    ${hasStarted ? game.home_team_score : ''}
+                <div class="score-center">
+                    <div class="scores">
+                        <span class="score ${status.isComplete && game.home_team_score < game.visitor_team_score ? 'loser' : ''}">${hasStarted ? game.home_team_score : '-'}</span>
+                        <span class="score-divider">-</span>
+                        <span class="score ${status.isComplete && game.visitor_team_score < game.home_team_score ? 'loser' : ''}">${hasStarted ? game.visitor_team_score : '-'}</span>
+                    </div>
+                    <div class="game-status">
+                        ${status.isLive ? '<div class="live-indicator"></div>' : ''}
+                        <span>${status.text}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="team-row">
-                <div class="team-info">
-                    <div class="${TEAM_LOGOS[game.visitor_team.full_name]}"></div>
-                    <span class="team-name">${game.visitor_team.full_name}</span>
+                <div class="team-side">
+                    <div class="${TEAM_LOGOS[game.visitor_team.full_name]} team-logo-card"></div>
+                    <span class="team-abbr">${game.visitor_team.abbreviation}</span>
                 </div>
-                <div class="team-score ${status.isComplete && game.visitor_team_score < game.home_team_score ? 'loser' : ''}">
-                    ${hasStarted ? game.visitor_team_score : ''}
-                </div>
-            </div>
-            <div class="game-status">
-                ${status.isLive ? '<div class="live-indicator"></div>' : ''}
-                <span>${status.text}</span>
             </div>
             ${hasStarted ? '<div class="box-score-btn">Box Score</div>' : ''}
         `;

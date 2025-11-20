@@ -168,40 +168,62 @@ main {
   overflow: hidden;
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-md);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
 }
 
-
-.team-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  padding: 1.125rem 1.25rem;
-  gap: 1rem;
-  position: relative;
-}
-
-.team-row::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 1.25rem;
-  right: 1.25rem;
-  height: 1px;
-  background: var(--color-border);
-}
-
-.team-row:last-of-type::after {
-  display: none;
-}
-
-.team-info {
+.matchup {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
   gap: 1rem;
-  min-width: 0;
+}
+
+.team-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 70px;
+}
+
+.team-logo-card {
+  width: 48px;
+  height: 48px;
+  background-size: 288px 240px;
+}
+
+.team-abbr {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.score-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scores {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.score {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-divider {
+  font-size: 1.5rem;
+  color: var(--color-text-muted);
+  font-weight: 300;
 }
 
 /* Team Logo Styles */
@@ -334,40 +356,18 @@ main {
   background-position: -140px -112px;
 }
 
-.team-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.team-score {
-  font-size: 1.75rem;
-  font-weight: 700;
-  min-width: 3ch;
-  text-align: right;
-  color: var(--color-text);
-  font-variant-numeric: tabular-nums;
-}
-
 .loser {
   opacity: 0.5;
 }
 
 .game-status {
-  text-align: center;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  padding: 1rem 1.25rem;
-  background: rgba(255, 255, 255, 0.02);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.625rem;
-  letter-spacing: 0.025em;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
 }
 
 .live-indicator {
@@ -388,11 +388,41 @@ main {
   font-weight: 600;
   transition: all 0.2s ease;
   cursor: pointer;
+  border-top: 1px solid var(--color-border);
 }
 
 .box-score-btn:hover {
   background: var(--color-accent);
   color: white;
+}
+
+/* Mobile styles for new card design */
+@media (max-width: 768px) {
+  .matchup {
+    padding: 1rem;
+  }
+
+  .team-logo-card {
+    width: 36px;
+    height: 36px;
+    background-size: 216px 180px;
+  }
+
+  .team-abbr {
+    font-size: 0.75rem;
+  }
+
+  .score {
+    font-size: 1.5rem;
+  }
+
+  .score-divider {
+    font-size: 1.25rem;
+  }
+
+  .game-status {
+    font-size: 0.75rem;
+  }
 }
 
 .loading-overlay {

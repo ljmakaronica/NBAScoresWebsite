@@ -684,12 +684,17 @@ main {
 
 .standings-table th {
   padding: 1rem 0.75rem;
-  text-align: left;
+  text-align: center;
   color: var(--color-text-muted);
   font-weight: 600;
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.standings-table th:first-child,
+.standings-table th:nth-child(2) {
+  text-align: left;
 }
 
 .standings-table tbody tr {

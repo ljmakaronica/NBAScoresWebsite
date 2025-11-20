@@ -439,17 +439,20 @@ main {
 /* Mobile styles for new card design */
 @media (max-width: 768px) {
   .game-card {
-    min-height: 140px;
+    min-height: 120px;
   }
 
   .matchup {
     padding: 1rem;
   }
 
+  .team-side {
+    min-width: 60px;
+  }
+
   .team-logo-card {
-    width: 44px;
-    height: 44px;
-    background-size: 264px 220px;
+    transform: scale(1.8);
+    margin: 16px;
   }
 
   .team-abbr {
@@ -466,6 +469,11 @@ main {
 
   .game-status {
     font-size: 0.75rem;
+  }
+
+  .box-score-btn {
+    font-size: 0.75rem;
+    padding: 0.625rem;
   }
 }
 
@@ -1562,8 +1570,11 @@ main {
   }
 
   .stats-table td.player-name {
-    min-width: 90px;
-    max-width: 100px;
+    min-width: 120px;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .stats-table td.player-name .name-full {

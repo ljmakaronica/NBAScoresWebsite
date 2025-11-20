@@ -382,7 +382,13 @@ class NBASchedule {
     renderBoxScore(data, container) {
         const { homeTeam, awayTeam, gameInfo } = data;
 
-        const renderPlayerTable = (players) => {
+        const renderPlayerTable = (playerStatsGroups) => {
+            // ESPN returns an array of stat groups, usually we want the first one (standard stats)
+            if (!playerStatsGroups || playerStatsGroups.length === 0) return '<div class="no-stats">No stats available</div>';
+
+            const statsGroup = playerStatsGroups[0];
+            const { names, athletes } = statsGroup;
+
             return `
                 <table class="stats-table">
                     <thead>
@@ -395,19 +401,23 @@ class NBASchedule {
                         </tr>
                     </thead>
                     <tbody>
-                        ${players.map(p => {
-                // Find stats in the stats array
+                        ${athletes.map(athleteEntry => {
+                const p = athleteEntry.athlete;
+                const stats = athleteEntry.stats;
+
+                // Helper to get stat value by name
                 const getStat = (abbr) => {
-                    const statIndex = p.names.indexOf(abbr);
-                    return statIndex !== -1 ? p.stats[statIndex] : '-';
+                    const statIndex = names.indexOf(abbr);
+                    return statIndex !== -1 ? stats[statIndex] : '-';
                 };
+
                 // Check if player played (has minutes)
                 const min = getStat('MIN');
-                if (!min || min === '0' || min === '--') return ''; // Skip DNP
+                if (!min || min === '0' || min === '--' || athleteEntry.didNotPlay) return '';
 
                 return `
                                 <tr>
-                                    <td class="player-name">${p.athlete.displayName}</td>
+                                    <td class="player-name">${p.displayName}</td>
                                     <td>${min}</td>
                                     <td>${getStat('PTS')}</td>
                                     <td>${getStat('REB')}</td>

@@ -191,9 +191,9 @@ main {
 }
 
 .team-logo-card {
-  width: 80px;
-  height: 80px;
-  background-size: 480px 400px;
+  width: 80px !important;
+  height: 80px !important;
+  background-size: 480px 400px !important;
 }
 
 .team-abbr {

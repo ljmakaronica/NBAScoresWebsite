@@ -309,7 +309,7 @@ class NBASchedule {
                     <div class="${TEAM_LOGOS[game.home_team.full_name]}"></div>
                     <span class="team-name">${game.home_team.full_name}</span>
                 </div>
-                <div class="team-score ${status.isComplete && game.home_team_score > game.visitor_team_score ? 'winner' : ''}">
+                <div class="team-score ${status.isComplete && game.home_team_score < game.visitor_team_score ? 'loser' : ''}">
                     ${showScore ? game.home_team_score : ''}
                 </div>
             </div>
@@ -318,7 +318,7 @@ class NBASchedule {
                     <div class="${TEAM_LOGOS[game.visitor_team.full_name]}"></div>
                     <span class="team-name">${game.visitor_team.full_name}</span>
                 </div>
-                <div class="team-score ${status.isComplete && game.visitor_team_score > game.home_team_score ? 'winner' : ''}">
+                <div class="team-score ${status.isComplete && game.visitor_team_score < game.home_team_score ? 'loser' : ''}">
                     ${showScore ? game.visitor_team_score : ''}
                 </div>
             </div>
@@ -456,6 +456,10 @@ class NBASchedule {
             `;
         };
 
+        const isComplete = gameInfo.status === 'Final' || gameInfo.status === 'Final/OT';
+        const homeScore = parseInt(homeTeam.score) || 0;
+        const awayScore = parseInt(awayTeam.score) || 0;
+
         container.innerHTML = `
             <div class="box-score-header">
                 <!-- Home Team (Left) -->
@@ -464,7 +468,7 @@ class NBASchedule {
                     <div class="team-details">
                         <h2>${homeTeam.info.displayName}</h2>
                     </div>
-                    <div class="score-large">${homeTeam.score || '0'}</div>
+                    <div class="score-large ${isComplete && homeScore < awayScore ? 'loser' : ''}">${homeTeam.score || '0'}</div>
                 </div>
 
                 <!-- Game Info (Center) -->
@@ -475,7 +479,7 @@ class NBASchedule {
 
                 <!-- Away Team (Right) -->
                 <div class="team-header away">
-                    <div class="score-large">${awayTeam.score || '0'}</div>
+                    <div class="score-large ${isComplete && awayScore < homeScore ? 'loser' : ''}">${awayTeam.score || '0'}</div>
                     <div class="team-details">
                         <h2>${awayTeam.info.displayName}</h2>
                     </div>

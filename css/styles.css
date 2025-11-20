@@ -358,9 +358,8 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
-.winner {
-  color: var(--color-win);
-  text-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+.loser {
+  opacity: 0.5;
 }
 
 .game-status {

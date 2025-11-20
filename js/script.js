@@ -300,8 +300,8 @@ class NBASchedule {
 
         const status = this.formatGameStatus(game);
 
-        // Show score if game is complete OR live
-        const showScore = status.isComplete || status.isLive;
+        // Game has started if it's live or complete
+        const hasStarted = status.isComplete || status.isLive;
 
         card.innerHTML = `
             <div class="team-row">
@@ -310,7 +310,7 @@ class NBASchedule {
                     <span class="team-name">${game.home_team.full_name}</span>
                 </div>
                 <div class="team-score ${status.isComplete && game.home_team_score < game.visitor_team_score ? 'loser' : ''}">
-                    ${showScore ? game.home_team_score : ''}
+                    ${hasStarted ? game.home_team_score : ''}
                 </div>
             </div>
             <div class="team-row">
@@ -319,19 +319,21 @@ class NBASchedule {
                     <span class="team-name">${game.visitor_team.full_name}</span>
                 </div>
                 <div class="team-score ${status.isComplete && game.visitor_team_score < game.home_team_score ? 'loser' : ''}">
-                    ${showScore ? game.visitor_team_score : ''}
+                    ${hasStarted ? game.visitor_team_score : ''}
                 </div>
             </div>
             <div class="game-status">
                 ${status.isLive ? '<div class="live-indicator"></div>' : ''}
                 <span>${status.text}</span>
             </div>
-            <div class="box-score-btn">Box Score</div>
+            ${hasStarted ? '<div class="box-score-btn">Box Score</div>' : ''}
         `;
 
-        // Add click event for box score
-        card.onclick = () => this.showBoxScore(game.id);
-        card.style.cursor = 'pointer';
+        // Add click event for box score only if game has started
+        if (hasStarted) {
+            card.onclick = () => this.showBoxScore(game.id);
+            card.style.cursor = 'pointer';
+        }
 
         return card;
     }

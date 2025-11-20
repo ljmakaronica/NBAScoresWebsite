@@ -50,8 +50,10 @@ class NBASchedule {
             if (dayEl && dayEl.dataset.date) {
                 const dayDate = new Date(dayEl.dataset.date);
                 this.selectedDate = dayDate;
+                const dateStr = this.formatDate(this.selectedDate);
+                this.updateURL(dateStr);
                 this.renderCalendar();
-                this.loadGamesForDate(this.formatDate(this.selectedDate));
+                this.loadGamesForDate(dateStr);
             }
         });
 
@@ -59,20 +61,40 @@ class NBASchedule {
     }
 
     initializeCalendar() {
-        const today = new Date();
+        // Check URL for date parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlDate = urlParams.get('date');
+
         let initialDate;
-        if (today < SEASON_START) {
-            initialDate = new Date(SEASON_START);
-        } else if (today > SEASON_END) {
-            initialDate = new Date(SEASON_END);
-        } else {
-            initialDate = new Date(today);
+        if (urlDate) {
+            // Parse date from URL (YYYY-MM-DD format)
+            const parsed = new Date(urlDate + 'T12:00:00');
+            if (!isNaN(parsed.getTime()) && parsed >= SEASON_START && parsed <= SEASON_END) {
+                initialDate = parsed;
+            }
+        }
+
+        if (!initialDate) {
+            const today = new Date();
+            if (today < SEASON_START) {
+                initialDate = new Date(SEASON_START);
+            } else if (today > SEASON_END) {
+                initialDate = new Date(SEASON_END);
+            } else {
+                initialDate = new Date(today);
+            }
         }
         initialDate.setHours(12, 0, 0, 0);
         this.selectedDate = initialDate;
 
         this.renderCalendar();
         this.loadGamesForDate(this.formatDate(this.selectedDate));
+    }
+
+    updateURL(date) {
+        const url = new URL(window.location);
+        url.searchParams.set('date', date);
+        window.history.replaceState({}, '', url);
     }
 
     renderCalendar() {

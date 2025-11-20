@@ -1570,11 +1570,7 @@ main {
   }
 
   .stats-table td.player-name {
-    min-width: 120px;
-    max-width: 140px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    min-width: 110px;
   }
 
   .stats-table td.player-name .name-full {

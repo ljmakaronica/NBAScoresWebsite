@@ -42,6 +42,7 @@ class NBASchedule {
         this.loadingOverlay = document.getElementById('loading-overlay');
         this.weekContainer = document.getElementById('weekContainer');
         this.dateDisplay = document.getElementById('date-display');
+        this.liveUpdateTimeout = null;
 
         // Event delegation for date clicks
         this.weekContainer.addEventListener('click', (e) => {
@@ -98,7 +99,7 @@ class NBASchedule {
         // Scroll to selected date
         if (selectedDayEl) {
             setTimeout(() => {
-                selectedDayEl.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+                selectedDayEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }, 100);
         }
     }
@@ -134,22 +135,29 @@ class NBASchedule {
     }
 
     showLoading(show) {
-        this.loadingOverlay.classList.toggle('visible', show);
+        // Only show loading overlay if we're not doing a background update
+        if (!this.isBackgroundUpdate) {
+            this.loadingOverlay.classList.toggle('visible', show);
+        }
     }
 
     async loadGamesForDate(date) {
         if (this.isLoading) return;
-        
+
         this.showLoading(true);
         this.isLoading = true;
 
+        // Stop any existing live updates when switching dates
+        this.stopLiveUpdates();
+
         try {
             const today = new Date();
-            today.setHours(0,0,0,0);
+            today.setHours(0, 0, 0, 0);
             const selectedDateObj = new Date(date);
-            selectedDateObj.setHours(12,0,0,0);
+            selectedDateObj.setHours(12, 0, 0, 0);
 
             const isPastDate = selectedDateObj < today;
+            const isToday = selectedDateObj.toDateString() === today.toDateString();
             let data;
 
             if (isPastDate) {
@@ -166,6 +174,11 @@ class NBASchedule {
                 const response = await fetch(`/api/scrape-games?date=${date}`);
                 if (!response.ok) throw new Error('Failed to fetch games');
                 data = await response.json();
+
+                // If it's today, start smart polling
+                if (isToday) {
+                    this.scheduleNextUpdate(data.data, date);
+                }
             }
 
             this.displayGames(data.data);
@@ -178,12 +191,92 @@ class NBASchedule {
         } finally {
             this.showLoading(false);
             this.isLoading = false;
+            this.isBackgroundUpdate = false;
+        }
+    }
+
+    scheduleNextUpdate(games, date) {
+        // Clear any existing timeout
+        this.stopLiveUpdates();
+
+        // 1. Check for live games
+        const hasLiveGames = games.some(g => {
+            const status = this.formatGameStatus(g);
+            return status.isLive;
+        });
+
+        if (hasLiveGames) {
+            // If there are live games, poll every 30 seconds
+            console.log('Live games in progress. Scheduling update in 30s.');
+            this.liveUpdateTimeout = setTimeout(() => this.fetchUpdate(date), 30000);
+            return;
+        }
+
+        // 2. Check for upcoming games
+        const upcomingGames = games.filter(g => {
+            const status = this.formatGameStatus(g);
+            return !status.isComplete && !status.isLive;
+        });
+
+        if (upcomingGames.length > 0) {
+            // Find the earliest start time
+            const now = new Date();
+            let nextStartTime = null;
+
+            upcomingGames.forEach(g => {
+                const gameDate = new Date(g.date);
+                if (gameDate > now) {
+                    if (!nextStartTime || gameDate < nextStartTime) {
+                        nextStartTime = gameDate;
+                    }
+                }
+            });
+
+            if (nextStartTime) {
+                // Schedule update for when the next game starts + 1 minute buffer
+                const delay = nextStartTime.getTime() - now.getTime() + 60000;
+                // Cap the delay at 1 hour to be safe (e.g. if game times change)
+                const safeDelay = Math.min(delay, 3600000);
+
+                console.log(`Next game starts at ${nextStartTime.toLocaleTimeString()}. Scheduling update in ${Math.round(safeDelay / 60000)} minutes.`);
+                this.liveUpdateTimeout = setTimeout(() => this.fetchUpdate(date), safeDelay);
+                return;
+            }
+        }
+
+        // 3. If all games are final, do nothing (stop polling)
+        console.log('All games final or no upcoming games today. Stopping updates.');
+    }
+
+    async fetchUpdate(date) {
+        try {
+            this.isBackgroundUpdate = true;
+            const response = await fetch(`/api/scrape-games?date=${date}`);
+            if (response.ok) {
+                const data = await response.json();
+                this.displayGames(data.data);
+                // Reschedule based on new data
+                this.scheduleNextUpdate(data.data, date);
+            }
+        } catch (error) {
+            console.error('Error updating live scores:', error);
+            // Retry in 1 minute on error
+            this.liveUpdateTimeout = setTimeout(() => this.fetchUpdate(date), 60000);
+        } finally {
+            this.isBackgroundUpdate = false;
+        }
+    }
+
+    stopLiveUpdates() {
+        if (this.liveUpdateTimeout) {
+            clearTimeout(this.liveUpdateTimeout);
+            this.liveUpdateTimeout = null;
         }
     }
 
     displayGames(games) {
         this.scoreboard.innerHTML = '';
-        
+
         if (games.length === 0) {
             const noGames = document.createElement('div');
             noGames.className = 'no-games';
@@ -196,9 +289,9 @@ class NBASchedule {
         gamesGrid.className = 'games-grid';
 
         games.sort((a, b) => new Date(a.status) - new Date(b.status))
-             .forEach(game => {
-                 gamesGrid.appendChild(this.createGameCard(game));
-             });
+            .forEach(game => {
+                gamesGrid.appendChild(this.createGameCard(game));
+            });
 
         this.scoreboard.appendChild(gamesGrid);
     }
@@ -206,9 +299,12 @@ class NBASchedule {
     createGameCard(game) {
         const card = document.createElement('div');
         card.className = 'game-card';
-        
+
         const status = this.formatGameStatus(game);
-        
+
+        // Show score if game is complete OR live
+        const showScore = status.isComplete || status.isLive;
+
         card.innerHTML = `
             <div class="team-row">
                 <div class="team-info">
@@ -216,7 +312,7 @@ class NBASchedule {
                     <span class="team-name">${game.home_team.full_name}</span>
                 </div>
                 <div class="team-score ${status.isComplete && game.home_team_score > game.visitor_team_score ? 'winner' : ''}">
-                    ${status.isComplete ? game.home_team_score : ''}
+                    ${showScore ? game.home_team_score : ''}
                 </div>
             </div>
             <div class="team-row">
@@ -225,7 +321,7 @@ class NBASchedule {
                     <span class="team-name">${game.visitor_team.full_name}</span>
                 </div>
                 <div class="team-score ${status.isComplete && game.visitor_team_score > game.home_team_score ? 'winner' : ''}">
-                    ${status.isComplete ? game.visitor_team_score : ''}
+                    ${showScore ? game.visitor_team_score : ''}
                 </div>
             </div>
             <div class="game-status">
@@ -233,7 +329,7 @@ class NBASchedule {
                 <span>${status.text}</span>
             </div>
         `;
-        
+
         return card;
     }
 
@@ -244,7 +340,7 @@ class NBASchedule {
                 isComplete: true,
                 isLive: false
             };
-        } else if (game.status.includes('Qtr') || game.status.includes('Half')) {
+        } else if (game.status.includes('Qtr') || game.status.includes('Half') || game.status.includes('OT')) {
             return {
                 text: game.status,
                 isComplete: false,
@@ -286,8 +382,8 @@ class NBASchedule {
         const dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
         const fullDateStr = this.selectedDate.toLocaleDateString('en-US', dateOptions);
         const today = new Date();
-        today.setHours(12,0,0,0);
-        
+        today.setHours(12, 0, 0, 0);
+
         let displayStr = fullDateStr;
         if (this.selectedDate.toDateString() === today.toDateString()) {
             displayStr += ' (Today)';

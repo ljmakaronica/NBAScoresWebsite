@@ -540,10 +540,10 @@ class NBASchedule {
             game.status.includes('Qtr') ||
             game.status.includes('Half') ||
             game.status.includes('OT') ||
-            game.status.includes('1st') ||
-            game.status.includes('2nd') ||
-            game.status.includes('3rd') ||
-            game.status.includes('4th')
+            game.status.match(/\b1st\b/) ||
+            game.status.match(/\b2nd\b/) ||
+            game.status.match(/\b3rd\b/) ||
+            game.status.match(/\b4th\b/)
         ) {
             return {
                 text: game.status,

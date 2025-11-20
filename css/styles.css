@@ -191,13 +191,13 @@ main {
 }
 
 .team-logo-card {
-  width: 56px;
-  height: 56px;
-  background-size: 336px 280px;
+  width: 64px;
+  height: 64px;
+  background-size: 384px 320px;
 }
 
 .team-abbr {
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--color-text-muted);
 }

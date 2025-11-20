@@ -432,18 +432,27 @@ class NBASchedule {
 
         container.innerHTML = `
             <div class="box-score-header">
-                <div class="team-header">
+                <!-- Home Team (Left) -->
+                <div class="team-header home">
                     <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
-                    <h2>${homeTeam.info.displayName}</h2>
-                    <div class="score-large">${homeTeam.info.score || '0'}</div>
+                    <div class="team-details">
+                        <h2>${homeTeam.info.displayName}</h2>
+                    </div>
+                    <div class="score-large">${homeTeam.score || '0'}</div>
                 </div>
+
+                <!-- Game Info (Center) -->
                 <div class="game-info-large">
                     <div class="game-status-large">${gameInfo.status}</div>
                     <div class="game-clock-large">${gameInfo.clock || ''}</div>
                 </div>
-                <div class="team-header">
-                    <div class="score-large">${awayTeam.info.score || '0'}</div>
-                    <h2>${awayTeam.info.displayName}</h2>
+
+                <!-- Away Team (Right) -->
+                <div class="team-header away">
+                    <div class="score-large">${awayTeam.score || '0'}</div>
+                    <div class="team-details">
+                        <h2>${awayTeam.info.displayName}</h2>
+                    </div>
                     <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
                 </div>
             </div>

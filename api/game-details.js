@@ -49,6 +49,9 @@ export default async function handler(req, res) {
         const homeTeamId = header.competitions[0].competitors.find(c => c.homeAway === 'home').id;
         const awayTeamId = header.competitions[0].competitors.find(c => c.homeAway === 'away').id;
 
+        const homeScore = header.competitions[0].competitors.find(c => c.homeAway === 'home').score;
+        const awayScore = header.competitions[0].competitors.find(c => c.homeAway === 'away').score;
+
         const processedData = {
             gameInfo: {
                 status: header.competitions[0].status.type.detail,
@@ -57,11 +60,13 @@ export default async function handler(req, res) {
             },
             homeTeam: {
                 info: boxscore.teams.find(t => t.team.id === homeTeamId).team,
+                score: homeScore,
                 stats: getTeamStats(homeTeamId),
                 players: getPlayerStats(homeTeamId)
             },
             awayTeam: {
                 info: boxscore.teams.find(t => t.team.id === awayTeamId).team,
+                score: awayScore,
                 stats: getTeamStats(awayTeamId),
                 players: getPlayerStats(awayTeamId)
             }

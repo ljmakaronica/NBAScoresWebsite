@@ -329,10 +329,10 @@ class NBASchedule {
             ${hasStarted ? '<div class="box-score-btn">Box Score</div>' : ''}
         `;
 
-        // Add click event for box score only if game has started
+        // Add click event to box score button
         if (hasStarted) {
-            card.onclick = () => this.showBoxScore(game.id);
-            card.style.cursor = 'pointer';
+            const btn = card.querySelector('.box-score-btn');
+            btn.onclick = () => this.showBoxScore(game.id);
         }
 
         return card;

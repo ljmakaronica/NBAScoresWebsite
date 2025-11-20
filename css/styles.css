@@ -388,15 +388,17 @@ main {
 .box-score-btn {
   text-align: center;
   padding: 0.75rem;
-  background: var(--color-accent);
-  color: white;
+  background: var(--color-row-bg);
+  color: var(--color-text-muted);
   font-size: 0.8125rem;
   font-weight: 600;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-.game-card:hover .box-score-btn {
-  background: var(--color-accent-hover);
+.box-score-btn:hover {
+  background: var(--color-accent);
+  color: white;
 }
 
 .loading-overlay {

@@ -171,7 +171,7 @@ class NBASchedule {
                     localStorage.setItem('games_' + date, JSON.stringify(data));
                 }
             } else {
-                const response = await fetch(`/api/scrape-games?date=${date}`);
+                const response = await fetch(`/api/scrape-games?date=${date}&t=${Date.now()}`);
                 if (!response.ok) throw new Error('Failed to fetch games');
                 data = await response.json();
 
@@ -251,7 +251,8 @@ class NBASchedule {
     async fetchUpdate(date) {
         try {
             this.isBackgroundUpdate = true;
-            const response = await fetch(`/api/scrape-games?date=${date}`);
+            // Add timestamp to prevent browser caching
+            const response = await fetch(`/api/scrape-games?date=${date}&t=${Date.now()}`);
             if (response.ok) {
                 const data = await response.json();
                 this.displayGames(data.data);

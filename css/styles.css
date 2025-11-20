@@ -173,12 +173,6 @@ main {
   flex-direction: column;
 }
 
-.game-card:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--color-accent);
-  background: var(--color-card-hover);
-}
 
 .team-row {
   display: grid;

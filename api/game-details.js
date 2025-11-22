@@ -1,19 +1,9 @@
-let temporaryCache = new Map();
-const TEMP_CACHE_DURATION = 1 * 60 * 1000; // 1 minute cache
-
 export default async function handler(req, res) {
     try {
         const { gameId } = req.query;
 
         if (!gameId) {
             return res.status(400).json({ error: 'Game ID is required' });
-        }
-
-        const cacheKey = `espn_game_detail_${gameId}`;
-        const cachedData = temporaryCache.get(cacheKey);
-
-        if (cachedData && (Date.now() - cachedData.timestamp) < TEMP_CACHE_DURATION) {
-            return res.status(200).json(cachedData.data);
         }
 
         const url = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${gameId}`;
@@ -71,18 +61,6 @@ export default async function handler(req, res) {
                 players: getPlayerStats(awayTeamId)
             }
         };
-
-        temporaryCache.set(cacheKey, {
-            data: processedData,
-            timestamp: Date.now()
-        });
-
-        // Cleanup old cache
-        for (const [key, value] of temporaryCache.entries()) {
-            if (Date.now() - value.timestamp > TEMP_CACHE_DURATION) {
-                temporaryCache.delete(key);
-            }
-        }
 
         res.setHeader('Cache-Control', 'no-store');
         res.status(200).json(processedData);

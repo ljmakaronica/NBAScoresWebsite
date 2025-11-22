@@ -1,19 +1,9 @@
-let temporaryCache = new Map();
-const TEMP_CACHE_DURATION = 1 * 60 * 1000; // 1 minute cache for live scores
-
 export default async function handler(req, res) {
     try {
         const { date } = req.query;
 
         if (!date) {
             return res.status(400).json({ error: 'Date parameter is required (format: YYYY-MM-DD)' });
-        }
-
-        const cacheKey = `espn_games_${date}`;
-        const cachedData = temporaryCache.get(cacheKey);
-
-        if (cachedData && (Date.now() - cachedData.timestamp) < TEMP_CACHE_DURATION) {
-            return res.status(200).json(cachedData.data);
         }
 
         // Convert YYYY-MM-DD to YYYYMMDD for ESPN API
@@ -84,18 +74,6 @@ export default async function handler(req, res) {
                 source: 'ESPN'
             }
         };
-
-        temporaryCache.set(cacheKey, {
-            data: responseData,
-            timestamp: Date.now()
-        });
-
-        // Cleanup old cache entries
-        for (const [key, value] of temporaryCache.entries()) {
-            if (Date.now() - value.timestamp > TEMP_CACHE_DURATION) {
-                temporaryCache.delete(key);
-            }
-        }
 
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.setHeader('CDN-Cache-Control', 'no-store');

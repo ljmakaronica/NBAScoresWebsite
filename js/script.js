@@ -420,6 +420,7 @@ class NBASchedule {
                         <thead>
                             <tr>
                                 <th class="sticky-col">Player</th>
+                                <th>PTS</th>
                                 <th>MIN</th>
                                 <th>FG</th>
                                 <th>3PT</th>
@@ -433,7 +434,6 @@ class NBASchedule {
                                 <th>TO</th>
                                 <th>PF</th>
                                 <th>+/-</th>
-                                <th>PTS</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -457,6 +457,7 @@ class NBASchedule {
                                             <span class="name-full">${p.displayName}</span>
                                             <span class="name-short">${p.shortName}</span>
                                         </td>
+                                        <td class="stat-pts">${getStat('PTS')}</td>
                                         <td>${min}</td>
                                         <td>${getStat('FG')}</td>
                                         <td>${getStat('3PT')}</td>
@@ -470,7 +471,6 @@ class NBASchedule {
                                         <td>${getStat('TO')}</td>
                                         <td>${getStat('PF')}</td>
                                         <td>${getStat('+/-')}</td>
-                                        <td class="stat-pts">${getStat('PTS')}</td>
                                     </tr>
                                 `;
             }).join('')}

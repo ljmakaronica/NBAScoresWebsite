@@ -50,6 +50,7 @@ export default async function handler(req, res) {
                     id: event.id,
                     date: gameDate,
                     status: status,
+                    period_state: competition.status.type.state, // 'pre', 'in', 'post'
                     home_team: {
                         id: homeTeam.id,
                         full_name: homeTeam.team.displayName,

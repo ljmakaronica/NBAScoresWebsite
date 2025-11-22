@@ -552,6 +552,37 @@ class NBASchedule {
     }
 
     formatGameStatus(game) {
+        // Use structured state from API if available
+        if (game.period_state) {
+            if (game.period_state === 'post') {
+                return {
+                    text: 'Final',
+                    isComplete: true,
+                    isLive: false
+                };
+            } else if (game.period_state === 'in') {
+                return {
+                    text: game.status, // "3rd Qtr", etc.
+                    isComplete: false,
+                    isLive: true
+                };
+            } else {
+                // 'pre' or scheduled
+                const gameTime = new Date(game.date);
+                if (!isNaN(gameTime.getTime())) {
+                    return {
+                        text: gameTime.toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit'
+                        }),
+                        isComplete: false,
+                        isLive: false
+                    };
+                }
+            }
+        }
+
+        // Fallback for legacy data or if period_state is missing
         if (game.status === 'Final') {
             return {
                 text: 'Final',
@@ -563,7 +594,10 @@ class NBASchedule {
             game.status.includes('Half') ||
             game.status.includes('OT') ||
             game.status.includes('End of') ||
-            game.status.match(/^[1-4](?:st|nd|rd|th)\s/)
+            game.status.includes('1st') ||
+            game.status.includes('2nd') ||
+            game.status.includes('3rd') ||
+            game.status.includes('4th')
         ) {
             return {
                 text: game.status,

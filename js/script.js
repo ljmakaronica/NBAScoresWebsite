@@ -180,15 +180,10 @@ class NBASchedule {
             let data;
 
             if (isPastDate) {
-                const cachedData = localStorage.getItem('games_' + date);
-                if (cachedData) {
-                    data = JSON.parse(cachedData);
-                } else {
-                    const response = await fetch(`/api/scrape-games?date=${date}`);
-                    if (!response.ok) throw new Error('Failed to fetch games');
-                    data = await response.json();
-                    localStorage.setItem('games_' + date, JSON.stringify(data));
-                }
+                // Always fetch fresh data, even for past dates, to avoid stale cache issues
+                const response = await fetch(`/api/scrape-games?date=${date}&t=${Date.now()}`);
+                if (!response.ok) throw new Error('Failed to fetch games');
+                data = await response.json();
             } else {
                 const response = await fetch(`/api/scrape-games?date=${date}&t=${Date.now()}`);
                 if (!response.ok) throw new Error('Failed to fetch games');

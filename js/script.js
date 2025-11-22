@@ -255,6 +255,12 @@ class NBASchedule {
                 console.log(`Next game starts at ${nextStartTime.toLocaleTimeString()}. Scheduling update in ${Math.round(safeDelay / 60000)} minutes.`);
                 this.liveUpdateTimeout = setTimeout(() => this.fetchUpdate(date), safeDelay);
                 return;
+            } else {
+                // There are upcoming games, but their start time is in the past (delayed start)
+                // Poll every minute to check for status change
+                console.log('Upcoming games found but start time passed. Polling every minute.');
+                this.liveUpdateTimeout = setTimeout(() => this.fetchUpdate(date), 60000);
+                return;
             }
         }
 

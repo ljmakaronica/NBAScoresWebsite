@@ -530,12 +530,12 @@ main {
   }
 }
 
-/* Desktop/Tablet: Center the displayed dates */
-@media (min-width: 768px) {
+/* Desktop/Tablet: Center the displayed dates - REMOVED to fix Chrome scrolling bug */
+/* @media (min-width: 768px) {
   .dates-container {
     justify-content: center;
   }
-}
+} */
 
 /* Mobile: no arrows, lazy load dates, allow horizontal scroll */
 @media (max-width: 768px) {

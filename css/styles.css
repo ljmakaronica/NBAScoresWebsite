@@ -924,17 +924,36 @@ main {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.team-info .team-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.team-info .team-link::after {
+  content: '→';
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.team-info:hover {
+  transform: translateX(4px);
 }
 
 .team-info:hover .team-name {
   color: var(--color-accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
-.team-info .team-link:hover {
-  transform: scale(1.02);
-  transition: all 0.2s ease;
+.team-info:hover .team-link::after {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* Playoff indicators */
@@ -1540,7 +1559,20 @@ main {
   box-shadow: none !important;
   outline: none !important;
   text-decoration: none !important;
-  transition: all 0.2s ease;
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.team-details h2 a::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .team-details h2 a:hover {
@@ -1549,9 +1581,12 @@ main {
   border: none !important;
   box-shadow: none !important;
   color: var(--color-accent) !important;
-  text-decoration: underline !important;
-  text-underline-offset: 3px !important;
-  transform: scale(1.02);
+  text-decoration: none !important;
+  transform: translateY(-2px);
+}
+
+.team-details h2 a:hover::before {
+  width: 100%;
 }
 
 .team-details,

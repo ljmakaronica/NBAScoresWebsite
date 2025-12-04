@@ -1924,75 +1924,102 @@ main {
   background: var(--color-card-bg);
   backdrop-filter: blur(10px);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
-  margin-bottom: 1rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
 }
 
 .team-header-content {
   display: flex;
-  gap: 1.5rem;
+  justify-content: space-between;
   align-items: center;
+  gap: 2rem;
 }
 
-.team-logo-section {
-  flex-shrink: 0;
+.team-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.team-logo-large {
-  width: 80px;
-  height: 80px;
+.team-logo-compact {
+  width: 50px;
+  height: 50px;
   object-fit: contain;
 }
 
-.team-info-section {
-  flex: 1;
+.team-info-compact {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
-.team-full-name {
-  font-size: 1.75rem;
+.team-name-compact {
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
 }
 
-.team-standing {
-  font-size: 0.9rem;
+.team-standing-compact {
+  font-size: 0.8rem;
   color: var(--color-text-muted);
-  margin-bottom: 0.25rem;
 }
 
-.team-record-container {
+.team-header-right {
   display: flex;
-  gap: 0.5rem;
+  gap: 2rem;
   align-items: center;
 }
 
-.record-item {
+.records-inline {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.record-inline {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.125rem;
+  gap: 0.25rem;
 }
 
-.record-value {
-  font-size: 1.25rem;
+.record-value-inline {
+  font-size: 1.125rem;
   font-weight: 700;
 }
 
-.record-label {
-  font-size: 0.75rem;
+.record-label-inline {
+  font-size: 0.7rem;
   color: var(--color-text-muted);
   text-transform: uppercase;
 }
 
-.record-divider {
-  width: 1px;
-  height: 30px;
-  background: var(--color-border);
+.next-game-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 0.5rem;
+  border-left: 3px solid var(--color-accent);
+}
+
+.next-game-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+}
+
+.next-game-opponent {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.next-game-date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
 }
 
 .team-content {
@@ -2037,55 +2064,118 @@ main {
   color: var(--color-text);
 }
 
-/* Stats Categories */
-.stats-categories {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+/* Stats Categories - Ultra Compact */
+.stats-categories-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.stat-category {
-  background: var(--color-row-bg);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  border: 1px solid var(--color-border);
-}
-
-.category-title {
-  font-size: 1rem;
+.category-title-compact {
+  font-size: 0.75rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   color: var(--color-accent);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.stats-table-compact {
-  width: 100%;
-  border-collapse: collapse;
+.stats-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
-.stats-table-compact tr {
-  border-bottom: 1px solid var(--color-border);
+.stat-item-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  background: var(--color-row-bg);
+  border-radius: 0.25rem;
 }
 
-.stats-table-compact tr:last-child {
-  border-bottom: none;
-}
-
-.stats-table-compact td {
-  padding: 0.5rem 0;
-  font-size: 0.875rem;
-}
-
-.stats-table-compact .stat-name {
+.stat-label-compact {
+  font-size: 0.7rem;
   color: var(--color-text-muted);
 }
 
-.stats-table-compact .stat-val {
-  text-align: right;
+.stat-value-compact {
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-text);
+}
+
+/* Roster Grid - Compact */
+.roster-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.roster-player-card {
+  background: var(--color-row-bg);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: background 0.2s ease;
+}
+
+.roster-player-card:hover {
+  background: rgba(40, 45, 65, 0.8);
+}
+
+.roster-player-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.roster-jersey {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  min-width: 30px;
+}
+
+.roster-player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.roster-player-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.roster-player-position {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.roster-player-stats {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.05);
+}
+
+.roster-stat {
+  font-size: 0.7rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.roster-stat-label {
+  color: var(--color-text-muted);
+  font-weight: 400;
 }
 
 /* Game Log Compact */
@@ -2211,28 +2301,46 @@ main {
   }
 
   .team-header-content {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
   }
 
-  .team-logo-large {
-    width: 60px;
-    height: 60px;
+  .team-header-right {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 
-  .team-full-name {
-    font-size: 1.5rem;
+  .records-inline {
+    width: 100%;
+    justify-content: space-around;
   }
 
-  .team-standing {
-    font-size: 0.8rem;
+  .next-game-compact {
+    width: 100%;
   }
 
-  .record-value {
+  .team-logo-compact {
+    width: 40px;
+    height: 40px;
+  }
+
+  .team-name-compact {
+    font-size: 1.25rem;
+  }
+
+  .team-standing-compact {
+    font-size: 0.7rem;
+  }
+
+  .record-value-inline {
     font-size: 1rem;
   }
 
-  .record-label {
-    font-size: 0.7rem;
+  .record-label-inline {
+    font-size: 0.65rem;
   }
 
   .stats-column,
@@ -2247,5 +2355,13 @@ main {
 
   .gamelog-column {
     max-height: 400px;
+  }
+
+  .roster-grid-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .roster-player-card {
+    padding: 0.5rem 0.625rem;
   }
 }

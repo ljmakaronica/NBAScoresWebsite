@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         }
 
         // Fetch all team data in parallel
-        const [teamInfoResponse, scheduleResponse, statsResponse] = await Promise.all([
+        const [teamInfoResponse, scheduleResponse, statsResponse, rosterResponse] = await Promise.all([
             fetch(`http://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${teamId}`, {
                 headers: {
                     'Accept': 'application/json',
@@ -25,17 +25,24 @@ export default async function handler(req, res) {
                     'Accept': 'application/json',
                     'User-Agent': 'Mozilla/5.0'
                 }
+            }),
+            fetch(`http://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${teamId}/roster`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'User-Agent': 'Mozilla/5.0'
+                }
             })
         ]);
 
-        if (!teamInfoResponse.ok || !scheduleResponse.ok || !statsResponse.ok) {
+        if (!teamInfoResponse.ok || !scheduleResponse.ok || !statsResponse.ok || !rosterResponse.ok) {
             throw new Error('ESPN API responded with an error');
         }
 
-        const [teamInfo, schedule, stats] = await Promise.all([
+        const [teamInfo, schedule, stats, roster] = await Promise.all([
             teamInfoResponse.json(),
             scheduleResponse.json(),
-            statsResponse.json()
+            statsResponse.json(),
+            rosterResponse.json()
         ]);
 
         // Process and combine the data
@@ -66,7 +73,8 @@ export default async function handler(req, res) {
             schedule: {
                 events: schedule.events || [],
                 season: schedule.season
-            }
+            },
+            roster: roster.athletes || []
         };
 
         res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');

@@ -924,36 +924,35 @@ main {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .team-info .team-link {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.team-info .team-link::after {
-  content: '→';
-  opacity: 0;
-  transform: translateX(-10px);
+  display: inline-block;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--color-accent);
-  font-weight: 600;
 }
 
-.team-info:hover {
-  transform: translateX(4px);
+.team-info .team-link::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.team-info:hover .team-link {
+  transform: translateY(-2px);
 }
 
 .team-info:hover .team-name {
   color: var(--color-accent);
 }
 
-.team-info:hover .team-link::after {
-  opacity: 1;
-  transform: translateX(0);
+.team-info:hover .team-link::before {
+  width: 100%;
 }
 
 /* Playoff indicators */

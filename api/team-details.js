@@ -62,7 +62,7 @@ export default async function handler(req, res) {
                 shortName: teamInfo.team.nextEvent[0].shortName,
                 date: teamInfo.team.nextEvent[0].date
             } : null,
-            statistics: stats.splits?.categories || [],
+            statistics: stats.results?.stats?.categories || [],
             schedule: {
                 events: schedule.events || [],
                 season: schedule.season

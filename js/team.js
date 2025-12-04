@@ -210,6 +210,9 @@ class TeamPage {
             const result = isCompleted ? this.getGameResult(homeTeam, awayTeam) : 'vs';
             const resultClass = isCompleted ? (result === 'W' ? 'win' : 'loss') : 'upcoming';
 
+            const homeScore = homeTeam.score?.displayValue || homeTeam.score || '0';
+            const awayScore = awayTeam.score?.displayValue || awayTeam.score || '0';
+
             gameLogHTML += `
                 <div class="game-log-item ${isCompleted ? 'completed' : 'upcoming'}">
                     <div class="game-date">${this.formatGameDate(event.date)}</div>
@@ -220,7 +223,7 @@ class TeamPage {
                         ${isCompleted ? `
                             <div class="game-score">
                                 <span class="result ${resultClass}">${result}</span>
-                                <span class="score">${awayTeam.score} - ${homeTeam.score}</span>
+                                <span class="score">${awayScore} - ${homeScore}</span>
                             </div>
                         ` : `
                             <div class="game-time">${this.formatGameTime(event.date)}</div>
@@ -236,11 +239,13 @@ class TeamPage {
 
     getGameResult(homeTeam, awayTeam) {
         const teamName = this.teamData.team.name;
+        const homeScore = parseFloat(homeTeam.score?.value || homeTeam.score?.displayValue || homeTeam.score || 0);
+        const awayScore = parseFloat(awayTeam.score?.value || awayTeam.score?.displayValue || awayTeam.score || 0);
 
         if (homeTeam.team.displayName === teamName) {
-            return parseInt(homeTeam.score) > parseInt(awayTeam.score) ? 'W' : 'L';
+            return homeScore > awayScore ? 'W' : 'L';
         } else {
-            return parseInt(awayTeam.score) > parseInt(homeTeam.score) ? 'W' : 'L';
+            return awayScore > homeScore ? 'W' : 'L';
         }
     }
 

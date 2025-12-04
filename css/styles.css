@@ -928,10 +928,13 @@ main {
 
 .team-info:hover .team-name {
   color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .team-info .team-link:hover {
-  text-decoration: none;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
 }
 
 /* Playoff indicators */
@@ -1439,9 +1442,8 @@ main {
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
+  background-color: rgba(0, 0, 0, 0.9);
   overflow-y: auto;
-  backdrop-filter: blur(4px);
 }
 
 .modal-content {
@@ -1524,7 +1526,6 @@ main {
 .team-details h2 a,
 .team-details h2 a:link,
 .team-details h2 a:visited,
-.team-details h2 a:hover,
 .team-details h2 a:active,
 .team-details h2 a:focus {
   background: none !important;
@@ -1536,6 +1537,18 @@ main {
   box-shadow: none !important;
   outline: none !important;
   text-decoration: none !important;
+  transition: all 0.2s ease;
+}
+
+.team-details h2 a:hover {
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--color-accent) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px !important;
+  transform: scale(1.02);
 }
 
 .team-details,

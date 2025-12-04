@@ -2042,7 +2042,6 @@ main {
   display: grid;
   grid-template-columns: 400px 1fr;
   gap: 1rem;
-  align-items: start;
 }
 
 .stats-column {
@@ -2061,10 +2060,11 @@ main {
   padding: 1.5rem;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
-  max-height: 600px;
-  overflow-y: auto;
-  position: sticky;
-  top: 1rem;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .section-title {
@@ -2200,6 +2200,11 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
+  /* Space for scrollbar */
 }
 
 .game-log-item {
@@ -2492,7 +2497,6 @@ main {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 1.5rem;
-  align-items: start;
 }
 
 .player-bio-section,
@@ -2503,6 +2507,9 @@ main {
   padding: 1.5rem;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .player-bio-grid {

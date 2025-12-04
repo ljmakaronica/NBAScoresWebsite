@@ -1489,11 +1489,14 @@ main {
   gap: 15px;
   flex: 1;
   background: none !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
   border: none !important;
   border-radius: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
   box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .box-score-header .team-header.home {

@@ -147,6 +147,21 @@ class TeamPage {
                 </div>
             </div>
         `;
+
+        // Add click listeners to game log items
+        this.setupGameLogListeners();
+    }
+
+    setupGameLogListeners() {
+        const gameLogItems = document.querySelectorAll('.game-log-item[data-game-id]');
+        gameLogItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const gameId = item.getAttribute('data-game-id');
+                if (gameId) {
+                    this.showBoxScore(gameId);
+                }
+            });
+        });
     }
 
     renderStatistics() {
@@ -224,8 +239,11 @@ class TeamPage {
             const opponent = isHome ? awayTeam.team.displayName : homeTeam.team.displayName;
             const vsAt = isHome ? 'vs' : '@';
 
+            // Extract ESPN game ID from the event ID
+            const gameId = event.id;
+
             gameLogHTML += `
-                <div class="game-log-item ${isCompleted ? `completed ${resultClass}` : 'upcoming'}">
+                <div class="game-log-item ${isCompleted ? `completed ${resultClass}` : 'upcoming'}" data-game-id="${gameId}" style="cursor: pointer;">
                     <div class="game-left">
                         <div class="game-date-compact">${this.formatGameDate(event.date)}</div>
                         <div class="game-opponent-compact">${vsAt} ${opponent}</div>
@@ -273,6 +291,222 @@ class TeamPage {
     formatGameTime(dateStr) {
         const date = new Date(dateStr);
         return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+
+    async showBoxScore(gameId) {
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('box-score-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'box-score-modal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <div id="modal-body">Loading...</div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Close button logic
+            modal.querySelector('.close-modal').onclick = () => {
+                modal.style.display = 'none';
+            };
+
+            // Click outside to close
+            window.onclick = (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        }
+
+        modal.style.display = 'block';
+        const modalBody = document.getElementById('modal-body');
+
+        // Skeleton Loader HTML
+        modalBody.innerHTML = `
+            <div class="box-score-skeleton">
+                <div class="skeleton-header">
+                    <div class="skeleton-team">
+                        <div class="skeleton-logo"></div>
+                        <div class="skeleton-name"></div>
+                        <div class="skeleton-score"></div>
+                    </div>
+                    <div class="skeleton-info">
+                        <div class="skeleton-status"></div>
+                        <div class="skeleton-clock"></div>
+                    </div>
+                    <div class="skeleton-team">
+                        <div class="skeleton-score"></div>
+                        <div class="skeleton-name"></div>
+                        <div class="skeleton-logo"></div>
+                    </div>
+                </div>
+                <div class="skeleton-tabs">
+                    <div class="skeleton-tab"></div>
+                    <div class="skeleton-tab"></div>
+                </div>
+                <div class="skeleton-table">
+                    <div class="skeleton-row header"></div>
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row"></div>
+                </div>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/api/game-details?gameId=${gameId}&t=${Date.now()}`);
+            if (!response.ok) throw new Error('Failed to fetch game details');
+            const data = await response.json();
+
+            this.renderBoxScore(data, modalBody);
+        } catch (error) {
+            console.error('Error loading box score:', error);
+            modalBody.innerHTML = '<div class="error-message">Failed to load box score.</div>';
+        }
+    }
+
+    renderBoxScore(data, container) {
+        const { homeTeam, awayTeam, gameInfo } = data;
+
+        const renderPlayerTable = (playerStatsGroups) => {
+            if (!playerStatsGroups || playerStatsGroups.length === 0) return '<div class="no-stats">No stats available</div>';
+
+            const statsGroup = playerStatsGroups[0];
+            const { names, athletes } = statsGroup;
+
+            return `
+                <div class="stats-table-wrapper">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th class="sticky-col">Player</th>
+                                <th>PTS</th>
+                                <th>MIN</th>
+                                <th>FG</th>
+                                <th>3PT</th>
+                                <th>FT</th>
+                                <th>OREB</th>
+                                <th>DREB</th>
+                                <th>REB</th>
+                                <th>AST</th>
+                                <th>STL</th>
+                                <th>BLK</th>
+                                <th>TO</th>
+                                <th>PF</th>
+                                <th>+/-</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${athletes.map(athleteEntry => {
+                const p = athleteEntry.athlete;
+                const stats = athleteEntry.stats;
+
+                const getStat = (abbr) => {
+                    const statIndex = names.indexOf(abbr);
+                    return statIndex !== -1 ? stats[statIndex] : '-';
+                };
+
+                const min = getStat('MIN');
+                if (!min || min === '0' || min === '--' || athleteEntry.didNotPlay) return '';
+
+                return `
+                                    <tr>
+                                        <td class="player-name sticky-col">
+                                            <span class="name-full">${p.displayName}</span>
+                                            <span class="name-short">${p.shortName}</span>
+                                        </td>
+                                        <td class="stat-pts">${getStat('PTS')}</td>
+                                        <td>${min}</td>
+                                        <td>${getStat('FG')}</td>
+                                        <td>${getStat('3PT')}</td>
+                                        <td>${getStat('FT')}</td>
+                                        <td>${getStat('OREB')}</td>
+                                        <td>${getStat('DREB')}</td>
+                                        <td>${getStat('REB')}</td>
+                                        <td>${getStat('AST')}</td>
+                                        <td>${getStat('STL')}</td>
+                                        <td>${getStat('BLK')}</td>
+                                        <td>${getStat('TO')}</td>
+                                        <td>${getStat('PF')}</td>
+                                        <td>${getStat('+/-')}</td>
+                                    </tr>
+                                `;
+            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        };
+
+        const isComplete = gameInfo.status === 'Final' || gameInfo.status === 'Final/OT';
+        const homeScore = parseInt(homeTeam.score) || 0;
+        const awayScore = parseInt(awayTeam.score) || 0;
+
+        container.innerHTML = `
+            <div class="box-score-header">
+                <div class="team-header home">
+                    <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
+                    <div class="team-details">
+                        <h2><a href="team.html?id=${TEAM_ID_MAP[homeTeam.info.displayName]}" class="team-link">${homeTeam.info.displayName}</a></h2>
+                    </div>
+                    <div class="score-large ${isComplete && homeScore < awayScore ? 'loser' : ''}">${homeTeam.score || '0'}</div>
+                </div>
+
+                <div class="game-info-large">
+                    <div class="game-status-large">${gameInfo.status}</div>
+                    <div class="game-clock-large">${gameInfo.clock || ''}</div>
+                    ${gameInfo.broadcasts && gameInfo.broadcasts.length > 0 ? `<div class="broadcast-info-large">${gameInfo.broadcasts.join(', ')}</div>` : ''}
+                </div>
+
+                <div class="team-header away">
+                    <div class="score-large ${isComplete && awayScore < homeScore ? 'loser' : ''}">${awayTeam.score || '0'}</div>
+                    <div class="team-details">
+                        <h2><a href="team.html?id=${TEAM_ID_MAP[awayTeam.info.displayName]}" class="team-link">${awayTeam.info.displayName}</a></h2>
+                    </div>
+                    <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
+                </div>
+            </div>
+
+            <div class="box-score-tabs">
+                <button class="tab-btn active" data-tab="home">${homeTeam.info.displayName}</button>
+                <button class="tab-btn" data-tab="away">${awayTeam.info.displayName}</button>
+            </div>
+
+            <div class="stats-container">
+                <div id="stats-home" class="team-stats-view active">
+                    ${renderPlayerTable(homeTeam.players)}
+                </div>
+                <div id="stats-away" class="team-stats-view" style="display: none;">
+                    ${renderPlayerTable(awayTeam.players)}
+                </div>
+            </div>
+        `;
+
+        // Add Tab Event Listeners
+        const tabs = container.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const targetTab = tab.getAttribute('data-tab');
+                container.querySelectorAll('.team-stats-view').forEach(view => {
+                    view.style.display = 'none';
+                    view.classList.remove('active');
+                });
+
+                const targetView = container.querySelector(`#stats-${targetTab}`);
+                if (targetView) {
+                    targetView.style.display = 'block';
+                    targetView.classList.add('active');
+                }
+            });
+        });
     }
 }
 

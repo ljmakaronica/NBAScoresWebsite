@@ -51,9 +51,9 @@ export default async function handler(req, res) {
                     const competition = header.competitions[0];
                     let broadcasts = [];
                     if (competition.broadcasts) {
-                        broadcasts = competition.broadcasts.flatMap(b => b.names);
+                        broadcasts = competition.broadcasts.map(b => b.media?.shortName).filter(Boolean);
                     } else if (competition.geoBroadcasts) {
-                        broadcasts = competition.geoBroadcasts.map(b => b.media.shortName);
+                        broadcasts = competition.geoBroadcasts.map(b => b.media?.shortName).filter(Boolean);
                     }
                     return [...new Set(broadcasts)];
                 })()

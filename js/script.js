@@ -341,8 +341,8 @@ class NBASchedule {
                     <div class="game-status">
                         ${status.isLive ? '<div class="live-indicator"></div>' : ''}
                         <span>${status.text}</span>
-                        ${game.broadcasts && game.broadcasts.length > 0 ? `<div class="broadcast-info">${game.broadcasts.join(', ')}</div>` : ''}
                     </div>
+                    ${game.broadcasts && game.broadcasts.length > 0 ? `<div class="broadcast-info">${game.broadcasts.join(', ')}</div>` : ''}
                 </div>
                 <div class="team-side">
                     <div class="${TEAM_LOGOS[game.visitor_team.full_name]} team-logo-card"></div>

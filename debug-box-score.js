@@ -37,10 +37,10 @@ async function checkGameDetails() {
         let broadcasts = [];
         if (competition.broadcasts) {
             console.log('Found competition.broadcasts:', JSON.stringify(competition.broadcasts, null, 2));
-            broadcasts = competition.broadcasts.flatMap(b => b.names);
+            broadcasts = competition.broadcasts.map(b => b.media?.shortName).filter(Boolean);
         } else if (competition.geoBroadcasts) {
             console.log('Found competition.geoBroadcasts');
-            broadcasts = competition.geoBroadcasts.map(b => b.media.shortName);
+            broadcasts = competition.geoBroadcasts.map(b => b.media?.shortName).filter(Boolean);
         } else {
             console.log('No broadcasts found in header.');
         }

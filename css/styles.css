@@ -423,57 +423,6 @@ main {
   box-shadow: 0 0 8px var(--color-live);
 }
 
-.broadcast-container {
-  margin-top: 0.5rem;
-  width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-}
-
-.broadcast-scroll {
-  display: inline-block;
-  animation: scroll-left 15s linear infinite;
-  padding-left: 100%;
-  /* Start from right */
-}
-
-/* If content is short, we might want to center it instead of scroll. 
-   But for now, user asked for crawling. 
-   To make it continuous, we usually duplicate content. 
-   The JS change duplicated content. 
-   Let's adjust the animation to be a smooth infinite scroll.
-*/
-
-.broadcast-scroll {
-  display: flex;
-  gap: 2rem;
-  width: max-content;
-  animation: scroll-infinite 20s linear infinite;
-  padding-left: 0;
-}
-
-.broadcast-scroll span {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  font-weight: 500;
-}
-
-.broadcast-separator {
-  color: var(--color-accent);
-}
-
-@keyframes scroll-infinite {
-  0% {
-    transform: translateX(0);
-  }
-
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
 .broadcast-info-large {
   margin-top: 0.5rem;
   font-size: 0.875rem;

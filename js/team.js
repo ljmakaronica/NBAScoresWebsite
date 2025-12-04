@@ -161,15 +161,15 @@ class TeamPage {
     renderTeamContent() {
         this.teamContent.innerHTML = `
             <div class="team-layout">
+                <div class="gamelog-column">
+                    <h3 class="section-title">Game Log</h3>
+                    ${this.renderGameLog()}
+                </div>
                 <div class="stats-column">
                     <h3 class="section-title">Team Statistics</h3>
                     ${this.renderStatistics()}
                     <h3 class="section-title" style="margin-top: 1.5rem;">Roster</h3>
                     ${this.renderRoster()}
-                </div>
-                <div class="gamelog-column">
-                    <h3 class="section-title">Game Log</h3>
-                    ${this.renderGameLog()}
                 </div>
             </div>
         `;
@@ -181,12 +181,15 @@ class TeamPage {
     setupGameLogListeners() {
         const gameLogItems = document.querySelectorAll('.game-log-item[data-game-id]');
         gameLogItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const gameId = item.getAttribute('data-game-id');
-                if (gameId) {
-                    this.showBoxScore(gameId);
-                }
-            });
+            // Only add click listener for completed games
+            if (item.classList.contains('completed')) {
+                item.addEventListener('click', () => {
+                    const gameId = item.getAttribute('data-game-id');
+                    if (gameId) {
+                        this.showBoxScore(gameId);
+                    }
+                });
+            }
         });
     }
 
@@ -310,7 +313,7 @@ class TeamPage {
             const gameId = event.id;
 
             gameLogHTML += `
-                <div class="game-log-item ${isCompleted ? `completed ${resultClass}` : 'upcoming'}" data-game-id="${gameId}" style="cursor: pointer;">
+                <div class="game-log-item ${isCompleted ? `completed ${resultClass}` : 'upcoming'}" data-game-id="${gameId}" ${isCompleted ? 'style="cursor: pointer;"' : ''}>
                     <div class="game-left">
                         <div class="game-date-compact">${this.formatGameDate(event.date)}</div>
                         <div class="game-opponent-compact">${vsAt} ${opponent}</div>
@@ -517,7 +520,9 @@ class TeamPage {
         container.innerHTML = `
             <div class="box-score-header">
                 <div class="team-header home">
-                    <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
+                    <a href="team.html?id=${TEAM_ID_MAP[homeTeam.info.displayName]}" class="team-logo-link">
+                        <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
+                    </a>
                     <div class="team-details">
                         <h2><a href="team.html?id=${TEAM_ID_MAP[homeTeam.info.displayName]}" class="team-link">${homeTeam.info.displayName}</a></h2>
                     </div>
@@ -535,7 +540,9 @@ class TeamPage {
                     <div class="team-details">
                         <h2><a href="team.html?id=${TEAM_ID_MAP[awayTeam.info.displayName]}" class="team-link">${awayTeam.info.displayName}</a></h2>
                     </div>
-                    <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
+                    <a href="team.html?id=${TEAM_ID_MAP[awayTeam.info.displayName]}" class="team-logo-link">
+                        <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
+                    </a>
                 </div>
             </div>
 

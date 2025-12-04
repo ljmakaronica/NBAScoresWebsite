@@ -563,7 +563,9 @@ class NBASchedule {
             <div class="box-score-header">
                 <!-- Home Team (Left) -->
                 <div class="team-header home">
-                    <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
+                    <a href="team.html?id=${TEAM_ID_MAP[homeTeam.info.displayName]}" class="team-logo-link">
+                        <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
+                    </a>
                     <div class="team-details">
                         <h2><a href="team.html?id=${TEAM_ID_MAP[homeTeam.info.displayName]}" class="team-link">${homeTeam.info.displayName}</a></h2>
                     </div>
@@ -583,7 +585,9 @@ class NBASchedule {
                     <div class="team-details">
                         <h2><a href="team.html?id=${TEAM_ID_MAP[awayTeam.info.displayName]}" class="team-link">${awayTeam.info.displayName}</a></h2>
                     </div>
-                    <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
+                    <a href="team.html?id=${TEAM_ID_MAP[awayTeam.info.displayName]}" class="team-logo-link">
+                        <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
+                    </a>
                 </div>
             </div>
             

@@ -1595,10 +1595,20 @@ main {
   box-shadow: none !important;
 }
 
+.team-logo-link {
+  display: inline-block;
+  transition: opacity 0.2s ease;
+}
+
+.team-logo-link:hover {
+  opacity: 0.8;
+}
+
 .team-logo-large {
   width: 60px;
   height: 60px;
   object-fit: contain;
+  display: block;
 }
 
 .score-large {
@@ -2030,7 +2040,7 @@ main {
 
 .team-layout {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 400px 1fr;
   gap: 1rem;
   align-items: start;
 }
@@ -2206,8 +2216,20 @@ main {
   border-left-color: var(--color-live);
 }
 
-.game-log-item:hover {
+.game-log-item.completed:hover {
   background: rgba(40, 45, 65, 0.8);
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+.game-log-item.completed.win:hover {
+  background: rgba(34, 197, 94, 0.18);
+  border-left-width: 4px;
+}
+
+.game-log-item.completed.loss:hover {
+  background: rgba(239, 68, 68, 0.18);
+  border-left-width: 4px;
 }
 
 .game-log-item.upcoming {

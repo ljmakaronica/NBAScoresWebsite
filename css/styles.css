@@ -926,6 +926,14 @@ main {
   gap: 0.75rem;
 }
 
+.team-info:hover .team-name {
+  color: var(--color-accent);
+}
+
+.team-info .team-link:hover {
+  text-decoration: none;
+}
+
 /* Playoff indicators */
 .playoff-spot {
   border-left: 3px solid var(--color-win);
@@ -1507,13 +1515,28 @@ main {
   padding: 0;
 }
 
-.team-details h2 a {
+.team-details h2 a,
+.team-details h2 a:link,
+.team-details h2 a:visited,
+.team-details h2 a:hover,
+.team-details h2 a:active,
+.team-details h2 a:focus {
   background: none !important;
+  background-color: transparent !important;
   border: none !important;
+  border-width: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
   box-shadow: none !important;
   outline: none !important;
+  text-decoration: none !important;
+}
+
+.team-details,
+.team-details * {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .team-logo-large {

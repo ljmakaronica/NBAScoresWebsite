@@ -2042,6 +2042,7 @@ main {
   display: grid;
   grid-template-columns: 400px 1fr;
   gap: 1rem;
+  align-items: start;
 }
 
 .stats-column {
@@ -2060,8 +2061,7 @@ main {
   padding: 1.5rem;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
-  height: 100%;
-  min-height: 0;
+  /* height handled by JS */
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2497,6 +2497,7 @@ main {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 1.5rem;
+  align-items: start;
 }
 
 .player-bio-section,
@@ -2507,9 +2508,22 @@ main {
   padding: 1.5rem;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
-  height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.player-stats-section {
+  overflow: hidden;
+}
+
+.player-stats-table-wrapper {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.recent-games-list {
+  overflow-y: auto;
+  flex: 1;
 }
 
 .player-bio-grid {

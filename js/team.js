@@ -46,6 +46,11 @@ class TeamPage {
         });
 
         this.initialize();
+
+        // Bind resize event
+        window.addEventListener('resize', () => {
+            this.adjustColumnHeights();
+        });
     }
 
     initialize() {
@@ -186,6 +191,10 @@ class TeamPage {
 
         // Add click listeners to game log items
         this.setupGameLogListeners();
+
+        // Adjust heights
+        // Small delay to ensure rendering is complete
+        setTimeout(() => this.adjustColumnHeights(), 0);
     }
 
     setupGameLogListeners() {
@@ -201,6 +210,25 @@ class TeamPage {
                 });
             }
         });
+    }
+
+    adjustColumnHeights() {
+        const statsColumn = this.teamContent.querySelector('.stats-column');
+        const gameLogColumn = this.teamContent.querySelector('.gamelog-column');
+
+        if (statsColumn && gameLogColumn) {
+            // Reset height first to get natural height if needed, or just measure stats
+            gameLogColumn.style.height = 'auto';
+
+            // Only apply fixed height on desktop (when side-by-side)
+            if (window.innerWidth > 968) { // Matching the media query breakpoint
+                const height = statsColumn.offsetHeight;
+                gameLogColumn.style.height = `${height}px`;
+            } else {
+                gameLogColumn.style.height = 'auto';
+                gameLogColumn.style.maxHeight = '500px'; // Restore mobile max-height
+            }
+        }
     }
 
     renderStatistics() {

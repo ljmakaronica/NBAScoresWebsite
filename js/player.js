@@ -12,6 +12,11 @@ class PlayerPage {
         });
 
         this.initialize();
+
+        // Bind resize event
+        window.addEventListener('resize', () => {
+            this.adjustColumnHeights();
+        });
     }
 
     initialize() {
@@ -111,6 +116,32 @@ class PlayerPage {
                 </div>
             </div>
         `;
+
+        // Adjust heights
+        setTimeout(() => this.adjustColumnHeights(), 0);
+    }
+
+    adjustColumnHeights() {
+        const bioSection = this.playerContent.querySelector('.player-bio-section');
+        const statsSection = this.playerContent.querySelector('.player-stats-section');
+
+        if (bioSection && statsSection) {
+            // Reset height
+            statsSection.style.height = 'auto';
+
+            // Only apply on desktop
+            if (window.innerWidth > 768) {
+                const height = bioSection.offsetHeight;
+                // If stats content is naturally shorter, don't force it? 
+                // User said "stats should be same height as player info".
+                // But if stats are huge, we want to scroll.
+                // If stats are tiny, we want to stretch?
+                // Usually "same height" means they match.
+                statsSection.style.height = `${height}px`;
+            } else {
+                statsSection.style.height = 'auto';
+            }
+        }
     }
 
     renderPlayerBio() {

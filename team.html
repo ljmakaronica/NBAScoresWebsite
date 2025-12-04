@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0e27" />
+  <title>Team Info - NBA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    referrerpolicy="no-referrer" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+</head>
+
+<body>
+  <div id="app">
+    <header class="site-header">
+      <div class="header-content">
+        <button id="back-button" class="back-button">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1 class="site-title" id="team-name">NBA</h1>
+        <nav class="tab-nav">
+          <a href="index.html" class="tab-link">Schedule</a>
+          <a href="standings.html" class="tab-link">Standings</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div id="team-header" class="team-header">
+        <!-- Team header will be dynamically inserted here -->
+      </div>
+
+      <div id="team-content" class="team-content">
+        <!-- Team stats and schedule will be dynamically inserted here -->
+      </div>
+    </main>
+
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="loader"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>
+        This website is a fan project and is not affiliated with or endorsed by the NBA. All team names, logos, and
+        trademarks are the property of their respective owners.
+        Data provided by ESPN.
+      </p>
+      <p>
+        Made by <a href="https://markoljuboja.com" target="_blank" rel="noopener noreferrer">markoljuboja.com</a>
+      </p>
+    </div>
+  </footer>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path
+          d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z" />
+      </svg>
+      <span>Schedule</span>
+    </a>
+    <a href="standings.html" class="bottom-nav-item">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M3 3v18h18v-2H5V3H3zm4 12h2v4H7v-4zm4-6h2v10h-2V9zm4 3h2v7h-2v-7zm4-6h2v13h-2V6z" />
+      </svg>
+      <span>Standings</span>
+    </a>
+  </nav>
+
+  <script src="js/team.js"></script>
+</body>
+
+</html>

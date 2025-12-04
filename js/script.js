@@ -32,6 +32,40 @@ const TEAM_LOGOS = {
     'LA Clippers': 'team-logo la-clippers'
 };
 
+// Team name to ESPN ID mapping
+const TEAM_ID_MAP = {
+    'Atlanta Hawks': '1',
+    'Boston Celtics': '2',
+    'New Orleans Pelicans': '3',
+    'Chicago Bulls': '4',
+    'Cleveland Cavaliers': '5',
+    'Dallas Mavericks': '6',
+    'Denver Nuggets': '7',
+    'Detroit Pistons': '8',
+    'Golden State Warriors': '9',
+    'Houston Rockets': '10',
+    'Indiana Pacers': '11',
+    'LA Clippers': '12',
+    'Los Angeles Lakers': '13',
+    'Miami Heat': '14',
+    'Milwaukee Bucks': '15',
+    'Minnesota Timberwolves': '16',
+    'Brooklyn Nets': '17',
+    'New York Knicks': '18',
+    'Orlando Magic': '19',
+    'Philadelphia 76ers': '20',
+    'Phoenix Suns': '21',
+    'Portland Trail Blazers': '22',
+    'Sacramento Kings': '23',
+    'San Antonio Spurs': '24',
+    'Oklahoma City Thunder': '25',
+    'Washington Wizards': '26',
+    'Utah Jazz': '27',
+    'Toronto Raptors': '28',
+    'Memphis Grizzlies': '29',
+    'Charlotte Hornets': '30'
+};
+
 const SEASON_START = new Date('2025-10-15T12:00:00');
 const SEASON_END = new Date('2026-06-13T12:00:00');
 
@@ -531,7 +565,7 @@ class NBASchedule {
                 <div class="team-header home">
                     <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
                     <div class="team-details">
-                        <h2>${homeTeam.info.displayName}</h2>
+                        <h2><a href="team.html?id=${TEAM_ID_MAP[homeTeam.info.displayName]}" class="team-link">${homeTeam.info.displayName}</a></h2>
                     </div>
                     <div class="score-large ${isComplete && homeScore < awayScore ? 'loser' : ''}">${homeTeam.score || '0'}</div>
                 </div>
@@ -547,7 +581,7 @@ class NBASchedule {
                 <div class="team-header away">
                     <div class="score-large ${isComplete && awayScore < homeScore ? 'loser' : ''}">${awayTeam.score || '0'}</div>
                     <div class="team-details">
-                        <h2>${awayTeam.info.displayName}</h2>
+                        <h2><a href="team.html?id=${TEAM_ID_MAP[awayTeam.info.displayName]}" class="team-link">${awayTeam.info.displayName}</a></h2>
                     </div>
                     <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
                 </div>

@@ -32,6 +32,40 @@ const TEAM_LOGOS = {
     'LA Clippers': 'team-logo la-clippers'
 };
 
+// Team name to ESPN ID mapping
+const TEAM_ID_MAP = {
+    'Atlanta Hawks': '1',
+    'Boston Celtics': '2',
+    'New Orleans Pelicans': '3',
+    'Chicago Bulls': '4',
+    'Cleveland Cavaliers': '5',
+    'Dallas Mavericks': '6',
+    'Denver Nuggets': '7',
+    'Detroit Pistons': '8',
+    'Golden State Warriors': '9',
+    'Houston Rockets': '10',
+    'Indiana Pacers': '11',
+    'LA Clippers': '12',
+    'Los Angeles Lakers': '13',
+    'Miami Heat': '14',
+    'Milwaukee Bucks': '15',
+    'Minnesota Timberwolves': '16',
+    'Brooklyn Nets': '17',
+    'New York Knicks': '18',
+    'Orlando Magic': '19',
+    'Philadelphia 76ers': '20',
+    'Phoenix Suns': '21',
+    'Portland Trail Blazers': '22',
+    'Sacramento Kings': '23',
+    'San Antonio Spurs': '24',
+    'Oklahoma City Thunder': '25',
+    'Washington Wizards': '26',
+    'Utah Jazz': '27',
+    'Toronto Raptors': '28',
+    'Memphis Grizzlies': '29',
+    'Charlotte Hornets': '30'
+};
+
 class NBAStandings {
     constructor() {
         this.container = document.getElementById('standings-container');
@@ -159,7 +193,9 @@ class NBAStandings {
                 <td class="team-col">
                     <div class="team-info">
                         <div class="${TEAM_LOGOS[team.full_name]}"></div>
-                        <span class="team-name">${team.full_name}</span>
+                        <a href="team.html?id=${TEAM_ID_MAP[team.full_name]}" class="team-link">
+                            <span class="team-name">${team.full_name}</span>
+                        </a>
                     </div>
                 </td>
                 <td class="stat-col">${team.wins}</td>

@@ -1481,19 +1481,25 @@ main {
   gap: 1rem;
 }
 
-.team-header {
+.box-score-header .team-header {
   display: flex;
   align-items: center;
   gap: 15px;
   flex: 1;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
 }
 
-.team-header.home {
+.box-score-header .team-header.home {
   justify-content: flex-end;
   text-align: right;
 }
 
-.team-header.away {
+.box-score-header .team-header.away {
   justify-content: flex-start;
   text-align: left;
 }

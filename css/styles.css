@@ -2061,7 +2061,7 @@ main {
   padding: 1.5rem;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border);
-  max-height: 800px;
+  max-height: 600px;
   overflow-y: auto;
   position: sticky;
   top: 1rem;
@@ -2392,5 +2392,305 @@ main {
 
   .roster-player-card {
     padding: 0.5rem 0.625rem;
+  }
+}
+
+/* Player Page Styles */
+.player-header {
+  background: var(--color-card-bg);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+.player-header-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.player-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.player-headshot {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-accent);
+}
+
+.player-headshot-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--color-row-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--color-text-muted);
+  border: 3px solid var(--color-border);
+}
+
+.player-info-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.player-name-header {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.player-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.player-jersey {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.player-position-header {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.player-team-link {
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+  padding: 0.25rem 0.75rem;
+  background: var(--color-row-bg);
+  border-radius: 0.5rem;
+}
+
+.player-team-link:hover {
+  color: var(--color-accent);
+}
+
+.player-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.player-bio-section,
+.player-stats-section {
+  background: var(--color-card-bg);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+.player-bio-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.bio-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-row-bg);
+  border-radius: 0.5rem;
+}
+
+.bio-label {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bio-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.player-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stats-category-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+/* Improved Team Header - Prominent Next Game */
+.team-header-content {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 2rem;
+  align-items: center;
+}
+
+.team-header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.next-game-prominent {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(129, 140, 248, 0.1) 100%);
+  border: 2px solid var(--color-accent);
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 300px;
+}
+
+.next-game-label-prominent {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.next-game-matchup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.next-game-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.next-game-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.next-game-opponent-prominent {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.next-game-datetime {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.next-game-datetime i {
+  color: var(--color-accent);
+}
+
+.no-upcoming-game {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Roster Player Card Link Styles */
+.roster-player-card {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.roster-player-card:hover .roster-player-name {
+  color: var(--color-accent);
+}
+
+/* Box Score Player Name Link */
+.player-name-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.player-name-link:hover {
+  color: var(--color-accent);
+}
+
+/* Mobile styles for player page */
+@media (max-width: 768px) {
+  .player-header {
+    padding: 1.25rem;
+  }
+
+  .player-header-left {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .player-headshot,
+  .player-headshot-placeholder {
+    width: 100px;
+    height: 100px;
+  }
+
+  .player-name-header {
+    font-size: 1.5rem;
+  }
+
+  .player-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .player-bio-section,
+  .player-stats-section {
+    padding: 1rem;
+  }
+
+  .team-header-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .team-header-center {
+    order: -1;
+  }
+
+  .next-game-prominent {
+    min-width: 0;
+    width: 100%;
   }
 }

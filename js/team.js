@@ -116,14 +116,22 @@ class TeamPage {
             const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
             const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
             const isHome = homeTeam.team.displayName === team.name;
-            const opponent = isHome ? awayTeam.team.displayName : homeTeam.team.displayName;
+            const opponent = isHome ? awayTeam.team : homeTeam.team;
+            const opponentLogo = opponent.logo;
             const vsAt = isHome ? 'vs' : '@';
 
             nextGameHTML = `
-                <div class="next-game-compact">
-                    <div class="next-game-label">NEXT GAME</div>
-                    <div class="next-game-opponent">${vsAt} ${opponent}</div>
-                    <div class="next-game-date">${this.formatGameDate(nextGame.date)} • ${this.formatGameTime(nextGame.date)}</div>
+                <div class="next-game-prominent">
+                    <div class="next-game-label-prominent">NEXT GAME</div>
+                    <div class="next-game-matchup">
+                        <img src="${opponentLogo}" alt="${opponent.displayName}" class="next-game-logo" onerror="this.style.display='none'">
+                        <div class="next-game-details">
+                            <div class="next-game-opponent-prominent">${vsAt} ${opponent.displayName}</div>
+                            <div class="next-game-datetime">
+                                <i class="far fa-calendar"></i> ${this.formatGameDate(nextGame.date)} • <i class="far fa-clock"></i> ${this.formatGameTime(nextGame.date)}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
         }
@@ -136,6 +144,9 @@ class TeamPage {
                         <h2 class="team-name-compact">${team.name}</h2>
                         <div class="team-standing-compact">${record.standing}</div>
                     </div>
+                </div>
+                <div class="team-header-center">
+                    ${nextGameHTML || '<div class="no-upcoming-game">No upcoming games scheduled</div>'}
                 </div>
                 <div class="team-header-right">
                     <div class="records-inline">
@@ -152,7 +163,6 @@ class TeamPage {
                             <span class="record-label-inline">Away</span>
                         </div>
                     </div>
-                    ${nextGameHTML}
                 </div>
             </div>
         `;
@@ -237,6 +247,7 @@ class TeamPage {
             const position = player.position?.abbreviation || 'N/A';
             const jersey = player.jersey || '--';
             const displayName = player.displayName || player.fullName || 'Unknown';
+            const playerId = player.id;
 
             // Get stats if available
             const stats = player.statistics?.[0]?.stats || [];
@@ -245,7 +256,7 @@ class TeamPage {
             const apg = stats.find(s => s.abbreviation === 'APG')?.displayValue || '--';
 
             rosterHTML += `
-                <div class="roster-player-card">
+                <a href="player.html?id=${playerId}" class="roster-player-card">
                     <div class="roster-player-header">
                         <span class="roster-jersey">#${jersey}</span>
                         <div class="roster-player-info">
@@ -260,7 +271,7 @@ class TeamPage {
                             <span class="roster-stat"><span class="roster-stat-label">APG:</span> ${apg}</span>
                         </div>
                     ` : ''}
-                </div>
+                </a>
             `;
         });
 
@@ -487,8 +498,10 @@ class TeamPage {
                 return `
                                     <tr>
                                         <td class="player-name sticky-col">
-                                            <span class="name-full">${p.displayName}</span>
-                                            <span class="name-short">${p.shortName}</span>
+                                            <a href="player.html?id=${p.id}" class="player-name-link">
+                                                <span class="name-full">${p.displayName}</span>
+                                                <span class="name-short">${p.shortName}</span>
+                                            </a>
                                         </td>
                                         <td class="stat-pts">${getStat('PTS')}</td>
                                         <td>${min}</td>

@@ -540,8 +540,10 @@ class NBASchedule {
                 return `
                                     <tr>
                                         <td class="player-name sticky-col">
-                                            <span class="name-full">${p.displayName}</span>
-                                            <span class="name-short">${p.shortName}</span>
+                                            <a href="player.html?id=${p.id}" class="player-name-link">
+                                                <span class="name-full">${p.displayName}</span>
+                                                <span class="name-short">${p.shortName}</span>
+                                            </a>
                                         </td>
                                         <td class="stat-pts">${getStat('PTS')}</td>
                                         <td>${min}</td>

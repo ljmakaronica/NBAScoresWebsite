@@ -103,14 +103,7 @@ class TeamPage {
     }
 
     renderTeamHeader() {
-        const { team, record, nextGame } = this.teamData;
-
-        const nextGameHTML = nextGame ? `
-            <div class="next-game">
-                <span class="next-game-label">Next Game:</span>
-                <span class="next-game-info">${nextGame.shortName} - ${this.formatDate(nextGame.date)}</span>
-            </div>
-        ` : '';
+        const { team, record } = this.teamData;
 
         this.teamHeader.innerHTML = `
             <div class="team-header-content">
@@ -119,22 +112,23 @@ class TeamPage {
                 </div>
                 <div class="team-info-section">
                     <h2 class="team-full-name">${team.name}</h2>
+                    <div class="team-standing">${record.standing}</div>
                     <div class="team-record-container">
                         <div class="record-item">
-                            <span class="record-label">Overall:</span>
                             <span class="record-value">${record.overall}</span>
+                            <span class="record-label">Overall</span>
                         </div>
+                        <div class="record-divider"></div>
                         <div class="record-item">
-                            <span class="record-label">Home:</span>
                             <span class="record-value">${record.home}</span>
+                            <span class="record-label">Home</span>
                         </div>
+                        <div class="record-divider"></div>
                         <div class="record-item">
-                            <span class="record-label">Away:</span>
                             <span class="record-value">${record.away}</span>
+                            <span class="record-label">Away</span>
                         </div>
                     </div>
-                    <div class="team-standing">${record.standing}</div>
-                    ${nextGameHTML}
                 </div>
             </div>
         `;
@@ -142,12 +136,12 @@ class TeamPage {
 
     renderTeamContent() {
         this.teamContent.innerHTML = `
-            <div class="team-sections">
-                <div class="team-section">
+            <div class="team-layout">
+                <div class="stats-column">
                     <h3 class="section-title">Team Statistics</h3>
                     ${this.renderStatistics()}
                 </div>
-                <div class="team-section">
+                <div class="gamelog-column">
                     <h3 class="section-title">Game Log</h3>
                     ${this.renderGameLog()}
                 </div>
@@ -162,18 +156,31 @@ class TeamPage {
             return '<p class="no-data">No statistics available</p>';
         }
 
-        let statsHTML = '<div class="stats-grid">';
+        let statsHTML = '<div class="stats-categories">';
 
         statistics.forEach(category => {
             if (category.stats && category.stats.length > 0) {
+                statsHTML += `
+                    <div class="stat-category">
+                        <h4 class="category-title">${category.displayName}</h4>
+                        <table class="stats-table-compact">
+                            <tbody>
+                `;
+
                 category.stats.forEach(stat => {
                     statsHTML += `
-                        <div class="stat-item">
-                            <span class="stat-label">${stat.displayName}</span>
-                            <span class="stat-value">${stat.displayValue}</span>
-                        </div>
+                        <tr>
+                            <td class="stat-name">${stat.displayName}</td>
+                            <td class="stat-val">${stat.displayValue}</td>
+                        </tr>
                     `;
                 });
+
+                statsHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
             }
         });
 
@@ -213,22 +220,26 @@ class TeamPage {
             const homeScore = homeTeam.score?.displayValue || homeTeam.score || '0';
             const awayScore = awayTeam.score?.displayValue || awayTeam.score || '0';
 
+            const isHome = homeTeam.team.displayName === this.teamData.team.name;
+            const opponent = isHome ? awayTeam.team.displayName : homeTeam.team.displayName;
+            const vsAt = isHome ? 'vs' : '@';
+
             gameLogHTML += `
                 <div class="game-log-item ${isCompleted ? 'completed' : 'upcoming'}">
-                    <div class="game-date">${this.formatGameDate(event.date)}</div>
-                    <div class="game-matchup">
-                        <div class="game-opponent">
-                            ${awayTeam.team.displayName} @ ${homeTeam.team.displayName}
-                        </div>
-                        ${isCompleted ? `
-                            <div class="game-score">
-                                <span class="result ${resultClass}">${result}</span>
-                                <span class="score">${awayScore} - ${homeScore}</span>
-                            </div>
-                        ` : `
-                            <div class="game-time">${this.formatGameTime(event.date)}</div>
-                        `}
+                    <div class="game-left">
+                        <div class="game-date-compact">${this.formatGameDate(event.date)}</div>
+                        <div class="game-opponent-compact">${vsAt} ${opponent}</div>
                     </div>
+                    ${isCompleted ? `
+                        <div class="game-right">
+                            <span class="result-compact ${resultClass}">${result}</span>
+                            <span class="score-compact">${isHome ? homeScore : awayScore}-${isHome ? awayScore : homeScore}</span>
+                        </div>
+                    ` : `
+                        <div class="game-right">
+                            <span class="game-time-compact">${this.formatGameTime(event.date)}</span>
+                        </div>
+                    `}
                 </div>
             `;
         });

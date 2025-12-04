@@ -98,8 +98,6 @@ class PlayerPage {
     }
 
     renderPlayerContent() {
-        const { player, statistics } = this.playerData;
-
         this.playerContent.innerHTML = `
             <div class="player-layout">
                 <div class="player-bio-section">
@@ -107,8 +105,9 @@ class PlayerPage {
                     ${this.renderPlayerBio()}
                 </div>
                 <div class="player-stats-section">
-                    <h3 class="section-title">Season Statistics</h3>
+                    <h3 class="section-title">Stats</h3>
                     ${this.renderPlayerStats()}
+                    ${this.renderRecentGames()}
                 </div>
             </div>
         `;
@@ -139,33 +138,112 @@ class PlayerPage {
     }
 
     renderPlayerStats() {
-        const { statistics } = this.playerData;
+        const { stats } = this.playerData;
 
-        if (!statistics || statistics.length === 0) {
+        if (!stats || (!stats.season && !stats.career)) {
             return '<p class="no-data">No statistics available</p>';
         }
 
-        let statsHTML = '<div class="player-stats-grid">';
+        const getStat = (statsObj, key) => statsObj?.[key] || '--';
 
-        statistics.forEach(category => {
-            if (category.stats && category.stats.length > 0) {
-                statsHTML += `<h4 class="stats-category-title">${category.displayName}</h4><div class="stats-grid-compact">`;
+        return `
+            <div class="player-stats-table-wrapper">
+                <table class="player-stats-table">
+                    <thead>
+                        <tr>
+                            <th>STATS</th>
+                            <th>GP</th>
+                            <th>MIN</th>
+                            <th>FG%</th>
+                            <th>3P%</th>
+                            <th>FT%</th>
+                            <th>REB</th>
+                            <th>AST</th>
+                            <th>BLK</th>
+                            <th>STL</th>
+                            <th>PF</th>
+                            <th>TO</th>
+                            <th>PTS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${stats.season ? `
+                            <tr>
+                                <td class="stat-label-col">Regular Season</td>
+                                <td>${getStat(stats.season, 'gamesPlayed')}</td>
+                                <td>${getStat(stats.season, 'avgMinutes')}</td>
+                                <td>${getStat(stats.season, 'fieldGoalPct')}</td>
+                                <td>${getStat(stats.season, 'threePointFieldGoalPct')}</td>
+                                <td>${getStat(stats.season, 'freeThrowPct')}</td>
+                                <td>${getStat(stats.season, 'avgRebounds')}</td>
+                                <td>${getStat(stats.season, 'avgAssists')}</td>
+                                <td>${getStat(stats.season, 'avgBlocks')}</td>
+                                <td>${getStat(stats.season, 'avgSteals')}</td>
+                                <td>${getStat(stats.season, 'avgPersonalFouls')}</td>
+                                <td>${getStat(stats.season, 'avgTurnovers')}</td>
+                                <td>${getStat(stats.season, 'avgPoints')}</td>
+                            </tr>
+                        ` : ''}
+                        ${stats.career ? `
+                            <tr>
+                                <td class="stat-label-col">Career</td>
+                                <td>${getStat(stats.career, 'gamesPlayed')}</td>
+                                <td>${getStat(stats.career, 'avgMinutes')}</td>
+                                <td>${getStat(stats.career, 'fieldGoalPct')}</td>
+                                <td>${getStat(stats.career, 'threePointFieldGoalPct')}</td>
+                                <td>${getStat(stats.career, 'freeThrowPct')}</td>
+                                <td>${getStat(stats.career, 'avgRebounds')}</td>
+                                <td>${getStat(stats.career, 'avgAssists')}</td>
+                                <td>${getStat(stats.career, 'avgBlocks')}</td>
+                                <td>${getStat(stats.career, 'avgSteals')}</td>
+                                <td>${getStat(stats.career, 'avgPersonalFouls')}</td>
+                                <td>${getStat(stats.career, 'avgTurnovers')}</td>
+                                <td>${getStat(stats.career, 'avgPoints')}</td>
+                            </tr>
+                        ` : ''}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
 
-                category.stats.forEach(stat => {
-                    statsHTML += `
-                        <div class="stat-item-compact">
-                            <span class="stat-label-compact">${stat.displayName}</span>
-                            <span class="stat-value-compact">${stat.displayValue}</span>
+    renderRecentGames() {
+        const { recentGames } = this.playerData;
+
+        if (!recentGames || recentGames.length === 0) {
+            return '';
+        }
+
+        return `
+            <h3 class="section-title" style="margin-top: 2rem;">Recent Games</h3>
+            <div class="recent-games-list">
+                ${recentGames.map(game => `
+                    <div class="recent-game-item">
+                        <div class="recent-game-header">
+                            <span class="recent-game-date">${this.formatGameDate(game.date)}</span>
+                            <span class="recent-game-opponent">${game.opponent}</span>
+                            <span class="recent-game-result ${game.result === 'W' ? 'win' : 'loss'}">${game.result}</span>
                         </div>
-                    `;
-                });
+                        ${game.stats ? `
+                            <div class="recent-game-stats">
+                                ${this.formatGameStats(game.stats)}
+                            </div>
+                        ` : '<div class="no-stats-game">No stats available</div>'}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
 
-                statsHTML += `</div>`;
-            }
-        });
+    formatGameDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
 
-        statsHTML += '</div>';
-        return statsHTML;
+    formatGameStats(stats) {
+        if (!stats) return '--';
+        // Format game stats as a simple string
+        return `<span>${stats}</span>`;
     }
 }
 

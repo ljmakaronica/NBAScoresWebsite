@@ -2549,6 +2549,129 @@ main {
   margin-bottom: 0.5rem;
 }
 
+/* Player Stats Table */
+.player-stats-table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--border-radius);
+  background: var(--color-row-bg);
+  border: 1px solid var(--color-border);
+}
+
+.player-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.player-stats-table th {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  background: var(--color-card-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.player-stats-table th:first-child {
+  text-align: left;
+  padding-left: 1rem;
+}
+
+.player-stats-table td {
+  padding: 0.875rem 0.5rem;
+  text-align: center;
+  color: var(--color-text);
+  font-weight: 500;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.player-stats-table td.stat-label-col {
+  text-align: left;
+  font-weight: 600;
+  padding-left: 1rem;
+  color: var(--color-text);
+}
+
+.player-stats-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.player-stats-table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+/* Recent Games */
+.recent-games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recent-game-item {
+  background: var(--color-row-bg);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  transition: background 0.2s ease;
+}
+
+.recent-game-item:hover {
+  background: rgba(40, 45, 65, 0.8);
+}
+
+.recent-game-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.recent-game-date {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.recent-game-opponent {
+  flex: 1;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.recent-game-result {
+  font-weight: 700;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.recent-game-result.win {
+  color: var(--color-win);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.recent-game-result.loss {
+  color: var(--color-live);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.recent-game-stats {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  padding-left: 60px;
+}
+
+.no-stats-game {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding-left: 60px;
+}
+
 /* Improved Team Header - Prominent Next Game */
 .team-header-content {
   display: grid;

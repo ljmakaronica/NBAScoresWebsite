@@ -6,8 +6,8 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Player ID is required' });
         }
 
-        // Fetch player data from ESPN API
-        const playerResponse = await fetch(`http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/athletes/${playerId}?lang=en&region=us`, {
+        // Use the simpler site API which has all the data we need
+        const playerResponse = await fetch(`http://site.api.espn.com/apis/site/v2/sports/basketball/nba/athletes/${playerId}`, {
             headers: {
                 'Accept': 'application/json',
                 'User-Agent': 'Mozilla/5.0'
@@ -18,78 +18,76 @@ export default async function handler(req, res) {
             throw new Error('ESPN API responded with an error');
         }
 
-        const playerData = await playerResponse.json();
+        const data = await playerResponse.json();
+        const athlete = data.athlete;
 
-        // Fetch additional data (stats, team info)
-        const additionalRequests = [];
+        // Extract stats helper function
+        const extractStats = (statsList, statNames) => {
+            if (!statsList || statsList.length === 0) return null;
 
-        // Fetch team info if available
-        if (playerData.team?.$ref) {
-            additionalRequests.push(
-                fetch(playerData.team.$ref, {
-                    headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
-                }).then(r => r.json()).catch(() => null)
-            );
-        } else {
-            additionalRequests.push(Promise.resolve(null));
-        }
+            const stats = {};
+            statsList.forEach(stat => {
+                if (statNames.includes(stat.name)) {
+                    stats[stat.name] = stat.displayValue;
+                }
+            });
+            return stats;
+        };
 
-        // Fetch statistics if available
-        if (playerData.statistics?.$ref) {
-            additionalRequests.push(
-                fetch(playerData.statistics.$ref, {
-                    headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
-                }).then(r => r.json()).catch(() => null)
-            );
-        } else {
-            additionalRequests.push(Promise.resolve(null));
-        }
+        // Get season stats (current season averages)
+        const seasonStats = athlete.statistics?.find(s => s.type === 'total' && s.displayName === 'regularSeason');
+        const careerStats = athlete.statistics?.find(s => s.type === 'career' && s.displayName === 'careerRegularSeason');
 
-        // Fetch position if available
-        if (playerData.position?.$ref) {
-            additionalRequests.push(
-                fetch(playerData.position.$ref, {
-                    headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
-                }).then(r => r.json()).catch(() => null)
-            );
-        } else {
-            additionalRequests.push(Promise.resolve(null));
-        }
+        // Get last 5 games from event log
+        const recentGames = athlete.eventLog?.events?.slice(0, 5) || [];
 
-        const [teamInfo, statistics, positionInfo] = await Promise.all(additionalRequests);
+        // Stats we want to display
+        const statNames = ['gamesPlayed', 'avgMinutes', 'fieldGoalPct', 'threePointFieldGoalPct',
+                          'freeThrowPct', 'avgRebounds', 'avgAssists', 'avgBlocks',
+                          'avgSteals', 'avgPersonalFouls', 'avgTurnovers', 'avgPoints'];
 
         // Process and combine the data
         const processedData = {
             player: {
-                id: playerData.id,
-                firstName: playerData.firstName,
-                lastName: playerData.lastName,
-                fullName: playerData.fullName,
-                displayName: playerData.displayName,
-                shortName: playerData.shortName,
-                jersey: playerData.jersey,
-                position: positionInfo?.displayName || positionInfo?.name || playerData.position?.abbreviation || 'N/A',
-                positionAbbr: positionInfo?.abbreviation || playerData.position?.abbreviation || 'N/A',
-                height: playerData.displayHeight,
-                weight: playerData.displayWeight,
-                age: playerData.age,
-                dateOfBirth: playerData.dateOfBirth,
-                birthPlace: playerData.birthPlace?.city && playerData.birthPlace?.country
-                    ? `${playerData.birthPlace.city}, ${playerData.birthPlace.country}`
+                id: athlete.id,
+                firstName: athlete.firstName,
+                lastName: athlete.lastName,
+                fullName: athlete.fullName,
+                displayName: athlete.displayName,
+                shortName: athlete.shortName,
+                jersey: athlete.jersey,
+                position: athlete.position?.displayName || 'N/A',
+                positionAbbr: athlete.position?.abbreviation || 'N/A',
+                height: athlete.displayHeight,
+                weight: athlete.displayWeight,
+                age: athlete.age,
+                dateOfBirth: athlete.dateOfBirth,
+                birthPlace: athlete.birthPlace?.city && athlete.birthPlace?.country
+                    ? `${athlete.birthPlace.city}, ${athlete.birthPlace.country}`
                     : null,
-                college: playerData.college?.name || playerData.college || null,
-                experience: playerData.experience?.years,
-                headshot: playerData.headshot?.href,
-                status: playerData.status?.name
+                college: athlete.college?.name || athlete.college || null,
+                experience: athlete.experience?.years,
+                headshot: athlete.headshot?.href,
+                status: athlete.status?.name
             },
-            team: teamInfo ? {
-                id: teamInfo.id,
-                name: teamInfo.displayName,
-                abbreviation: teamInfo.abbreviation,
-                logo: teamInfo.logos?.[0]?.href,
-                color: teamInfo.color
+            team: athlete.team ? {
+                id: athlete.team.id,
+                name: athlete.team.displayName,
+                abbreviation: athlete.team.abbreviation,
+                logo: athlete.team.logos?.[0]?.href,
+                color: athlete.team.color
             } : null,
-            statistics: statistics?.splits?.categories || null
+            stats: {
+                season: seasonStats ? extractStats(seasonStats.stats, statNames) : null,
+                career: careerStats ? extractStats(careerStats.stats, statNames) : null
+            },
+            recentGames: recentGames.map(event => ({
+                id: event.id,
+                date: event.gameDate,
+                opponent: event.opponentName,
+                result: event.gameResult,
+                stats: event.stats || null
+            }))
         };
 
         res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');

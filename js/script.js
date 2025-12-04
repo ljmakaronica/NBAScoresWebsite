@@ -109,12 +109,23 @@ class NBASchedule {
         }
 
         if (!initialDate) {
-            const today = new Date();
+            const now = new Date();
+            let today = new Date(now);
+
             if (today < SEASON_START) {
                 initialDate = new Date(SEASON_START);
             } else if (today > SEASON_END) {
                 initialDate = new Date(SEASON_END);
             } else {
+                // Smart date selection: Don't switch to "today" until we're close to the first game
+                // NBA games typically start at 6 PM or later, so we switch at 5 PM (1 hour before)
+                const currentHour = now.getHours();
+
+                if (currentHour < 17) {
+                    // Before 5 PM: Show previous day's games
+                    today.setDate(today.getDate() - 1);
+                }
+
                 initialDate = new Date(today);
             }
         }

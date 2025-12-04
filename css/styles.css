@@ -2153,21 +2153,28 @@ main {
 
 .roster-player-info {
   display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.375rem;
   flex: 1;
+  min-width: 0;
 }
 
 .roster-player-name {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .roster-player-position {
   font-size: 0.65rem;
   color: var(--color-text-muted);
   font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .roster-player-stats {

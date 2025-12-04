@@ -166,10 +166,10 @@ class TeamPage {
                     ${this.renderGameLog()}
                 </div>
                 <div class="stats-column">
-                    <h3 class="section-title">Team Statistics</h3>
-                    ${this.renderStatistics()}
-                    <h3 class="section-title" style="margin-top: 1.5rem;">Roster</h3>
+                    <h3 class="section-title">Roster</h3>
                     ${this.renderRoster()}
+                    <h3 class="section-title" style="margin-top: 1.5rem;">Team Statistics</h3>
+                    ${this.renderStatistics()}
                 </div>
             </div>
         `;

@@ -62,9 +62,9 @@ export default async function handler(req, res) {
         let seasonStats = null;
         let careerStats = null;
 
-        if (statistics?.splits?.categories) {
+        if (statistics?.splits?.categories && Array.isArray(statistics.splits.categories)) {
             statistics.splits.categories.forEach(category => {
-                if (category.name === 'general') {
+                if (category.name === 'general' && category.splits && Array.isArray(category.splits)) {
                     category.splits.forEach(split => {
                         if (split.name === 'regularSeason' && split.type === 'total') {
                             seasonStats = split.stats;

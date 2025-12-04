@@ -6,8 +6,8 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Player ID is required' });
         }
 
-        // Use the simpler site API which has all the data we need
-        const playerResponse = await fetch(`http://site.api.espn.com/apis/site/v2/sports/basketball/nba/athletes/${playerId}`, {
+        // Fetch player data from ESPN core API
+        const playerResponse = await fetch(`http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/athletes/${playerId}?lang=en&region=us`, {
             headers: {
                 'Accept': 'application/json',
                 'User-Agent': 'Mozilla/5.0'
@@ -18,76 +18,133 @@ export default async function handler(req, res) {
             throw new Error('ESPN API responded with an error');
         }
 
-        const data = await playerResponse.json();
-        const athlete = data.athlete;
+        const playerData = await playerResponse.json();
 
-        // Extract stats helper function
-        const extractStats = (statsList, statNames) => {
-            if (!statsList || statsList.length === 0) return null;
+        // Fetch additional data in parallel
+        const additionalRequests = [];
 
-            const stats = {};
-            statsList.forEach(stat => {
-                if (statNames.includes(stat.name)) {
-                    stats[stat.name] = stat.displayValue;
+        // Fetch team info
+        if (playerData.team?.$ref) {
+            additionalRequests.push(
+                fetch(playerData.team.$ref, {
+                    headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
+                }).then(r => r.json()).catch(() => null)
+            );
+        } else {
+            additionalRequests.push(Promise.resolve(null));
+        }
+
+        // Fetch position
+        if (playerData.position?.$ref) {
+            additionalRequests.push(
+                fetch(playerData.position.$ref, {
+                    headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
+                }).then(r => r.json()).catch(() => null)
+            );
+        } else {
+            additionalRequests.push(Promise.resolve(null));
+        }
+
+        // Fetch statistics (season stats)
+        if (playerData.statistics?.$ref) {
+            additionalRequests.push(
+                fetch(playerData.statistics.$ref, {
+                    headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
+                }).then(r => r.json()).catch(() => null)
+            );
+        } else {
+            additionalRequests.push(Promise.resolve(null));
+        }
+
+        const [teamInfo, positionInfo, statistics] = await Promise.all(additionalRequests);
+
+        // Parse stats from the splits
+        let seasonStats = null;
+        let careerStats = null;
+
+        if (statistics?.splits?.categories) {
+            statistics.splits.categories.forEach(category => {
+                if (category.name === 'general') {
+                    category.splits.forEach(split => {
+                        if (split.name === 'regularSeason' && split.type === 'total') {
+                            seasonStats = split.stats;
+                        } else if (split.name === 'career' && split.type === 'career') {
+                            careerStats = split.stats;
+                        }
+                    });
                 }
             });
-            return stats;
+        }
+
+        // Helper to get stat value
+        const getStat = (statsArray, abbr) => {
+            if (!statsArray) return null;
+            const stat = statsArray.find(s => s.abbreviation === abbr || s.name === abbr);
+            return stat?.displayValue || null;
         };
-
-        // Get season stats (current season averages)
-        const seasonStats = athlete.statistics?.find(s => s.type === 'total' && s.displayName === 'regularSeason');
-        const careerStats = athlete.statistics?.find(s => s.type === 'career' && s.displayName === 'careerRegularSeason');
-
-        // Get last 5 games from event log
-        const recentGames = athlete.eventLog?.events?.slice(0, 5) || [];
-
-        // Stats we want to display
-        const statNames = ['gamesPlayed', 'avgMinutes', 'fieldGoalPct', 'threePointFieldGoalPct',
-                          'freeThrowPct', 'avgRebounds', 'avgAssists', 'avgBlocks',
-                          'avgSteals', 'avgPersonalFouls', 'avgTurnovers', 'avgPoints'];
 
         // Process and combine the data
         const processedData = {
             player: {
-                id: athlete.id,
-                firstName: athlete.firstName,
-                lastName: athlete.lastName,
-                fullName: athlete.fullName,
-                displayName: athlete.displayName,
-                shortName: athlete.shortName,
-                jersey: athlete.jersey,
-                position: athlete.position?.displayName || 'N/A',
-                positionAbbr: athlete.position?.abbreviation || 'N/A',
-                height: athlete.displayHeight,
-                weight: athlete.displayWeight,
-                age: athlete.age,
-                dateOfBirth: athlete.dateOfBirth,
-                birthPlace: athlete.birthPlace?.city && athlete.birthPlace?.country
-                    ? `${athlete.birthPlace.city}, ${athlete.birthPlace.country}`
+                id: playerData.id,
+                firstName: playerData.firstName,
+                lastName: playerData.lastName,
+                fullName: playerData.fullName,
+                displayName: playerData.displayName,
+                shortName: playerData.shortName,
+                jersey: playerData.jersey,
+                position: positionInfo?.displayName || positionInfo?.name || 'N/A',
+                positionAbbr: positionInfo?.abbreviation || 'N/A',
+                height: playerData.displayHeight,
+                weight: playerData.displayWeight,
+                age: playerData.age,
+                dateOfBirth: playerData.dateOfBirth,
+                birthPlace: playerData.birthPlace?.city && playerData.birthPlace?.country
+                    ? `${playerData.birthPlace.city}, ${playerData.birthPlace.country}`
                     : null,
-                college: athlete.college?.name || athlete.college || null,
-                experience: athlete.experience?.years,
-                headshot: athlete.headshot?.href,
-                status: athlete.status?.name
+                college: playerData.college?.name || playerData.college || null,
+                experience: playerData.experience?.years,
+                headshot: playerData.headshot?.href,
+                status: playerData.status?.name
             },
-            team: athlete.team ? {
-                id: athlete.team.id,
-                name: athlete.team.displayName,
-                abbreviation: athlete.team.abbreviation,
-                logo: athlete.team.logos?.[0]?.href,
-                color: athlete.team.color
+            team: teamInfo ? {
+                id: teamInfo.id,
+                name: teamInfo.displayName,
+                abbreviation: teamInfo.abbreviation,
+                logo: teamInfo.logos?.[0]?.href,
+                color: teamInfo.color
             } : null,
             stats: {
-                season: seasonStats ? extractStats(seasonStats.stats, statNames) : null,
-                career: careerStats ? extractStats(careerStats.stats, statNames) : null
+                season: seasonStats ? {
+                    gamesPlayed: getStat(seasonStats, 'GP'),
+                    avgMinutes: getStat(seasonStats, 'MPG'),
+                    fieldGoalPct: getStat(seasonStats, 'FG%'),
+                    threePointFieldGoalPct: getStat(seasonStats, '3P%'),
+                    freeThrowPct: getStat(seasonStats, 'FT%'),
+                    avgRebounds: getStat(seasonStats, 'RPG'),
+                    avgAssists: getStat(seasonStats, 'APG'),
+                    avgBlocks: getStat(seasonStats, 'BPG'),
+                    avgSteals: getStat(seasonStats, 'SPG'),
+                    avgPersonalFouls: getStat(seasonStats, 'PF'),
+                    avgTurnovers: getStat(seasonStats, 'TO'),
+                    avgPoints: getStat(seasonStats, 'PPG')
+                } : null,
+                career: careerStats ? {
+                    gamesPlayed: getStat(careerStats, 'GP'),
+                    avgMinutes: getStat(careerStats, 'MPG'),
+                    fieldGoalPct: getStat(careerStats, 'FG%'),
+                    threePointFieldGoalPct: getStat(careerStats, '3P%'),
+                    freeThrowPct: getStat(careerStats, 'FT%'),
+                    avgRebounds: getStat(careerStats, 'RPG'),
+                    avgAssists: getStat(careerStats, 'APG'),
+                    avgBlocks: getStat(careerStats, 'BPG'),
+                    avgSteals: getStat(careerStats, 'SPG'),
+                    avgPersonalFouls: getStat(careerStats, 'PF'),
+                    avgTurnovers: getStat(careerStats, 'TO'),
+                    avgPoints: getStat(careerStats, 'PPG')
+                } : null
             },
-            recentGames: recentGames.map(event => ({
-                id: event.id,
-                date: event.gameDate,
-                opponent: event.opponentName,
-                result: event.gameResult,
-                stats: event.stats || null
-            }))
+            recentGames: []
         };
 
         res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');

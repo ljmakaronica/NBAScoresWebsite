@@ -341,6 +341,7 @@ class NBASchedule {
                     <div class="game-status">
                         ${status.isLive ? '<div class="live-indicator"></div>' : ''}
                         <span>${status.text}</span>
+                        ${game.broadcasts && game.broadcasts.length > 0 ? `<div class="broadcast-info">${game.broadcasts.join(', ')}</div>` : ''}
                     </div>
                 </div>
                 <div class="team-side">
@@ -390,7 +391,40 @@ class NBASchedule {
 
         modal.style.display = 'block';
         const modalBody = document.getElementById('modal-body');
-        modalBody.innerHTML = '<div class="loading-spinner"></div>';
+
+        // Skeleton Loader HTML
+        modalBody.innerHTML = `
+            <div class="box-score-skeleton">
+                <div class="skeleton-header">
+                    <div class="skeleton-team">
+                        <div class="skeleton-logo"></div>
+                        <div class="skeleton-name"></div>
+                        <div class="skeleton-score"></div>
+                    </div>
+                    <div class="skeleton-info">
+                        <div class="skeleton-status"></div>
+                        <div class="skeleton-clock"></div>
+                    </div>
+                    <div class="skeleton-team">
+                        <div class="skeleton-score"></div>
+                        <div class="skeleton-name"></div>
+                        <div class="skeleton-logo"></div>
+                    </div>
+                </div>
+                <div class="skeleton-tabs">
+                    <div class="skeleton-tab"></div>
+                    <div class="skeleton-tab"></div>
+                </div>
+                <div class="skeleton-table">
+                    <div class="skeleton-row header"></div>
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row"></div>
+                    <div class="skeleton-row"></div>
+                </div>
+            </div>
+        `;
 
         try {
             const response = await fetch(`/api/game-details?gameId=${gameId}&t=${Date.now()}`);
@@ -499,6 +533,7 @@ class NBASchedule {
                 <div class="game-info-large">
                     <div class="game-status-large">${gameInfo.status}</div>
                     <div class="game-clock-large">${gameInfo.clock || ''}</div>
+                    ${gameInfo.broadcasts && gameInfo.broadcasts.length > 0 ? `<div class="broadcast-info-large">${gameInfo.broadcasts.join(', ')}</div>` : ''}
                 </div>
 
                 <!-- Away Team (Right) -->

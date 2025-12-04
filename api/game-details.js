@@ -46,7 +46,17 @@ export default async function handler(req, res) {
             gameInfo: {
                 status: header.competitions[0].status.type.detail,
                 clock: header.competitions[0].status.displayClock,
-                period: header.competitions[0].status.period
+                period: header.competitions[0].status.period,
+                broadcasts: (() => {
+                    const competition = header.competitions[0];
+                    let broadcasts = [];
+                    if (competition.broadcasts) {
+                        broadcasts = competition.broadcasts.flatMap(b => b.names);
+                    } else if (competition.geoBroadcasts) {
+                        broadcasts = competition.geoBroadcasts.map(b => b.media.shortName);
+                    }
+                    return [...new Set(broadcasts)];
+                })()
             },
             homeTeam: {
                 info: boxscore.teams.find(t => t.team.id === homeTeamId).team,

@@ -46,6 +46,16 @@ export default async function handler(req, res) {
                 // For upcoming games, status will be time like "7:30 PM ET"
                 // We'll pass the actual game date separately for parsing
 
+                // Extract broadcasts
+                let broadcasts = [];
+                if (competition.broadcasts) {
+                    broadcasts = competition.broadcasts.flatMap(b => b.names);
+                } else if (competition.geoBroadcasts) {
+                    broadcasts = competition.geoBroadcasts.map(b => b.media.shortName);
+                }
+                // Remove duplicates
+                broadcasts = [...new Set(broadcasts)];
+
                 games.push({
                     id: event.id,
                     date: gameDate,
@@ -62,7 +72,8 @@ export default async function handler(req, res) {
                         abbreviation: awayTeam.team.abbreviation
                     },
                     home_team_score: parseInt(homeTeam.score) || 0,
-                    visitor_team_score: parseInt(awayTeam.score) || 0
+                    visitor_team_score: parseInt(awayTeam.score) || 0,
+                    broadcasts: broadcasts
                 });
             });
         }

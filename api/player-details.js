@@ -56,7 +56,17 @@ export default async function handler(req, res) {
             additionalRequests.push(Promise.resolve(null));
         }
 
-        const [teamInfo, positionInfo, statistics] = await Promise.all(additionalRequests);
+        // Fetch Game Log (using site API for easier consumption)
+        additionalRequests.push(
+            fetch(`http://site.api.espn.com/apis/site/v2/sports/basketball/nba/players/${playerId}/gamelog`, {
+                headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
+            }).then(r => r.json()).catch(e => {
+                console.error('Error fetching game log:', e);
+                return null;
+            })
+        );
+
+        const [teamInfo, positionInfo, statistics, gameLogData] = await Promise.all(additionalRequests);
 
         // Parse stats from the splits
         let seasonStats = null;
@@ -82,6 +92,36 @@ export default async function handler(req, res) {
             const stat = statsArray.find(s => s.abbreviation === abbr || s.name === abbr);
             return stat?.displayValue || null;
         };
+
+        // Process Game Log
+        let recentGames = [];
+        if (gameLogData?.events && Array.isArray(gameLogData.events)) {
+            // Get last 5 games
+            const last5 = gameLogData.events.slice(0, 5);
+
+            recentGames = last5.map(event => {
+                const gameId = event.id;
+                const gameDate = event.gameDate;
+                const opponent = event.opponent?.displayName || 'Unknown';
+                const result = event.gameResult || '-'; // W or L
+                const score = event.score || '';
+
+                // Stats are usually in event.stats
+                // The structure might vary, but let's try to extract key stats
+                // In this endpoint, stats might be in 'stats' array or similar
+                // For now, let's just return basic info and maybe raw stats if available
+                const stats = event.stats || [];
+
+                return {
+                    id: gameId,
+                    date: gameDate,
+                    opponent: opponent,
+                    result: result,
+                    score: score,
+                    stats: stats // Array of values
+                };
+            });
+        }
 
         // Process and combine the data
         const processedData = {
@@ -144,7 +184,7 @@ export default async function handler(req, res) {
                     avgPoints: getStat(careerStats, 'PPG')
                 } : null
             },
-            recentGames: []
+            recentGames: recentGames
         };
 
         res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');

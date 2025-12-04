@@ -126,15 +126,16 @@ class TeamPage {
             const vsAt = isHome ? 'vs' : '@';
 
             nextGameHTML = `
-                <div class="next-game-prominent">
-                    <div class="next-game-label-prominent">NEXT GAME</div>
-                    <div class="next-game-matchup">
-                        <img src="${opponentLogo}" alt="${opponent.displayName}" class="next-game-logo" onerror="this.style.display='none'">
-                        <div class="next-game-details">
-                            <div class="next-game-opponent-prominent">${vsAt} ${opponent.displayName}</div>
-                            <div class="next-game-datetime">
-                                <i class="far fa-calendar"></i> ${this.formatGameDate(nextGame.date)} • <i class="far fa-clock"></i> ${this.formatGameTime(nextGame.date)}
-                            </div>
+                <div class="next-game-card">
+                    <div class="next-game-label">NEXT GAME</div>
+                    <div class="next-game-info">
+                        <div class="next-game-opponent">
+                            <img src="${opponentLogo}" alt="${opponent.displayName}" class="opponent-logo" onerror="this.style.display='none'">
+                            <span class="opponent-name">${vsAt} ${opponent.abbreviation}</span>
+                        </div>
+                        <div class="next-game-time">
+                            <div class="game-date">${this.formatGameDate(nextGame.date)}</div>
+                            <div class="game-time">${this.formatGameTime(nextGame.date)}</div>
                         </div>
                     </div>
                 </div>
@@ -142,48 +143,97 @@ class TeamPage {
         }
 
         this.teamHeader.innerHTML = `
-            <div class="team-header-content">
-                <div class="team-header-left">
-                    <img src="${team.logo}" alt="${team.name}" class="team-logo-compact" onerror="this.style.display='none'">
-                    <div class="team-info-compact">
-                        <h2 class="team-name-compact">${team.name}</h2>
-                        <div class="team-standing-compact">${record.standing}</div>
-                    </div>
-                </div>
-                <div class="team-header-center">
-                    ${nextGameHTML || '<div class="no-upcoming-game">No upcoming games scheduled</div>'}
-                </div>
-                <div class="team-header-right">
-                    <div class="records-inline">
-                        <div class="record-inline">
-                            <span class="record-value-inline">${record.overall}</span>
-                            <span class="record-label-inline">Overall</span>
-                        </div>
-                        <div class="record-inline">
-                            <span class="record-value-inline">${record.home}</span>
-                            <span class="record-label-inline">Home</span>
-                        </div>
-                        <div class="record-inline">
-                            <span class="record-value-inline">${record.away}</span>
-                            <span class="record-label-inline">Away</span>
+            <div class="team-hero" style="background: linear-gradient(to right, ${team.color}dd, ${team.color}99), url('${team.logo}') no-repeat center/cover;">
+                <div class="team-hero-content">
+                    <div class="team-identity">
+                        <img src="${team.logo}" alt="${team.name}" class="team-logo-hero" onerror="this.style.display='none'">
+                        <div class="team-text">
+                            <h1 class="team-name-hero">${team.name}</h1>
+                            <div class="team-record-hero">
+                                <span class="record-badge">${record.overall}</span>
+                                <span class="standing-text">${record.standing}</span>
+                            </div>
                         </div>
                     </div>
+                    <div class="team-next-game">
+                        ${nextGameHTML || '<div class="no-upcoming-game">No upcoming games scheduled</div>'}
+                    </div>
+                </div>
+            </div>
+            <div class="team-stats-bar">
+                <div class="stat-box">
+                    <span class="stat-label">Home</span>
+                    <span class="stat-value">${record.home}</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Away</span>
+                    <span class="stat-value">${record.away}</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Streak</span>
+                    <span class="stat-value">${this.getStreak(schedule)}</span>
                 </div>
             </div>
         `;
     }
 
+    getStreak(schedule) {
+        if (!schedule || !schedule.events) return '-';
+        const completedGames = schedule.events.filter(event =>
+            event.competitions?.[0]?.status?.type?.completed
+        ).reverse(); // Most recent first
+
+        if (completedGames.length === 0) return '-';
+
+        let streak = 0;
+        let type = '';
+
+        for (const game of completedGames) {
+            const competition = game.competitions[0];
+            const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
+            const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
+            const isHome = homeTeam.team.displayName === this.teamData.team.name;
+            const homeScore = parseFloat(homeTeam.score?.value || homeTeam.score?.displayValue || homeTeam.score || 0);
+            const awayScore = parseFloat(awayTeam.score?.value || awayTeam.score?.displayValue || awayTeam.score || 0);
+
+            const won = isHome ? homeScore > awayScore : awayScore > homeScore;
+            const result = won ? 'W' : 'L';
+
+            if (streak === 0) {
+                type = result;
+                streak = 1;
+            } else if (type === result) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+        return `${type}${streak}`;
+    }
+
     renderTeamContent() {
         this.teamContent.innerHTML = `
-            <div class="team-layout">
-                <div class="gamelog-column">
-                    <h3 class="section-title">Game Log</h3>
-                    ${this.renderGameLog()}
-                </div>
-                <div class="stats-column">
-                    <h3 class="section-title">Roster</h3>
+            <div class="team-grid-layout">
+                <div class="main-column">
+                    <div class="section-header">
+                        <h3 class="section-title">Team Leaders</h3>
+                    </div>
+                    ${this.renderTeamLeaders()}
+                    
+                    <div class="section-header" style="margin-top: 2rem;">
+                        <h3 class="section-title">Roster</h3>
+                    </div>
                     ${this.renderRoster()}
-                    <h3 class="section-title" style="margin-top: 1.5rem;">Team Statistics</h3>
+                </div>
+                <div class="sidebar-column">
+                    <div class="section-header">
+                        <h3 class="section-title">Game Log</h3>
+                    </div>
+                    ${this.renderGameLog()}
+                    
+                    <div class="section-header" style="margin-top: 2rem;">
+                        <h3 class="section-title">Team Stats</h3>
+                    </div>
                     ${this.renderStatistics()}
                 </div>
             </div>
@@ -193,17 +243,15 @@ class TeamPage {
         this.setupGameLogListeners();
 
         // Adjust heights
-        // Small delay to ensure rendering is complete
         setTimeout(() => this.adjustColumnHeights(), 0);
     }
 
     setupGameLogListeners() {
-        const gameLogItems = document.querySelectorAll('.game-log-item[data-game-id]');
-        gameLogItems.forEach(item => {
-            // Only add click listener for completed games
-            if (item.classList.contains('completed')) {
-                item.addEventListener('click', () => {
-                    const gameId = item.getAttribute('data-game-id');
+        const gameLogRows = document.querySelectorAll('.game-log-row[data-game-id]');
+        gameLogRows.forEach(row => {
+            if (row.classList.contains('completed')) {
+                row.addEventListener('click', () => {
+                    const gameId = row.getAttribute('data-game-id');
                     if (gameId) {
                         this.showBoxScore(gameId);
                     }
@@ -213,22 +261,55 @@ class TeamPage {
     }
 
     adjustColumnHeights() {
-        const statsColumn = this.teamContent.querySelector('.stats-column');
-        const gameLogColumn = this.teamContent.querySelector('.gamelog-column');
+        // With the new grid layout, we might not need manual height adjustment as much,
+        // but let's keep it for the sidebar if needed.
+        // For now, let CSS Grid handle the layout.
+    }
 
-        if (statsColumn && gameLogColumn) {
-            // Reset height first to get natural height if needed, or just measure stats
-            gameLogColumn.style.height = 'auto';
+    renderTeamLeaders() {
+        const { roster } = this.teamData;
+        if (!roster || roster.length === 0) return '';
 
-            // Only apply fixed height on desktop (when side-by-side)
-            if (window.innerWidth > 968) { // Matching the media query breakpoint
-                const height = statsColumn.offsetHeight;
-                gameLogColumn.style.height = `${height}px`;
-            } else {
-                gameLogColumn.style.height = 'auto';
-                gameLogColumn.style.maxHeight = '500px'; // Restore mobile max-height
-            }
-        }
+        // Helper to get stat value safely
+        const getStatValue = (player, abbr) => {
+            const stats = player.statistics?.[0]?.stats || [];
+            const stat = stats.find(s => s.abbreviation === abbr);
+            return stat ? parseFloat(stat.displayValue) : 0;
+        };
+
+        // Find leaders
+        const ppgLeader = [...roster].sort((a, b) => getStatValue(b, 'PPG') - getStatValue(a, 'PPG'))[0];
+        const rpgLeader = [...roster].sort((a, b) => getStatValue(b, 'RPG') - getStatValue(a, 'RPG'))[0];
+        const apgLeader = [...roster].sort((a, b) => getStatValue(b, 'APG') - getStatValue(a, 'APG'))[0];
+
+        const leaders = [
+            { label: 'Points', player: ppgLeader, stat: 'PPG' },
+            { label: 'Rebounds', player: rpgLeader, stat: 'RPG' },
+            { label: 'Assists', player: apgLeader, stat: 'APG' }
+        ];
+
+        return `
+            <div class="team-leaders-grid">
+                ${leaders.map(item => {
+            const player = item.player;
+            if (!player) return '';
+            const statValue = getStatValue(player, item.stat);
+
+            return `
+                        <div class="leader-card">
+                            <div class="leader-label">${item.label}</div>
+                            <div class="leader-info">
+                                <img src="${player.headshot || ''}" alt="${player.displayName}" class="leader-headshot" onerror="this.src='assets/default-player.png'">
+                                <div class="leader-details">
+                                    <div class="leader-value">${statValue}</div>
+                                    <div class="leader-name">${player.displayName}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+        }).join('')}
+            </div>
+        `;
     }
 
     renderStatistics() {
@@ -238,22 +319,27 @@ class TeamPage {
             return '<p class="no-data">No statistics available</p>';
         }
 
-        let statsHTML = '<div class="stats-categories-compact">';
+        let statsHTML = '<div class="team-stats-list">';
 
         statistics.forEach(category => {
             if (category.stats && category.stats.length > 0) {
-                statsHTML += `<h4 class="category-title-compact">${category.displayName}</h4><div class="stats-grid-compact">`;
+                // Filter for key stats only to keep it clean
+                const keyStats = category.stats.filter(s =>
+                    ['PPG', 'RPG', 'APG', 'FG%', '3P%', 'FT%', 'TO', 'SPG', 'BPG'].includes(s.abbreviation)
+                );
 
-                category.stats.forEach(stat => {
-                    statsHTML += `
-                        <div class="stat-item-compact">
-                            <span class="stat-label-compact">${stat.shortDisplayName || stat.displayName}</span>
-                            <span class="stat-value-compact">${stat.displayValue}</span>
-                        </div>
-                    `;
-                });
-
-                statsHTML += `</div>`;
+                if (keyStats.length > 0) {
+                    statsHTML += `<div class="stats-category-group">`;
+                    keyStats.forEach(stat => {
+                        statsHTML += `
+                            <div class="team-stat-row">
+                                <span class="team-stat-label">${stat.displayName}</span>
+                                <span class="team-stat-value">${stat.displayValue}</span>
+                            </div>
+                        `;
+                    });
+                    statsHTML += `</div>`;
+                }
             }
         });
 
@@ -268,37 +354,38 @@ class TeamPage {
             return '<p class="no-data">No roster available</p>';
         }
 
-        let rosterHTML = '<div class="roster-grid-compact">';
+        let rosterHTML = '<div class="roster-grid-modern">';
 
-        roster.forEach(athlete => {
-            const player = athlete;
+        roster.forEach(player => {
             const position = player.position?.abbreviation || 'N/A';
             const jersey = player.jersey || '--';
             const displayName = player.displayName || player.fullName || 'Unknown';
             const playerId = player.id;
+            const headshot = player.headshot;
 
             // Get stats if available
             const stats = player.statistics?.[0]?.stats || [];
             const ppg = stats.find(s => s.abbreviation === 'PPG')?.displayValue || '--';
-            const rpg = stats.find(s => s.abbreviation === 'RPG')?.displayValue || '--';
-            const apg = stats.find(s => s.abbreviation === 'APG')?.displayValue || '--';
 
             rosterHTML += `
-                <a href="player.html?id=${playerId}" class="roster-player-card">
-                    <div class="roster-player-header">
-                        <span class="roster-jersey">#${jersey}</span>
-                        <div class="roster-player-info">
-                            <span class="roster-player-name">${displayName}</span>
-                            <span class="roster-player-position">${position}</span>
+                <a href="player.html?id=${playerId}" class="player-card-modern">
+                    <div class="player-card-top">
+                        <span class="player-card-jersey">#${jersey}</span>
+                        <span class="player-card-pos">${position}</span>
+                    </div>
+                    <div class="player-card-image-container">
+                        ${headshot ?
+                    `<img src="${headshot}" alt="${displayName}" class="player-card-img" onerror="this.style.display='none'">` :
+                    `<div class="player-card-placeholder"><i class="fas fa-user"></i></div>`
+                }
+                    </div>
+                    <div class="player-card-info">
+                        <div class="player-card-name">${displayName}</div>
+                        <div class="player-card-stat">
+                            <span class="stat-label">PPG</span>
+                            <span class="stat-val">${ppg}</span>
                         </div>
                     </div>
-                    ${ppg !== '--' || rpg !== '--' || apg !== '--' ? `
-                        <div class="roster-player-stats">
-                            <span class="roster-stat"><span class="roster-stat-label">PPG:</span> ${ppg}</span>
-                            <span class="roster-stat"><span class="roster-stat-label">RPG:</span> ${rpg}</span>
-                            <span class="roster-stat"><span class="roster-stat-label">APG:</span> ${apg}</span>
-                        </div>
-                    ` : ''}
                 </a>
             `;
         });
@@ -314,8 +401,6 @@ class TeamPage {
             return '<p class="no-data">No games available</p>';
         }
 
-        let gameLogHTML = '<div class="game-log-list">';
-
         // Separate games
         const completedGames = schedule.events.filter(event =>
             event.competitions?.[0]?.status?.type?.completed
@@ -325,12 +410,28 @@ class TeamPage {
             !event.competitions?.[0]?.status?.type?.completed
         );
 
-        // Next game is first upcoming, then completed games, then rest of upcoming
-        const nextGame = upcomingGames.length > 0 ? [upcomingGames[0]] : [];
-        const futureGames = upcomingGames.slice(1);
-        const orderedGames = [...nextGame, ...completedGames, ...futureGames];
+        // Limit to last 5 completed and next 3 upcoming for the sidebar view
+        const recentGames = completedGames.slice(0, 5);
+        const nextGames = upcomingGames.slice(0, 3);
 
-        orderedGames.forEach(event => {
+        let gameLogHTML = `
+            <div class="game-log-modern">
+                <table class="game-log-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Opponent</th>
+                            <th>Result/Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        // Combine for display: Next games first (if any), then recent games
+        // Actually, usually users want to see "Schedule" vs "Results".
+        // Let's show recent results first as that's "Game Log".
+
+        recentGames.forEach(event => {
             const competition = event.competitions?.[0];
             if (!competition) return;
 
@@ -338,40 +439,42 @@ class TeamPage {
             const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
             const isCompleted = competition.status?.type?.completed;
 
-            const result = isCompleted ? this.getGameResult(homeTeam, awayTeam) : 'vs';
-            const resultClass = isCompleted ? (result === 'W' ? 'win' : 'loss') : 'upcoming';
+            const result = this.getGameResult(homeTeam, awayTeam);
+            const resultClass = result === 'W' ? 'win' : 'loss';
 
             const homeScore = homeTeam.score?.displayValue || homeTeam.score || '0';
             const awayScore = awayTeam.score?.displayValue || awayTeam.score || '0';
 
             const isHome = homeTeam.team.displayName === this.teamData.team.name;
             const opponent = isHome ? awayTeam.team.displayName : homeTeam.team.displayName;
+            const opponentAbbr = isHome ? awayTeam.team.abbreviation : homeTeam.team.abbreviation;
             const vsAt = isHome ? 'vs' : '@';
-
-            // Extract ESPN game ID from the event ID
             const gameId = event.id;
 
             gameLogHTML += `
-                <div class="game-log-item ${isCompleted ? `completed ${resultClass}` : 'upcoming'}" data-game-id="${gameId}" ${isCompleted ? 'style="cursor: pointer;"' : ''}>
-                    <div class="game-left">
-                        <div class="game-date-compact">${this.formatGameDate(event.date)}</div>
-                        <div class="game-opponent-compact">${vsAt} ${opponent}</div>
-                    </div>
-                    ${isCompleted ? `
-                        <div class="game-right">
-                            <span class="result-compact ${resultClass}">${result}</span>
-                            <span class="score-compact">${isHome ? homeScore : awayScore}-${isHome ? awayScore : homeScore}</span>
-                        </div>
-                    ` : `
-                        <div class="game-right">
-                            <span class="game-time-compact">${this.formatGameTime(event.date)}</span>
-                        </div>
-                    `}
-                </div>
+                <tr class="game-log-row completed" data-game-id="${gameId}">
+                    <td class="date-col">
+                        <span class="date-day">${this.formatGameDate(event.date)}</span>
+                    </td>
+                    <td class="opponent-col">
+                        <span class="vs-at">${vsAt}</span>
+                        <span class="opp-name">${opponentAbbr}</span>
+                    </td>
+                    <td class="result-col">
+                        <span class="result-badge ${resultClass}">${result}</span>
+                        <span class="score-text">${isHome ? homeScore : awayScore}-${isHome ? awayScore : homeScore}</span>
+                    </td>
+                </tr>
             `;
         });
 
-        gameLogHTML += '</div>';
+        gameLogHTML += `
+                    </tbody>
+                </table>
+                ${completedGames.length > 5 ? `<div class="view-all-games">View full schedule</div>` : ''}
+            </div>
+        `;
+
         return gameLogHTML;
     }
 

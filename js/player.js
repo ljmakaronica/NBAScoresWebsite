@@ -102,12 +102,15 @@ class PlayerPage {
         `;
     }
 
-    renderPlayerContent() {
+    async renderPlayerContent() {
         this.playerContent.innerHTML = `
             <div class="player-layout">
                 <div class="player-bio-section">
                     <h3 class="section-title">Player Info</h3>
                     ${this.renderPlayerBio()}
+                    
+                    <h3 class="section-title" style="margin-top: 2rem;">Last Game</h3>
+                    <div id="last-game-container">Loading last game stats...</div>
                 </div>
                 <div class="player-stats-section">
                     <h3 class="section-title">Stats</h3>
@@ -116,6 +119,9 @@ class PlayerPage {
                 </div>
             </div>
         `;
+
+        // Fetch and render last game stats
+        await this.renderLastGameStats();
 
         // Adjust heights
         setTimeout(() => this.adjustColumnHeights(), 0);
@@ -131,13 +137,8 @@ class PlayerPage {
 
             // Only apply on desktop
             if (window.innerWidth > 768) {
-                const height = bioSection.offsetHeight;
-                // If stats content is naturally shorter, don't force it? 
-                // User said "stats should be same height as player info".
-                // But if stats are huge, we want to scroll.
-                // If stats are tiny, we want to stretch?
-                // Usually "same height" means they match.
-                statsSection.style.height = `${height}px`;
+                // const height = bioSection.offsetHeight;
+                // statsSection.style.height = `${height}px`;
             } else {
                 statsSection.style.height = 'auto';
             }
@@ -255,15 +256,86 @@ class PlayerPage {
                             <span class="recent-game-opponent">${game.opponent}</span>
                             <span class="recent-game-result ${game.result === 'W' ? 'win' : 'loss'}">${game.result}</span>
                         </div>
-                        ${game.stats ? `
-                            <div class="recent-game-stats">
-                                ${this.formatGameStats(game.stats)}
-                            </div>
-                        ` : '<div class="no-stats-game">No stats available</div>'}
+                        <div class="recent-game-score">${game.score}</div>
                     </div>
                 `).join('')}
             </div>
         `;
+    }
+
+    async renderLastGameStats() {
+        const container = document.getElementById('last-game-container');
+        const { recentGames, player } = this.playerData;
+
+        if (!recentGames || recentGames.length === 0) {
+            container.innerHTML = '<p class="no-data">No recent games found</p>';
+            return;
+        }
+
+        const lastGame = recentGames[0];
+        const gameId = lastGame.id;
+
+        try {
+            const response = await fetch(`/api/game-details?gameId=${gameId}`);
+            if (!response.ok) throw new Error('Failed to fetch game details');
+            const gameData = await response.json();
+
+            // Find player stats in the game data
+            let playerStats = null;
+
+            // Helper to find player in team stats
+            const findPlayerInTeam = (teamData) => {
+                if (!teamData || !teamData.players || teamData.players.length === 0) return null;
+                const statsGroup = teamData.players[0]; // Usually the first group contains the main stats
+                if (!statsGroup || !statsGroup.athletes) return null;
+                return statsGroup.athletes.find(p => p.athlete.id === player.id);
+            };
+
+            const homePlayer = findPlayerInTeam(gameData.homeTeam);
+            if (homePlayer) {
+                playerStats = { stats: homePlayer.stats };
+            } else {
+                const awayPlayer = findPlayerInTeam(gameData.awayTeam);
+                if (awayPlayer) {
+                    playerStats = { stats: awayPlayer.stats };
+                }
+            }
+
+            if (playerStats) {
+                // Standard ESPN order: MIN, FG, 3PT, FT, OREB, DREB, REB, AST, STL, BLK, TO, PF, +/-, PTS
+                const stats = playerStats.stats;
+                const pts = stats[13] || '--';
+                const reb = stats[6] || '--';
+                const ast = stats[7] || '--';
+
+                container.innerHTML = `
+                    <div class="last-game-stats">
+                        <div class="last-game-stat">
+                            <span class="stat-value-lg">${pts}</span>
+                            <span class="stat-label-sm">PTS</span>
+                        </div>
+                        <div class="last-game-stat">
+                            <span class="stat-value-lg">${reb}</span>
+                            <span class="stat-label-sm">REB</span>
+                        </div>
+                        <div class="last-game-stat">
+                            <span class="stat-value-lg">${ast}</span>
+                            <span class="stat-label-sm">AST</span>
+                        </div>
+                        <div class="last-game-details">
+                            <div class="last-game-opp">vs ${lastGame.opponent}</div>
+                            <div class="last-game-date">${this.formatGameDate(lastGame.date)}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '<p class="no-data">Player did not play in last game</p>';
+            }
+
+        } catch (error) {
+            console.error('Error loading last game stats:', error);
+            container.innerHTML = '<p class="error-message">Failed to load last game stats</p>';
+        }
     }
 
     formatGameDate(dateStr) {
@@ -273,7 +345,6 @@ class PlayerPage {
 
     formatGameStats(stats) {
         if (!stats) return '--';
-        // Format game stats as a simple string
         return `<span>${stats}</span>`;
     }
 }

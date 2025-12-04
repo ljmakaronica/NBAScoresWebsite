@@ -368,7 +368,7 @@ class TeamPage {
             const ppg = stats.find(s => s.abbreviation === 'PPG')?.displayValue || '--';
 
             rosterHTML += `
-                <a href="player.html?id=${playerId}" class="player-card-modern">
+                <a href="#" onclick="return false;" class="player-card-modern" style="cursor: default;">
                     <div class="player-card-top">
                         <span class="player-card-jersey">#${jersey}</span>
                         <span class="player-card-pos">${position}</span>
@@ -629,7 +629,7 @@ class TeamPage {
                 return `
                                     <tr>
                                         <td class="player-name sticky-col">
-                                            <a href="player.html?id=${p.id}" class="player-name-link">
+                                            <a href="#" onclick="return false;" class="player-name-link" style="cursor: default;">
                                                 <span class="name-full">${p.displayName}</span>
                                                 <span class="name-short">${p.shortName}</span>
                                             </a>
@@ -664,11 +664,11 @@ class TeamPage {
         container.innerHTML = `
             <div class="box-score-header">
                 <div class="team-header home">
-                    <a href="team.html?id=${TEAM_ID_MAP[homeTeam.info.displayName]}" class="team-logo-link">
+                    <a href="#" onclick="return false;" class="team-logo-link" style="cursor: default;">
                         <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
                     </a>
                     <div class="team-details">
-                        <h2><a href="team.html?id=${TEAM_ID_MAP[homeTeam.info.displayName]}" class="team-link">${homeTeam.info.displayName}</a></h2>
+                        <h2><a href="#" onclick="return false;" class="team-link" style="cursor: default;">${homeTeam.info.displayName}</a></h2>
                     </div>
                     <div class="score-large ${isComplete && homeScore < awayScore ? 'loser' : ''}">${homeTeam.score || '0'}</div>
                 </div>
@@ -682,9 +682,9 @@ class TeamPage {
                 <div class="team-header away">
                     <div class="score-large ${isComplete && awayScore < homeScore ? 'loser' : ''}">${awayTeam.score || '0'}</div>
                     <div class="team-details">
-                        <h2><a href="team.html?id=${TEAM_ID_MAP[awayTeam.info.displayName]}" class="team-link">${awayTeam.info.displayName}</a></h2>
+                        <h2><a href="#" onclick="return false;" class="team-link" style="cursor: default;">${awayTeam.info.displayName}</a></h2>
                     </div>
-                    <a href="team.html?id=${TEAM_ID_MAP[awayTeam.info.displayName]}" class="team-logo-link">
+                    <a href="#" onclick="return false;" class="team-logo-link" style="cursor: default;">
                         <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
                     </a>
                 </div>

@@ -225,7 +225,7 @@ class TeamPage {
             const vsAt = isHome ? 'vs' : '@';
 
             gameLogHTML += `
-                <div class="game-log-item ${isCompleted ? 'completed' : 'upcoming'}">
+                <div class="game-log-item ${isCompleted ? `completed ${resultClass}` : 'upcoming'}">
                     <div class="game-left">
                         <div class="game-date-compact">${this.formatGameDate(event.date)}</div>
                         <div class="game-opponent-compact">${vsAt} ${opponent}</div>

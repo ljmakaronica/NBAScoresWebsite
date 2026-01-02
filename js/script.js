@@ -540,7 +540,7 @@ class NBASchedule {
                 return `
                                     <tr>
                                         <td class="player-name sticky-col">
-                                            <a href="#" onclick="return false;" class="player-name-link" style="cursor: default;">
+                                            <a href="player.html?id=${p.id}" class="player-name-link">
                                                 <span class="name-full">${p.displayName}</span>
                                                 <span class="name-short">${p.shortName}</span>
                                             </a>
@@ -576,11 +576,11 @@ class NBASchedule {
             <div class="box-score-header">
                 <!-- Home Team (Left) -->
                 <div class="team-header home">
-                    <a href="#" onclick="return false;" class="team-logo-link" style="cursor: default;">
+                    <a href="team.html?id=${homeTeam.info.id}" class="team-logo-link">
                         <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
                     </a>
                     <div class="team-details">
-                        <h2><a href="#" onclick="return false;" class="team-link" style="cursor: default;">${homeTeam.info.displayName}</a></h2>
+                        <h2><a href="team.html?id=${homeTeam.info.id}" class="team-link">${homeTeam.info.displayName}</a></h2>
                         ${homeTeam.record ? `<span class="team-record">${homeTeam.record}</span>` : ''}
                     </div>
                     <div class="score-large ${isComplete && homeScore < awayScore ? 'loser' : ''}">${homeTeam.score || '0'}</div>
@@ -597,10 +597,10 @@ class NBASchedule {
                 <div class="team-header away">
                     <div class="score-large ${isComplete && awayScore < homeScore ? 'loser' : ''}">${awayTeam.score || '0'}</div>
                     <div class="team-details">
-                        <h2><a href="#" onclick="return false;" class="team-link" style="cursor: default;">${awayTeam.info.displayName}</a></h2>
+                        <h2><a href="team.html?id=${awayTeam.info.id}" class="team-link">${awayTeam.info.displayName}</a></h2>
                         ${awayTeam.record ? `<span class="team-record">${awayTeam.record}</span>` : ''}
                     </div>
-                    <a href="#" onclick="return false;" class="team-logo-link" style="cursor: default;">
+                    <a href="team.html?id=${awayTeam.info.id}" class="team-logo-link">
                         <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
                     </a>
                 </div>

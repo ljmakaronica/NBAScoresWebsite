@@ -93,7 +93,7 @@ class PlayerPage {
                             <span class="player-jersey">#${player.jersey || '--'}</span>
                             <span class="player-position-header">${player.position}</span>
                             ${team ? `
-                                <a href="#" onclick="return false;" class="player-team-link" style="cursor: default;">${team.name}</a>
+                                <a href="team.html?id=${team.id}" class="player-team-link">${team.name}</a>
                             ` : ''}
                         </div>
                     </div>

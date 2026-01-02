@@ -1,37 +1,3 @@
-// Team name to ESPN ID mapping
-const TEAM_ID_MAP = {
-    'Atlanta Hawks': '1',
-    'Boston Celtics': '2',
-    'New Orleans Pelicans': '3',
-    'Chicago Bulls': '4',
-    'Cleveland Cavaliers': '5',
-    'Dallas Mavericks': '6',
-    'Denver Nuggets': '7',
-    'Detroit Pistons': '8',
-    'Golden State Warriors': '9',
-    'Houston Rockets': '10',
-    'Indiana Pacers': '11',
-    'LA Clippers': '12',
-    'Los Angeles Lakers': '13',
-    'Miami Heat': '14',
-    'Milwaukee Bucks': '15',
-    'Minnesota Timberwolves': '16',
-    'Brooklyn Nets': '17',
-    'New York Knicks': '18',
-    'Orlando Magic': '19',
-    'Philadelphia 76ers': '20',
-    'Phoenix Suns': '21',
-    'Portland Trail Blazers': '22',
-    'Sacramento Kings': '23',
-    'San Antonio Spurs': '24',
-    'Oklahoma City Thunder': '25',
-    'Toronto Raptors': '28',
-    'Memphis Grizzlies': '29',
-    'Charlotte Hornets': '30',
-    'Utah Jazz': '27',
-    'Washington Wizards': '26'
-};
-
 class TeamPage {
     constructor() {
         this.teamId = null;
@@ -46,11 +12,6 @@ class TeamPage {
         });
 
         this.initialize();
-
-        // Bind resize event
-        window.addEventListener('resize', () => {
-            this.adjustColumnHeights();
-        });
     }
 
     initialize() {
@@ -73,7 +34,6 @@ class TeamPage {
     showError(message) {
         this.teamContent.innerHTML = `
             <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
                 <p>${message}</p>
             </div>
         `;
@@ -88,7 +48,7 @@ class TeamPage {
             }
 
             this.teamData = await response.json();
-            this.renderTeamPage();
+            this.renderPage();
         } catch (error) {
             console.error('Error loading team data:', error);
             this.showError('Failed to load team data. Please try again.');
@@ -97,254 +57,109 @@ class TeamPage {
         }
     }
 
-    renderTeamPage() {
+    renderPage() {
         if (!this.teamData) return;
 
-        document.title = `${this.teamData.team.name} - NBA`;
-        document.getElementById('team-name').textContent = this.teamData.team.name;
+        const { team, record } = this.teamData;
+        document.title = `${team.name} - NBA`;
+        document.getElementById('team-name').textContent = team.name;
 
-        this.renderTeamHeader();
-        this.renderTeamContent();
+        this.renderHeader();
+        this.renderContent();
     }
 
-    renderTeamHeader() {
-        const { team, record, schedule } = this.teamData;
+    renderHeader() {
+        const { team, record } = this.teamData;
 
-        // Find next game
-        const nextGame = schedule?.events?.find(event =>
-            !event.competitions?.[0]?.status?.type?.completed
-        );
+        this.teamHeader.innerHTML = `
+            <div class="team-page-header">
+                <img src="${team.logo}" alt="${team.name}" class="team-page-logo">
+                <div class="team-page-info">
+                    <h1 class="team-page-name">${team.name}</h1>
+                    <div class="team-page-record">
+                        <span class="record-value">${record.overall}</span>
+                        <span class="record-separator">•</span>
+                        <span class="record-standing">${record.standing}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 
-        let nextGameHTML = '';
-        if (nextGame) {
-            const competition = nextGame.competitions[0];
+    renderContent() {
+        this.teamContent.innerHTML = `
+            <div class="team-page-grid">
+                <div class="team-page-main">
+                    <section class="team-section">
+                        <h2 class="team-section-title">Recent Games</h2>
+                        ${this.renderGameLog()}
+                    </section>
+                </div>
+                <div class="team-page-sidebar">
+                    <section class="team-section">
+                        <h2 class="team-section-title">Roster</h2>
+                        ${this.renderRoster()}
+                    </section>
+                </div>
+            </div>
+        `;
+
+        this.setupGameLogListeners();
+    }
+
+    renderGameLog() {
+        const { schedule, team } = this.teamData;
+
+        if (!schedule || !schedule.events || schedule.events.length === 0) {
+            return '<p class="no-data">No games available</p>';
+        }
+
+        // Get completed games, most recent first
+        const completedGames = schedule.events
+            .filter(event => event.competitions?.[0]?.status?.type?.completed)
+            .slice(-10)
+            .reverse();
+
+        if (completedGames.length === 0) {
+            return '<p class="no-data">No completed games yet</p>';
+        }
+
+        let html = '<div class="game-log-list">';
+
+        completedGames.forEach(game => {
+            const competition = game.competitions[0];
             const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
             const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
             const isHome = homeTeam.team.displayName === team.name;
             const opponent = isHome ? awayTeam.team : homeTeam.team;
-            const opponentLogo = opponent.logo;
             const vsAt = isHome ? 'vs' : '@';
 
-            nextGameHTML = `
-                <div class="next-game-card">
-                    <div class="next-game-label">NEXT GAME</div>
-                    <div class="next-game-info">
-                        <div class="next-game-opponent">
-                            <img src="${opponentLogo}" alt="${opponent.displayName}" class="opponent-logo" onerror="this.style.display='none'">
-                            <span class="opponent-name">${vsAt} ${opponent.abbreviation}</span>
-                        </div>
-                        <div class="next-game-time">
-                            <div class="game-date">${this.formatGameDate(nextGame.date)}</div>
-                            <div class="game-time">${this.formatGameTime(nextGame.date)}</div>
-                        </div>
+            const homeScore = parseInt(homeTeam.score?.displayValue || homeTeam.score || 0);
+            const awayScore = parseInt(awayTeam.score?.displayValue || awayTeam.score || 0);
+            const teamScore = isHome ? homeScore : awayScore;
+            const opponentScore = isHome ? awayScore : homeScore;
+            const won = teamScore > opponentScore;
+
+            const gameDate = new Date(game.date);
+            const dateStr = gameDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            html += `
+                <div class="game-log-item" data-game-id="${game.id}">
+                    <div class="game-log-date">${dateStr}</div>
+                    <div class="game-log-matchup">
+                        <span class="game-log-vsat">${vsAt}</span>
+                        <span class="game-log-opponent">${opponent.abbreviation}</span>
+                    </div>
+                    <div class="game-log-result ${won ? 'win' : 'loss'}">
+                        <span class="game-log-wl">${won ? 'W' : 'L'}</span>
+                        <span class="game-log-score">${teamScore}-${opponentScore}</span>
                     </div>
                 </div>
             `;
-        }
-
-        this.teamHeader.innerHTML = `
-            <div class="team-hero" style="background: linear-gradient(to right, ${team.color}dd, ${team.color}99), url('${team.logo}') no-repeat center/cover;">
-                <div class="team-hero-content">
-                    <div class="team-identity">
-                        <img src="${team.logo}" alt="${team.name}" class="team-logo-hero" onerror="this.style.display='none'">
-                        <div class="team-text">
-                            <h1 class="team-name-hero">${team.name}</h1>
-                            <div class="team-record-hero">
-                                <span class="record-badge">${record.overall}</span>
-                                <span class="standing-text">${record.standing}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="team-next-game">
-                        ${nextGameHTML || '<div class="no-upcoming-game">No upcoming games scheduled</div>'}
-                    </div>
-                </div>
-            </div>
-            <div class="team-stats-bar">
-                <div class="stat-box">
-                    <span class="stat-label">Home</span>
-                    <span class="stat-value">${record.home}</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Away</span>
-                    <span class="stat-value">${record.away}</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Streak</span>
-                    <span class="stat-value">${this.getStreak(schedule)}</span>
-                </div>
-            </div>
-        `;
-    }
-
-    getStreak(schedule) {
-        if (!schedule || !schedule.events) return '-';
-        const completedGames = schedule.events.filter(event =>
-            event.competitions?.[0]?.status?.type?.completed
-        ).reverse(); // Most recent first
-
-        if (completedGames.length === 0) return '-';
-
-        let streak = 0;
-        let type = '';
-
-        for (const game of completedGames) {
-            const competition = game.competitions[0];
-            const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
-            const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
-            const isHome = homeTeam.team.displayName === this.teamData.team.name;
-            const homeScore = parseFloat(homeTeam.score?.value || homeTeam.score?.displayValue || homeTeam.score || 0);
-            const awayScore = parseFloat(awayTeam.score?.value || awayTeam.score?.displayValue || awayTeam.score || 0);
-
-            const won = isHome ? homeScore > awayScore : awayScore > homeScore;
-            const result = won ? 'W' : 'L';
-
-            if (streak === 0) {
-                type = result;
-                streak = 1;
-            } else if (type === result) {
-                streak++;
-            } else {
-                break;
-            }
-        }
-        return `${type}${streak}`;
-    }
-
-    renderTeamContent() {
-        this.teamContent.innerHTML = `
-            <div class="team-grid-layout">
-                <div class="main-column">
-                    <div class="section-header">
-                        <h3 class="section-title">Team Leaders</h3>
-                    </div>
-                    ${this.renderTeamLeaders()}
-                    
-                    <div class="section-header" style="margin-top: 2rem;">
-                        <h3 class="section-title">Roster</h3>
-                    </div>
-                    ${this.renderRoster()}
-                </div>
-                <div class="sidebar-column">
-                    <div class="section-header">
-                        <h3 class="section-title">Game Log</h3>
-                    </div>
-                    ${this.renderGameLog()}
-                    
-                    <div class="section-header" style="margin-top: 2rem;">
-                        <h3 class="section-title">Team Stats</h3>
-                    </div>
-                    ${this.renderStatistics()}
-                </div>
-            </div>
-        `;
-
-        // Add click listeners to game log items
-        this.setupGameLogListeners();
-
-        // Adjust heights
-        setTimeout(() => this.adjustColumnHeights(), 0);
-    }
-
-    setupGameLogListeners() {
-        const gameLogRows = document.querySelectorAll('.game-log-row[data-game-id]');
-        gameLogRows.forEach(row => {
-            if (row.classList.contains('completed')) {
-                row.addEventListener('click', () => {
-                    const gameId = row.getAttribute('data-game-id');
-                    if (gameId) {
-                        this.showBoxScore(gameId);
-                    }
-                });
-            }
-        });
-    }
-
-    adjustColumnHeights() {
-        // With the new grid layout, we might not need manual height adjustment as much,
-        // but let's keep it for the sidebar if needed.
-        // For now, let CSS Grid handle the layout.
-    }
-
-    renderTeamLeaders() {
-        const { roster } = this.teamData;
-        if (!roster || roster.length === 0) return '';
-
-        // Helper to get stat value safely
-        const getStatValue = (player, abbr) => {
-            const stats = player.statistics?.[0]?.stats || [];
-            const stat = stats.find(s => s.abbreviation === abbr);
-            return stat ? parseFloat(stat.displayValue) : 0;
-        };
-
-        // Find leaders
-        const ppgLeader = [...roster].sort((a, b) => getStatValue(b, 'PPG') - getStatValue(a, 'PPG'))[0];
-        const rpgLeader = [...roster].sort((a, b) => getStatValue(b, 'RPG') - getStatValue(a, 'RPG'))[0];
-        const apgLeader = [...roster].sort((a, b) => getStatValue(b, 'APG') - getStatValue(a, 'APG'))[0];
-
-        const leaders = [
-            { label: 'Points', player: ppgLeader, stat: 'PPG' },
-            { label: 'Rebounds', player: rpgLeader, stat: 'RPG' },
-            { label: 'Assists', player: apgLeader, stat: 'APG' }
-        ];
-
-        return `
-            <div class="team-leaders-grid">
-                ${leaders.map(item => {
-            const player = item.player;
-            if (!player) return '';
-            const statValue = getStatValue(player, item.stat);
-
-            return `
-                        <div class="leader-card">
-                            <div class="leader-label">${item.label}</div>
-                            <div class="leader-info">
-                                <img src="${player.headshot || ''}" alt="${player.displayName}" class="leader-headshot" onerror="this.src='assets/default-player.png'">
-                                <div class="leader-details">
-                                    <div class="leader-value">${statValue}</div>
-                                    <div class="leader-name">${player.displayName}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-        }).join('')}
-            </div>
-        `;
-    }
-
-    renderStatistics() {
-        const { statistics } = this.teamData;
-
-        if (!statistics || statistics.length === 0) {
-            return '<p class="no-data">No statistics available</p>';
-        }
-
-        let statsHTML = '<div class="team-stats-list">';
-
-        statistics.forEach(category => {
-            if (category.stats && category.stats.length > 0) {
-                // Filter for key stats only to keep it clean
-                const keyStats = category.stats.filter(s =>
-                    ['PPG', 'RPG', 'APG', 'FG%', '3P%', 'FT%', 'TO', 'SPG', 'BPG'].includes(s.abbreviation)
-                );
-
-                if (keyStats.length > 0) {
-                    statsHTML += `<div class="stats-category-group">`;
-                    keyStats.forEach(stat => {
-                        statsHTML += `
-                            <div class="team-stat-row">
-                                <span class="team-stat-label">${stat.displayName}</span>
-                                <span class="team-stat-value">${stat.displayValue}</span>
-                            </div>
-                        `;
-                    });
-                    statsHTML += `</div>`;
-                }
-            }
         });
 
-        statsHTML += '</div>';
-        return statsHTML;
+        html += '</div>';
+        return html;
     }
 
     renderRoster() {
@@ -354,159 +169,38 @@ class TeamPage {
             return '<p class="no-data">No roster available</p>';
         }
 
-        let rosterHTML = '<div class="roster-grid-modern">';
+        let html = '<div class="roster-list">';
 
         roster.forEach(player => {
-            const position = player.position?.abbreviation || 'N/A';
+            const position = player.position?.abbreviation || '--';
             const jersey = player.jersey || '--';
             const displayName = player.displayName || player.fullName || 'Unknown';
             const playerId = player.id;
-            const headshot = player.headshot;
 
-            // Get stats if available
-            const stats = player.statistics?.[0]?.stats || [];
-            const ppg = stats.find(s => s.abbreviation === 'PPG')?.displayValue || '--';
-
-            rosterHTML += `
-                <a href="player.html?id=${playerId}" class="player-card-modern">
-                    <div class="player-card-top">
-                        <span class="player-card-jersey">#${jersey}</span>
-                        <span class="player-card-pos">${position}</span>
-                    </div>
-                    <div class="player-card-image-container">
-                        ${headshot ?
-                    `<img src="${headshot}" alt="${displayName}" class="player-card-img" onerror="this.style.display='none'">` :
-                    `<div class="player-card-placeholder"><i class="fas fa-user"></i></div>`
-                }
-                    </div>
-                    <div class="player-card-info">
-                        <div class="player-card-name">${displayName}</div>
-                        <div class="player-card-stat">
-                            <span class="stat-label">PPG</span>
-                            <span class="stat-val">${ppg}</span>
-                        </div>
-                    </div>
+            html += `
+                <a href="player.html?id=${playerId}" class="roster-item">
+                    <span class="roster-jersey">#${jersey}</span>
+                    <span class="roster-name">${displayName}</span>
+                    <span class="roster-pos">${position}</span>
                 </a>
             `;
         });
 
-        rosterHTML += '</div>';
-        return rosterHTML;
+        html += '</div>';
+        return html;
     }
 
-    renderGameLog() {
-        const { schedule } = this.teamData;
-
-        if (!schedule || !schedule.events || schedule.events.length === 0) {
-            return '<p class="no-data">No games available</p>';
-        }
-
-        // Separate games
-        const completedGames = schedule.events.filter(event =>
-            event.competitions?.[0]?.status?.type?.completed
-        ).reverse();
-
-        const upcomingGames = schedule.events.filter(event =>
-            !event.competitions?.[0]?.status?.type?.completed
-        );
-
-        // Limit to last 5 completed and next 3 upcoming for the sidebar view
-        const recentGames = completedGames.slice(0, 5);
-        const nextGames = upcomingGames.slice(0, 3);
-
-        let gameLogHTML = `
-            <div class="game-log-modern">
-                <table class="game-log-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Opponent</th>
-                            <th>Result/Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-
-        // Combine for display: Next games first (if any), then recent games
-        // Actually, usually users want to see "Schedule" vs "Results".
-        // Let's show recent results first as that's "Game Log".
-
-        recentGames.forEach(event => {
-            const competition = event.competitions?.[0];
-            if (!competition) return;
-
-            const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
-            const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
-            const isCompleted = competition.status?.type?.completed;
-
-            const result = this.getGameResult(homeTeam, awayTeam);
-            const resultClass = result === 'W' ? 'win' : 'loss';
-
-            const homeScore = homeTeam.score?.displayValue || homeTeam.score || '0';
-            const awayScore = awayTeam.score?.displayValue || awayTeam.score || '0';
-
-            const isHome = homeTeam.team.displayName === this.teamData.team.name;
-            const opponent = isHome ? awayTeam.team.displayName : homeTeam.team.displayName;
-            const opponentAbbr = isHome ? awayTeam.team.abbreviation : homeTeam.team.abbreviation;
-            const vsAt = isHome ? 'vs' : '@';
-            const gameId = event.id;
-
-            gameLogHTML += `
-                <tr class="game-log-row completed" data-game-id="${gameId}">
-                    <td class="date-col">
-                        <span class="date-day">${this.formatGameDate(event.date)}</span>
-                    </td>
-                    <td class="opponent-col">
-                        <span class="vs-at">${vsAt}</span>
-                        <span class="opp-name">${opponentAbbr}</span>
-                    </td>
-                    <td class="result-col">
-                        <span class="result-badge ${resultClass}">${result}</span>
-                        <span class="score-text">${isHome ? homeScore : awayScore}-${isHome ? awayScore : homeScore}</span>
-                    </td>
-                </tr>
-            `;
+    setupGameLogListeners() {
+        const gameItems = document.querySelectorAll('.game-log-item[data-game-id]');
+        gameItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const gameId = item.dataset.gameId;
+                this.openBoxScoreModal(gameId);
+            });
         });
-
-        gameLogHTML += `
-                    </tbody>
-                </table>
-                ${completedGames.length > 5 ? `<div class="view-all-games">View full schedule</div>` : ''}
-            </div>
-        `;
-
-        return gameLogHTML;
     }
 
-    getGameResult(homeTeam, awayTeam) {
-        const teamName = this.teamData.team.name;
-        const homeScore = parseFloat(homeTeam.score?.value || homeTeam.score?.displayValue || homeTeam.score || 0);
-        const awayScore = parseFloat(awayTeam.score?.value || awayTeam.score?.displayValue || awayTeam.score || 0);
-
-        if (homeTeam.team.displayName === teamName) {
-            return homeScore > awayScore ? 'W' : 'L';
-        } else {
-            return awayScore > homeScore ? 'W' : 'L';
-        }
-    }
-
-    formatDate(dateStr) {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
-
-    formatGameDate(dateStr) {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    }
-
-    formatGameTime(dateStr) {
-        const date = new Date(dateStr);
-        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    }
-
-    async showBoxScore(gameId) {
-        // Create modal if it doesn't exist
+    async openBoxScoreModal(gameId) {
         let modal = document.getElementById('box-score-modal');
         if (!modal) {
             modal = document.createElement('div');
@@ -515,81 +209,53 @@ class TeamPage {
             modal.innerHTML = `
                 <div class="modal-content">
                     <span class="close-modal">&times;</span>
-                    <div id="modal-body">Loading...</div>
+                    <div id="box-score-container">Loading...</div>
                 </div>
             `;
             document.body.appendChild(modal);
 
-            // Close button logic
-            modal.querySelector('.close-modal').onclick = () => {
+            modal.querySelector('.close-modal').addEventListener('click', () => {
                 modal.style.display = 'none';
-            };
+            });
 
-            // Click outside to close
-            window.onclick = (event) => {
-                if (event.target === modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
                     modal.style.display = 'none';
                 }
-            };
+            });
         }
 
         modal.style.display = 'block';
-        const modalBody = document.getElementById('modal-body');
-
-        // Skeleton Loader HTML
-        modalBody.innerHTML = `
-            <div class="box-score-skeleton">
-                <div class="skeleton-header">
-                    <div class="skeleton-team">
-                        <div class="skeleton-logo"></div>
-                        <div class="skeleton-name"></div>
-                        <div class="skeleton-score"></div>
-                    </div>
-                    <div class="skeleton-info">
-                        <div class="skeleton-status"></div>
-                        <div class="skeleton-clock"></div>
-                    </div>
-                    <div class="skeleton-team">
-                        <div class="skeleton-score"></div>
-                        <div class="skeleton-name"></div>
-                        <div class="skeleton-logo"></div>
-                    </div>
-                </div>
-                <div class="skeleton-tabs">
-                    <div class="skeleton-tab"></div>
-                    <div class="skeleton-tab"></div>
-                </div>
-                <div class="skeleton-table">
-                    <div class="skeleton-row header"></div>
-                    <div class="skeleton-row"></div>
-                    <div class="skeleton-row"></div>
-                    <div class="skeleton-row"></div>
-                    <div class="skeleton-row"></div>
-                    <div class="skeleton-row"></div>
-                </div>
-            </div>
-        `;
+        const container = document.getElementById('box-score-container');
+        container.innerHTML = '<div class="loading-text">Loading box score...</div>';
 
         try {
-            const response = await fetch(`/api/game-details?gameId=${gameId}&t=${Date.now()}`);
+            const response = await fetch(`/api/game-details?gameId=${gameId}`);
             if (!response.ok) throw new Error('Failed to fetch game details');
-            const data = await response.json();
 
-            this.renderBoxScore(data, modalBody);
+            const data = await response.json();
+            this.renderBoxScore(data, container);
         } catch (error) {
             console.error('Error loading box score:', error);
-            modalBody.innerHTML = '<div class="error-message">Failed to load box score.</div>';
+            container.innerHTML = '<p class="error-message">Failed to load box score</p>';
         }
     }
 
     renderBoxScore(data, container) {
-        const { homeTeam, awayTeam, gameInfo } = data;
+        const { gameInfo, homeTeam, awayTeam } = data;
 
-        const renderPlayerTable = (playerStatsGroups) => {
-            if (!playerStatsGroups || playerStatsGroups.length === 0) return '<div class="no-stats">No stats available</div>';
+        const renderPlayerTable = (players) => {
+            if (!players || players.length === 0) {
+                return '<p class="no-data">No player stats available</p>';
+            }
 
-            const statsGroup = playerStatsGroups[0];
-            const { names, athletes } = statsGroup;
+            const statsGroup = players[0];
+            if (!statsGroup || !statsGroup.athletes) {
+                return '<p class="no-data">No player stats available</p>';
+            }
+
+            const athletes = statsGroup.athletes;
+            const names = statsGroup.names || [];
 
             return `
                 <div class="stats-table-wrapper">
@@ -677,7 +343,6 @@ class TeamPage {
                 <div class="game-info-large">
                     <div class="game-status-large">${gameInfo.status}</div>
                     <div class="game-clock-large">${gameInfo.clock || ''}</div>
-                    ${gameInfo.broadcasts && gameInfo.broadcasts.length > 0 ? `<div class="broadcast-info-large">${gameInfo.broadcasts.join(', ')}</div>` : ''}
                 </div>
 
                 <div class="team-header away">
@@ -707,24 +372,15 @@ class TeamPage {
             </div>
         `;
 
-        // Add Tab Event Listeners
         const tabs = container.querySelectorAll('.tab-btn');
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
 
-                const targetTab = tab.getAttribute('data-tab');
-                container.querySelectorAll('.team-stats-view').forEach(view => {
-                    view.style.display = 'none';
-                    view.classList.remove('active');
-                });
-
-                const targetView = container.querySelector(`#stats-${targetTab}`);
-                if (targetView) {
-                    targetView.style.display = 'block';
-                    targetView.classList.add('active');
-                }
+                const tabName = tab.dataset.tab;
+                document.getElementById('stats-home').style.display = tabName === 'home' ? 'block' : 'none';
+                document.getElementById('stats-away').style.display = tabName === 'away' ? 'block' : 'none';
             });
         });
     }

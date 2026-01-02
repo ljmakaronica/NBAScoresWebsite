@@ -1513,6 +1513,8 @@ main {
   border: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .team-details h2 {
@@ -1556,10 +1558,18 @@ main {
 
 .team-record {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--color-text-muted);
-  margin-top: 0.25rem;
+  margin-top: 0.125rem;
+}
+
+.team-header.home .team-record {
+  text-align: right;
+}
+
+.team-header.away .team-record {
+  text-align: left;
 }
 
 .team-logo-link {

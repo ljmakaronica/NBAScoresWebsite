@@ -36,11 +36,18 @@ export default async function handler(req, res) {
             return team ? team.statistics : [];
         };
 
-        const homeTeamId = header.competitions[0].competitors.find(c => c.homeAway === 'home').id;
-        const awayTeamId = header.competitions[0].competitors.find(c => c.homeAway === 'away').id;
+        const homeCompetitor = header.competitions[0].competitors.find(c => c.homeAway === 'home');
+        const awayCompetitor = header.competitions[0].competitors.find(c => c.homeAway === 'away');
 
-        const homeScore = header.competitions[0].competitors.find(c => c.homeAway === 'home').score;
-        const awayScore = header.competitions[0].competitors.find(c => c.homeAway === 'away').score;
+        const homeTeamId = homeCompetitor.id;
+        const awayTeamId = awayCompetitor.id;
+
+        const homeScore = homeCompetitor.score;
+        const awayScore = awayCompetitor.score;
+
+        // Extract records (format: "25-10" or similar)
+        const homeRecord = homeCompetitor.record?.[0]?.summary || null;
+        const awayRecord = awayCompetitor.record?.[0]?.summary || null;
 
         const processedData = {
             gameInfo: {
@@ -61,12 +68,14 @@ export default async function handler(req, res) {
             homeTeam: {
                 info: boxscore.teams.find(t => t.team.id === homeTeamId).team,
                 score: homeScore,
+                record: homeRecord,
                 stats: getTeamStats(homeTeamId),
                 players: getPlayerStats(homeTeamId)
             },
             awayTeam: {
                 info: boxscore.teams.find(t => t.team.id === awayTeamId).team,
                 score: awayScore,
+                record: awayRecord,
                 stats: getTeamStats(awayTeamId),
                 players: getPlayerStats(awayTeamId)
             }

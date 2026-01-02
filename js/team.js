@@ -669,6 +669,7 @@ class TeamPage {
                     </a>
                     <div class="team-details">
                         <h2><a href="#" onclick="return false;" class="team-link" style="cursor: default;">${homeTeam.info.displayName}</a></h2>
+                        ${homeTeam.record ? `<span class="team-record">${homeTeam.record}</span>` : ''}
                     </div>
                     <div class="score-large ${isComplete && homeScore < awayScore ? 'loser' : ''}">${homeTeam.score || '0'}</div>
                 </div>
@@ -683,6 +684,7 @@ class TeamPage {
                     <div class="score-large ${isComplete && awayScore < homeScore ? 'loser' : ''}">${awayTeam.score || '0'}</div>
                     <div class="team-details">
                         <h2><a href="#" onclick="return false;" class="team-link" style="cursor: default;">${awayTeam.info.displayName}</a></h2>
+                        ${awayTeam.record ? `<span class="team-record">${awayTeam.record}</span>` : ''}
                     </div>
                     <a href="#" onclick="return false;" class="team-logo-link" style="cursor: default;">
                         <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">

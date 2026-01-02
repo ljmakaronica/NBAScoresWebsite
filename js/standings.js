@@ -193,9 +193,9 @@ class NBAStandings {
                 <td class="team-col">
                     <div class="team-info">
                         <div class="${TEAM_LOGOS[team.full_name]}"></div>
-                        <a href="team.html?id=${TEAM_ID_MAP[team.full_name]}" class="team-link">
+                        <span class="team-link">
                             <span class="team-name">${team.full_name}</span>
-                        </a>
+                        </span>
                     </div>
                 </td>
                 <td class="stat-col">${team.wins}</td>

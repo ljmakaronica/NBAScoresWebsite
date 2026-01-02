@@ -178,11 +178,11 @@ class TeamPage {
             const playerId = player.id;
 
             html += `
-                <a href="player.html?id=${playerId}" class="roster-item">
+                <div class="roster-item">
                     <span class="roster-jersey">#${jersey}</span>
                     <span class="roster-name">${displayName}</span>
                     <span class="roster-pos">${position}</span>
-                </a>
+                </div>
             `;
         });
 
@@ -295,10 +295,10 @@ class TeamPage {
                 return `
                                     <tr>
                                         <td class="player-name sticky-col">
-                                            <a href="player.html?id=${p.id}" class="player-name-link">
+                                            <span class="player-name-link">
                                                 <span class="name-full">${p.displayName}</span>
                                                 <span class="name-short">${p.shortName}</span>
-                                            </a>
+                                            </span>
                                         </td>
                                         <td class="stat-pts">${getStat('PTS')}</td>
                                         <td>${min}</td>
@@ -330,11 +330,11 @@ class TeamPage {
         container.innerHTML = `
             <div class="box-score-header">
                 <div class="team-header home">
-                    <a href="team.html?id=${homeTeam.info.id}" class="team-logo-link">
+                    <span class="team-logo-link">
                         <img src="${homeTeam.info.logo}" alt="${homeTeam.info.abbreviation}" class="team-logo-large">
-                    </a>
+                    </span>
                     <div class="team-details">
-                        <h2><a href="team.html?id=${homeTeam.info.id}" class="team-link">${homeTeam.info.displayName}</a></h2>
+                        <h2><span class="team-link">${homeTeam.info.displayName}</span></h2>
                         ${homeTeam.record ? `<span class="team-record">${homeTeam.record}</span>` : ''}
                     </div>
                     <div class="score-large ${isComplete && homeScore < awayScore ? 'loser' : ''}">${homeTeam.score || '0'}</div>
@@ -348,12 +348,12 @@ class TeamPage {
                 <div class="team-header away">
                     <div class="score-large ${isComplete && awayScore < homeScore ? 'loser' : ''}">${awayTeam.score || '0'}</div>
                     <div class="team-details">
-                        <h2><a href="team.html?id=${awayTeam.info.id}" class="team-link">${awayTeam.info.displayName}</a></h2>
+                        <h2><span class="team-link">${awayTeam.info.displayName}</span></h2>
                         ${awayTeam.record ? `<span class="team-record">${awayTeam.record}</span>` : ''}
                     </div>
-                    <a href="team.html?id=${awayTeam.info.id}" class="team-logo-link">
+                    <span class="team-logo-link">
                         <img src="${awayTeam.info.logo}" alt="${awayTeam.info.abbreviation}" class="team-logo-large">
-                    </a>
+                    </span>
                 </div>
             </div>
 

@@ -26,10 +26,7 @@
   <div id="app">
     <header class="site-header">
       <div class="header-content">
-        <button id="back-button" class="back-button">
-          <i class="fas fa-arrow-left"></i>
-        </button>
-        <h1 class="site-title" id="player-name">NBA</h1>
+        <a href="index.html" class="site-title">NBA</a>
         <nav class="tab-nav">
           <a href="index.html" class="tab-link">Schedule</a>
           <a href="standings.html" class="tab-link">Standings</a>
@@ -38,6 +35,11 @@
     </header>
 
     <main>
+      <button id="back-button" class="content-back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back</span>
+      </button>
+
       <div id="player-header" class="player-header">
         <!-- Player header will be dynamically inserted here -->
       </div>

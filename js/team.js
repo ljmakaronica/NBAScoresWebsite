@@ -62,7 +62,6 @@ class TeamPage {
 
         const { team, record } = this.teamData;
         document.title = `${team.name} - NBA`;
-        document.getElementById('team-name').textContent = team.name;
 
         this.renderHeader();
         this.renderContent();

@@ -1907,6 +1907,34 @@ main {
   color: var(--color-accent);
 }
 
+/* Content Back Button (within page content) */
+.content-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+}
+
+.content-back-button:hover {
+  background: var(--color-row-bg);
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+.content-back-button i {
+  font-size: 0.75rem;
+}
+
 .team-header {
   background: var(--color-card-bg);
   backdrop-filter: blur(10px);
@@ -2435,6 +2463,34 @@ main {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Injury Badge */
+.injury-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  border-radius: 1rem;
+  -webkit-text-fill-color: #ef4444;
+}
+
+.injury-badge i {
+  font-size: 0.625rem;
+}
+
+.injury-status {
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 .player-meta {

@@ -68,7 +68,6 @@ class PlayerPage {
 
         const { player } = this.playerData;
         document.title = `${player.displayName} - NBA`;
-        document.getElementById('player-name').textContent = player.displayName;
 
         this.renderPlayerHeader();
         this.renderPlayerContent();
@@ -76,6 +75,15 @@ class PlayerPage {
 
     renderPlayerHeader() {
         const { player, team } = this.playerData;
+        
+        // Check if player is injured (status is not 'Active')
+        const isInjured = player.status && player.status !== 'Active';
+        const injuryBadge = isInjured ? `
+            <span class="injury-badge" title="${player.status}">
+                <i class="fas fa-kit-medical"></i>
+                <span class="injury-status">${player.status}</span>
+            </span>
+        ` : '';
 
         this.playerHeader.innerHTML = `
             <div class="player-header-content">
@@ -88,7 +96,10 @@ class PlayerPage {
                         </div>
                     `}
                     <div class="player-info-header">
-                        <h2 class="player-name-header">${player.displayName}</h2>
+                        <h2 class="player-name-header">
+                            ${player.displayName}
+                            ${injuryBadge}
+                        </h2>
                         <div class="player-meta">
                             <span class="player-jersey">#${player.jersey || '--'}</span>
                             <span class="player-position-header">${player.position}</span>

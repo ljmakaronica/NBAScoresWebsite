@@ -66,16 +66,8 @@ class PlayerPage {
     renderPlayerPage() {
         if (!this.playerData) return;
 
-        const { player, team } = this.playerData;
+        const { player } = this.playerData;
         document.title = `${player.displayName} - NBA`;
-
-        // Apply team color theming if available
-        if (team?.color) {
-            const teamColor = `#${team.color}`;
-            document.documentElement.style.setProperty('--team-color', teamColor);
-            document.documentElement.style.setProperty('--team-color-light', `${teamColor}20`);
-            document.documentElement.style.setProperty('--team-color-border', `${teamColor}40`);
-        }
 
         this.renderPlayerHeader();
         this.renderPlayerContent();
@@ -388,16 +380,15 @@ class PlayerPage {
         const { player, team } = this.playerData;
 
         if (!team) {
-            container.innerHTML = `<div class="no-recent-game"><span class="no-data-text">Team info unavailable</span></div>`;
+            container.innerHTML = `<p class="no-data-text">Team info unavailable</p>`;
             return;
         }
 
         try {
-            // Search the last 7 days for completed games
-            let foundGame = null;
+            // Search last 14 days for games where this player actually played
             const today = new Date();
             
-            for (let daysBack = 1; daysBack <= 7; daysBack++) {
+            for (let daysBack = 1; daysBack <= 14; daysBack++) {
                 const searchDate = new Date(today);
                 searchDate.setDate(searchDate.getDate() - daysBack);
                 const dateStr = searchDate.toISOString().split('T')[0];
@@ -408,96 +399,82 @@ class PlayerPage {
                 const gamesData = await gamesResponse.json();
                 const games = gamesData.data || [];
                 
-                // Find a completed game involving this team
-                const teamGame = games.find(g => 
+                // Find completed games involving this team
+                const teamGames = games.filter(g => 
                     (g.home_team?.full_name === team.name || g.visitor_team?.full_name === team.name) &&
                     (g.status === 'Final' || g.period_state === 'post')
                 );
                 
-                if (teamGame) {
-                    foundGame = { id: teamGame.id, date: dateStr };
-                    break;
+                for (const teamGame of teamGames) {
+                    // Fetch box score and check if player has stats
+                    const boxResponse = await fetch(`/api/game-details?gameId=${teamGame.id}`);
+                    if (!boxResponse.ok) continue;
+                    const boxData = await boxResponse.json();
+
+                    let playerStats = null;
+                    let statNames = [];
+
+                    const findPlayerInTeam = (teamData) => {
+                        if (!teamData?.players?.[0]?.athletes) return null;
+                        const statsGroup = teamData.players[0];
+                        statNames = statsGroup.names || [];
+                        return statsGroup.athletes.find(p => String(p.athlete.id) === String(player.id));
+                    };
+
+                    playerStats = findPlayerInTeam(boxData.homeTeam) || findPlayerInTeam(boxData.awayTeam);
+
+                    // Only show if player actually has stats
+                    if (playerStats?.stats && playerStats.stats.length > 0) {
+                        const getStatByName = (name) => {
+                            const index = statNames.indexOf(name);
+                            return index !== -1 ? (playerStats.stats[index] || '--') : '--';
+                        };
+
+                        const pts = getStatByName('PTS');
+                        const reb = getStatByName('REB');
+                        const ast = getStatByName('AST');
+
+                        // Only show if at least one stat is not '--'
+                        if (pts === '--' && reb === '--' && ast === '--') continue;
+
+                        const isHome = boxData.homeTeam?.info?.displayName === team.name;
+                        const teamScore = isHome ? parseInt(boxData.homeTeam?.score) : parseInt(boxData.awayTeam?.score);
+                        const oppScore = isHome ? parseInt(boxData.awayTeam?.score) : parseInt(boxData.homeTeam?.score);
+                        const result = teamScore > oppScore ? 'W' : 'L';
+                        const opponent = isHome ? boxData.awayTeam?.info?.abbreviation : boxData.homeTeam?.info?.abbreviation;
+
+                        container.innerHTML = `
+                            <div class="last-game-stats">
+                                <div class="last-game-stat">
+                                    <span class="stat-value-lg">${pts}</span>
+                                    <span class="stat-label-sm">PTS</span>
+                                </div>
+                                <div class="last-game-stat">
+                                    <span class="stat-value-lg">${reb}</span>
+                                    <span class="stat-label-sm">REB</span>
+                                </div>
+                                <div class="last-game-stat">
+                                    <span class="stat-value-lg">${ast}</span>
+                                    <span class="stat-label-sm">AST</span>
+                                </div>
+                                <div class="last-game-details">
+                                    <div class="last-game-opp">vs ${opponent || 'OPP'}</div>
+                                    <div class="last-game-date">${this.formatGameDate(dateStr)}</div>
+                                    <div class="last-game-result ${result === 'W' ? 'win' : 'loss'}">${result} ${teamScore}-${oppScore}</div>
+                                </div>
+                            </div>
+                        `;
+                        return; // Found a game where player played!
+                    }
                 }
             }
 
-            if (!foundGame) {
-                container.innerHTML = `<div class="no-recent-game"><span class="no-data-text">No recent games found</span></div>`;
-                return;
-            }
+            // No game found where player played
+            container.innerHTML = `<p class="no-data-text">No games in last 2 weeks</p>`;
 
-            // Fetch box score for the game
-            const boxResponse = await fetch(`/api/game-details?gameId=${foundGame.id}`);
-            if (!boxResponse.ok) throw new Error('Failed to fetch box score');
-            const boxData = await boxResponse.json();
-
-            // Find the player in the box score
-            let playerStats = null;
-            let statNames = [];
-
-            const findPlayerInTeam = (teamData) => {
-                if (!teamData?.players?.[0]?.athletes) return null;
-                const statsGroup = teamData.players[0];
-                statNames = statsGroup.names || [];
-                return statsGroup.athletes.find(p => String(p.athlete.id) === String(player.id));
-            };
-
-            const homePlayer = findPlayerInTeam(boxData.homeTeam);
-            playerStats = homePlayer || findPlayerInTeam(boxData.awayTeam);
-
-            if (playerStats?.stats) {
-                const getStatByName = (name) => {
-                    const index = statNames.indexOf(name);
-                    return index !== -1 ? (playerStats.stats[index] || '--') : '--';
-                };
-
-                const pts = getStatByName('PTS');
-                const reb = getStatByName('REB');
-                const ast = getStatByName('AST');
-
-                // Determine opponent and score
-                const isHome = boxData.homeTeam?.info?.id === team.id || boxData.homeTeam?.info?.displayName === team.name;
-                const teamScore = isHome ? parseInt(boxData.homeTeam?.score) : parseInt(boxData.awayTeam?.score);
-                const oppScore = isHome ? parseInt(boxData.awayTeam?.score) : parseInt(boxData.homeTeam?.score);
-                const result = teamScore > oppScore ? 'W' : 'L';
-                const opponent = isHome ? boxData.awayTeam?.info?.abbreviation : boxData.homeTeam?.info?.abbreviation;
-
-                container.innerHTML = `
-                    <div class="last-game-stats">
-                        <div class="last-game-stat">
-                            <span class="stat-value-lg">${pts}</span>
-                            <span class="stat-label-sm">PTS</span>
-                        </div>
-                        <div class="last-game-stat">
-                            <span class="stat-value-lg">${reb}</span>
-                            <span class="stat-label-sm">REB</span>
-                        </div>
-                        <div class="last-game-stat">
-                            <span class="stat-value-lg">${ast}</span>
-                            <span class="stat-label-sm">AST</span>
-                        </div>
-                        <div class="last-game-details">
-                            <div class="last-game-opp">vs ${opponent || 'OPP'}</div>
-                            <div class="last-game-date">${this.formatGameDate(foundGame.date)}</div>
-                            <div class="last-game-result ${result === 'W' ? 'win' : 'loss'}">${result} ${teamScore}-${oppScore}</div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                const isHome = boxData.homeTeam?.info?.displayName === team.name;
-                const opponent = isHome ? boxData.awayTeam?.info?.abbreviation : boxData.homeTeam?.info?.abbreviation;
-                container.innerHTML = `
-                    <div class="last-game-stats">
-                        <div class="last-game-details" style="margin-left: 0;">
-                            <div class="last-game-opp">vs ${opponent || 'OPP'}</div>
-                            <div class="last-game-date">${this.formatGameDate(foundGame.date)}</div>
-                            <div class="no-stats-note">Did not play</div>
-                        </div>
-                    </div>
-                `;
-            }
         } catch (error) {
             console.error('Error loading last game stats:', error);
-            container.innerHTML = `<div class="no-recent-game"><span class="no-data-text">Could not load last game</span></div>`;
+            container.innerHTML = `<p class="no-data-text">Could not load stats</p>`;
         }
     }
 

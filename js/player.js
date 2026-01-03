@@ -66,8 +66,16 @@ class PlayerPage {
     renderPlayerPage() {
         if (!this.playerData) return;
 
-        const { player } = this.playerData;
+        const { player, team } = this.playerData;
         document.title = `${player.displayName} - NBA`;
+
+        // Apply team color theming if available
+        if (team?.color) {
+            const teamColor = `#${team.color}`;
+            document.documentElement.style.setProperty('--team-color', teamColor);
+            document.documentElement.style.setProperty('--team-color-light', `${teamColor}20`);
+            document.documentElement.style.setProperty('--team-color-border', `${teamColor}40`);
+        }
 
         this.renderPlayerHeader();
         this.renderPlayerContent();

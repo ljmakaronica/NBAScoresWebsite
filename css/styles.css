@@ -2417,20 +2417,14 @@ main {
 /* Hero Section */
 .player-hero {
   position: relative;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, transparent 100%);
+  background: var(--color-card-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   overflow: hidden;
 }
 
 .player-hero-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
-  pointer-events: none;
+  display: none;
 }
 
 .player-hero-content {
@@ -2669,11 +2663,18 @@ main {
 }
 
 /* Last Game Stats - Full Width Layout */
+#last-game-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 120px;
+}
+
 .last-game-loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100px;
 }
 
 .last-game-stats {

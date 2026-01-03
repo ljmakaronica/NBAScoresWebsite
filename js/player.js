@@ -177,8 +177,33 @@ class PlayerPage {
         }
 
         const getStat = (statsObj, key) => statsObj?.[key] || '--';
+        const seasonStats = stats.season;
+        const careerStats = stats.career;
+
+        // Determine which stats to show in key cards (prefer season, fallback to career)
+        const keyStats = seasonStats || careerStats;
+        const statsLabel = seasonStats ? 'Season Avg' : 'Career Avg';
 
         return `
+            <div class="key-stats-cards">
+                <div class="key-stat-card">
+                    <div class="key-stat-value">${getStat(keyStats, 'avgPoints')}</div>
+                    <div class="key-stat-label">PTS</div>
+                    <div class="key-stat-type">${statsLabel}</div>
+                </div>
+                <div class="key-stat-card">
+                    <div class="key-stat-value">${getStat(keyStats, 'avgRebounds')}</div>
+                    <div class="key-stat-label">REB</div>
+                    <div class="key-stat-type">${statsLabel}</div>
+                </div>
+                <div class="key-stat-card">
+                    <div class="key-stat-value">${getStat(keyStats, 'avgAssists')}</div>
+                    <div class="key-stat-label">AST</div>
+                    <div class="key-stat-type">${statsLabel}</div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="margin-top: 1.5rem;">Season & Career Stats</h3>
             <div class="player-stats-table-wrapper">
                 <table class="player-stats-table">
                     <thead>
@@ -199,38 +224,38 @@ class PlayerPage {
                         </tr>
                     </thead>
                     <tbody>
-                        ${stats.season ? `
+                        ${seasonStats ? `
                             <tr>
-                                <td class="stat-label-col">Regular Season</td>
-                                <td>${getStat(stats.season, 'gamesPlayed')}</td>
-                                <td>${getStat(stats.season, 'avgMinutes')}</td>
-                                <td>${getStat(stats.season, 'fieldGoalPct')}</td>
-                                <td>${getStat(stats.season, 'threePointFieldGoalPct')}</td>
-                                <td>${getStat(stats.season, 'freeThrowPct')}</td>
-                                <td>${getStat(stats.season, 'avgRebounds')}</td>
-                                <td>${getStat(stats.season, 'avgAssists')}</td>
-                                <td>${getStat(stats.season, 'avgBlocks')}</td>
-                                <td>${getStat(stats.season, 'avgSteals')}</td>
-                                <td>${getStat(stats.season, 'avgPersonalFouls')}</td>
-                                <td>${getStat(stats.season, 'avgTurnovers')}</td>
-                                <td>${getStat(stats.season, 'avgPoints')}</td>
+                                <td class="stat-label-col">Season</td>
+                                <td>${getStat(seasonStats, 'gamesPlayed')}</td>
+                                <td>${getStat(seasonStats, 'avgMinutes')}</td>
+                                <td>${getStat(seasonStats, 'fieldGoalPct')}</td>
+                                <td>${getStat(seasonStats, 'threePointFieldGoalPct')}</td>
+                                <td>${getStat(seasonStats, 'freeThrowPct')}</td>
+                                <td>${getStat(seasonStats, 'avgRebounds')}</td>
+                                <td>${getStat(seasonStats, 'avgAssists')}</td>
+                                <td>${getStat(seasonStats, 'avgBlocks')}</td>
+                                <td>${getStat(seasonStats, 'avgSteals')}</td>
+                                <td>${getStat(seasonStats, 'avgPersonalFouls')}</td>
+                                <td>${getStat(seasonStats, 'avgTurnovers')}</td>
+                                <td>${getStat(seasonStats, 'avgPoints')}</td>
                             </tr>
                         ` : ''}
-                        ${stats.career ? `
+                        ${careerStats ? `
                             <tr>
                                 <td class="stat-label-col">Career</td>
-                                <td>${getStat(stats.career, 'gamesPlayed')}</td>
-                                <td>${getStat(stats.career, 'avgMinutes')}</td>
-                                <td>${getStat(stats.career, 'fieldGoalPct')}</td>
-                                <td>${getStat(stats.career, 'threePointFieldGoalPct')}</td>
-                                <td>${getStat(stats.career, 'freeThrowPct')}</td>
-                                <td>${getStat(stats.career, 'avgRebounds')}</td>
-                                <td>${getStat(stats.career, 'avgAssists')}</td>
-                                <td>${getStat(stats.career, 'avgBlocks')}</td>
-                                <td>${getStat(stats.career, 'avgSteals')}</td>
-                                <td>${getStat(stats.career, 'avgPersonalFouls')}</td>
-                                <td>${getStat(stats.career, 'avgTurnovers')}</td>
-                                <td>${getStat(stats.career, 'avgPoints')}</td>
+                                <td>${getStat(careerStats, 'gamesPlayed')}</td>
+                                <td>${getStat(careerStats, 'avgMinutes')}</td>
+                                <td>${getStat(careerStats, 'fieldGoalPct')}</td>
+                                <td>${getStat(careerStats, 'threePointFieldGoalPct')}</td>
+                                <td>${getStat(careerStats, 'freeThrowPct')}</td>
+                                <td>${getStat(careerStats, 'avgRebounds')}</td>
+                                <td>${getStat(careerStats, 'avgAssists')}</td>
+                                <td>${getStat(careerStats, 'avgBlocks')}</td>
+                                <td>${getStat(careerStats, 'avgSteals')}</td>
+                                <td>${getStat(careerStats, 'avgPersonalFouls')}</td>
+                                <td>${getStat(careerStats, 'avgTurnovers')}</td>
+                                <td>${getStat(careerStats, 'avgPoints')}</td>
                             </tr>
                         ` : ''}
                     </tbody>
@@ -282,13 +307,16 @@ class PlayerPage {
 
             // Find player stats in the game data
             let playerStats = null;
+            let statNames = [];
 
             // Helper to find player in team stats
             const findPlayerInTeam = (teamData) => {
                 if (!teamData || !teamData.players || teamData.players.length === 0) return null;
                 const statsGroup = teamData.players[0]; // Usually the first group contains the main stats
                 if (!statsGroup || !statsGroup.athletes) return null;
-                return statsGroup.athletes.find(p => p.athlete.id === player.id);
+                statNames = statsGroup.names || [];
+                // Convert both IDs to strings for comparison
+                return statsGroup.athletes.find(p => String(p.athlete.id) === String(player.id));
             };
 
             const homePlayer = findPlayerInTeam(gameData.homeTeam);
@@ -302,11 +330,17 @@ class PlayerPage {
             }
 
             if (playerStats) {
-                // Standard ESPN order: MIN, FG, 3PT, FT, OREB, DREB, REB, AST, STL, BLK, TO, PF, +/-, PTS
                 const stats = playerStats.stats;
-                const pts = stats[13] || '--';
-                const reb = stats[6] || '--';
-                const ast = stats[7] || '--';
+                
+                // Use names array to find stat indices properly
+                const getStatByName = (name) => {
+                    const index = statNames.indexOf(name);
+                    return index !== -1 ? (stats[index] || '--') : '--';
+                };
+
+                const pts = getStatByName('PTS');
+                const reb = getStatByName('REB');
+                const ast = getStatByName('AST');
 
                 container.innerHTML = `
                     <div class="last-game-stats">

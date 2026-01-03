@@ -2493,6 +2493,53 @@ main {
   overflow: hidden;
 }
 
+/* Key Stats Cards - PTS/REB/AST */
+.key-stats-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.key-stat-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.key-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+}
+
+.key-stat-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.key-stat-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+.key-stat-type {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
 .player-stats-table-wrapper {
   overflow-y: auto;
   flex: 1;
@@ -2799,6 +2846,27 @@ main {
   .player-bio-section,
   .player-stats-section {
     padding: 1rem;
+  }
+
+  .key-stats-cards {
+    gap: 0.5rem;
+  }
+
+  .key-stat-card {
+    padding: 0.875rem 0.5rem;
+    border-radius: 0.75rem;
+  }
+
+  .key-stat-value {
+    font-size: 1.75rem;
+  }
+
+  .key-stat-label {
+    font-size: 0.75rem;
+  }
+
+  .key-stat-type {
+    font-size: 0.625rem;
   }
 
   .team-header-content {

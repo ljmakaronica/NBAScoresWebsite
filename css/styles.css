@@ -2668,62 +2668,67 @@ main {
   animation: spin 1s linear infinite;
 }
 
-/* Last Game Stats */
-.last-game-stats {
+/* Last Game Stats - Full Width Layout */
+.last-game-loading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.last-game-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  align-items: center;
+  gap: 0;
+  width: 100%;
 }
 
 .last-game-stat {
   text-align: center;
-  flex: 1;
+  padding: 0.5rem;
 }
 
 .stat-value-lg {
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-accent);
   line-height: 1;
 }
 
 .stat-label-sm {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-top: 0.375rem;
+  margin-top: 0.5rem;
   display: block;
 }
 
 .last-game-details {
-  flex: 1.5;
   text-align: right;
-  padding-left: 1rem;
+  padding: 0.5rem 0 0.5rem 1.5rem;
   border-left: 1px solid var(--color-border);
+  min-width: 120px;
 }
 
 .last-game-opp {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--color-text);
 }
 
 .last-game-date {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--color-text-muted);
-  margin-top: 0.125rem;
+  margin-top: 0.25rem;
 }
 
 .last-game-result {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 700;
-  margin-top: 0.375rem;
+  margin-top: 0.5rem;
 }
 
 .last-game-result.win {
@@ -2738,11 +2743,12 @@ main {
   color: var(--color-text-muted);
   font-size: 0.875rem;
   text-align: center;
-  padding: 1rem 0;
+  padding: 2rem 0;
+  width: 100%;
 }
 
 .no-stats-note {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--color-text-muted);
   margin-top: 0.25rem;
 }

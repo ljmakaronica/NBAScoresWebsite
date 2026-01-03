@@ -777,6 +777,7 @@ main {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: -0.05em;
+  text-decoration: none;
 }
 
 /* Tab Navigation */
@@ -1911,28 +1912,31 @@ main {
 .content-back-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
   color: var(--color-text-muted);
   font-size: 0.875rem;
-  font-weight: 500;
   cursor: pointer;
-  padding: 0.5rem 1rem;
+  padding: 0;
   border-radius: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   transition: all 0.2s ease;
-  font-family: var(--font-family);
 }
 
 .content-back-button:hover {
   background: var(--color-row-bg);
-  color: var(--color-text);
-  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .content-back-button i {
-  font-size: 0.75rem;
+  font-size: 1rem;
+}
+
+.content-back-button span {
+  display: none;
 }
 
 .team-header {

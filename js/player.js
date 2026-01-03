@@ -385,106 +385,81 @@ class PlayerPage {
 
     async renderLastGameStats() {
         const container = document.getElementById('last-game-container');
-        const { recentGames, player } = this.playerData;
+        const { player, team } = this.playerData;
 
-        // Check if we have recent games data
-        if (!recentGames || recentGames.length === 0) {
-            container.innerHTML = `
-                <div class="no-recent-game">
-                    <span class="no-data-text">No recent game data</span>
-                </div>
-            `;
-            return;
-        }
-
-        const lastGame = recentGames[0];
-        
-        // Check if stats are available directly in recentGames (from gamelog API)
-        if (lastGame.stats && lastGame.stats.length > 0) {
-            // Stats from gamelog are typically in order: PTS, REB, AST, etc
-            // This depends on the API structure - for now show what we have
-            const pts = lastGame.stats[0] || '--';
-            const reb = lastGame.stats[1] || '--';
-            const ast = lastGame.stats[2] || '--';
-            
-            container.innerHTML = `
-                <div class="last-game-stats">
-                    <div class="last-game-stat">
-                        <span class="stat-value-lg">${pts}</span>
-                        <span class="stat-label-sm">PTS</span>
-                    </div>
-                    <div class="last-game-stat">
-                        <span class="stat-value-lg">${reb}</span>
-                        <span class="stat-label-sm">REB</span>
-                    </div>
-                    <div class="last-game-stat">
-                        <span class="stat-value-lg">${ast}</span>
-                        <span class="stat-label-sm">AST</span>
-                    </div>
-                    <div class="last-game-details">
-                        <div class="last-game-opp">vs ${lastGame.opponent}</div>
-                        <div class="last-game-date">${this.formatGameDate(lastGame.date)}</div>
-                        <div class="last-game-result ${lastGame.result === 'W' ? 'win' : 'loss'}">${lastGame.result} ${lastGame.score}</div>
-                    </div>
-                </div>
-            `;
-            return;
-        }
-
-        // Try fetching from game-details API as fallback
-        const gameId = lastGame.id;
-        if (!gameId) {
-            container.innerHTML = `
-                <div class="last-game-stats">
-                    <div class="last-game-details" style="margin-left: 0;">
-                        <div class="last-game-opp">vs ${lastGame.opponent}</div>
-                        <div class="last-game-date">${this.formatGameDate(lastGame.date)}</div>
-                        <div class="last-game-result ${lastGame.result === 'W' ? 'win' : 'loss'}">${lastGame.result} ${lastGame.score}</div>
-                    </div>
-                </div>
-            `;
+        if (!team) {
+            container.innerHTML = `<div class="no-recent-game"><span class="no-data-text">Team info unavailable</span></div>`;
             return;
         }
 
         try {
-            const response = await fetch(`/api/game-details?gameId=${gameId}`);
-            if (!response.ok) throw new Error('Failed to fetch game details');
-            const gameData = await response.json();
+            // Search the last 7 days for completed games
+            let foundGame = null;
+            const today = new Date();
+            
+            for (let daysBack = 1; daysBack <= 7; daysBack++) {
+                const searchDate = new Date(today);
+                searchDate.setDate(searchDate.getDate() - daysBack);
+                const dateStr = searchDate.toISOString().split('T')[0];
+                
+                const gamesResponse = await fetch(`/api/scrape-games?date=${dateStr}`);
+                if (!gamesResponse.ok) continue;
+                
+                const gamesData = await gamesResponse.json();
+                const games = gamesData.data || [];
+                
+                // Find a completed game involving this team
+                const teamGame = games.find(g => 
+                    (g.home_team?.full_name === team.name || g.visitor_team?.full_name === team.name) &&
+                    (g.status === 'Final' || g.period_state === 'post')
+                );
+                
+                if (teamGame) {
+                    foundGame = { id: teamGame.id, date: dateStr };
+                    break;
+                }
+            }
 
-            // Find player stats in the game data
+            if (!foundGame) {
+                container.innerHTML = `<div class="no-recent-game"><span class="no-data-text">No recent games found</span></div>`;
+                return;
+            }
+
+            // Fetch box score for the game
+            const boxResponse = await fetch(`/api/game-details?gameId=${foundGame.id}`);
+            if (!boxResponse.ok) throw new Error('Failed to fetch box score');
+            const boxData = await boxResponse.json();
+
+            // Find the player in the box score
             let playerStats = null;
             let statNames = [];
 
-            // Helper to find player in team stats
             const findPlayerInTeam = (teamData) => {
-                if (!teamData || !teamData.players || teamData.players.length === 0) return null;
+                if (!teamData?.players?.[0]?.athletes) return null;
                 const statsGroup = teamData.players[0];
-                if (!statsGroup || !statsGroup.athletes) return null;
                 statNames = statsGroup.names || [];
                 return statsGroup.athletes.find(p => String(p.athlete.id) === String(player.id));
             };
 
-            const homePlayer = findPlayerInTeam(gameData.homeTeam);
-            if (homePlayer) {
-                playerStats = { stats: homePlayer.stats };
-            } else {
-                const awayPlayer = findPlayerInTeam(gameData.awayTeam);
-                if (awayPlayer) {
-                    playerStats = { stats: awayPlayer.stats };
-                }
-            }
+            const homePlayer = findPlayerInTeam(boxData.homeTeam);
+            playerStats = homePlayer || findPlayerInTeam(boxData.awayTeam);
 
-            if (playerStats) {
-                const stats = playerStats.stats;
-                
+            if (playerStats?.stats) {
                 const getStatByName = (name) => {
                     const index = statNames.indexOf(name);
-                    return index !== -1 ? (stats[index] || '--') : '--';
+                    return index !== -1 ? (playerStats.stats[index] || '--') : '--';
                 };
 
                 const pts = getStatByName('PTS');
                 const reb = getStatByName('REB');
                 const ast = getStatByName('AST');
+
+                // Determine opponent and score
+                const isHome = boxData.homeTeam?.info?.id === team.id || boxData.homeTeam?.info?.displayName === team.name;
+                const teamScore = isHome ? parseInt(boxData.homeTeam?.score) : parseInt(boxData.awayTeam?.score);
+                const oppScore = isHome ? parseInt(boxData.awayTeam?.score) : parseInt(boxData.homeTeam?.score);
+                const result = teamScore > oppScore ? 'W' : 'L';
+                const opponent = isHome ? boxData.awayTeam?.info?.abbreviation : boxData.homeTeam?.info?.abbreviation;
 
                 container.innerHTML = `
                     <div class="last-game-stats">
@@ -501,36 +476,28 @@ class PlayerPage {
                             <span class="stat-label-sm">AST</span>
                         </div>
                         <div class="last-game-details">
-                            <div class="last-game-opp">vs ${lastGame.opponent}</div>
-                            <div class="last-game-date">${this.formatGameDate(lastGame.date)}</div>
+                            <div class="last-game-opp">vs ${opponent || 'OPP'}</div>
+                            <div class="last-game-date">${this.formatGameDate(foundGame.date)}</div>
+                            <div class="last-game-result ${result === 'W' ? 'win' : 'loss'}">${result} ${teamScore}-${oppScore}</div>
                         </div>
                     </div>
                 `;
             } else {
-                // Player stats not found in game data
+                const isHome = boxData.homeTeam?.info?.displayName === team.name;
+                const opponent = isHome ? boxData.awayTeam?.info?.abbreviation : boxData.homeTeam?.info?.abbreviation;
                 container.innerHTML = `
                     <div class="last-game-stats">
                         <div class="last-game-details" style="margin-left: 0;">
-                            <div class="last-game-opp">vs ${lastGame.opponent}</div>
-                            <div class="last-game-date">${this.formatGameDate(lastGame.date)}</div>
-                            <div class="last-game-result ${lastGame.result === 'W' ? 'win' : 'loss'}">${lastGame.result} ${lastGame.score}</div>
-                            <div class="no-stats-note">Stats not available</div>
+                            <div class="last-game-opp">vs ${opponent || 'OPP'}</div>
+                            <div class="last-game-date">${this.formatGameDate(foundGame.date)}</div>
+                            <div class="no-stats-note">Did not play</div>
                         </div>
                     </div>
                 `;
             }
-
         } catch (error) {
             console.error('Error loading last game stats:', error);
-            container.innerHTML = `
-                <div class="last-game-stats">
-                    <div class="last-game-details" style="margin-left: 0;">
-                        <div class="last-game-opp">vs ${lastGame.opponent}</div>
-                        <div class="last-game-date">${this.formatGameDate(lastGame.date)}</div>
-                        <div class="last-game-result ${lastGame.result === 'W' ? 'win' : 'loss'}">${lastGame.result} ${lastGame.score}</div>
-                    </div>
-                </div>
-            `;
+            container.innerHTML = `<div class="no-recent-game"><span class="no-data-text">Could not load last game</span></div>`;
         }
     }
 

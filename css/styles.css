@@ -2709,6 +2709,37 @@ main {
   color: var(--color-text-muted);
 }
 
+.last-game-result {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.last-game-result.win {
+  color: var(--color-win);
+}
+
+.last-game-result.loss {
+  color: var(--color-live);
+}
+
+.no-recent-game {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.no-data-text {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.no-stats-note {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
 /* Modern Stats Table */
 .stats-table-container {
   overflow-x: auto;

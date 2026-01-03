@@ -45,7 +45,18 @@ export default async function handler(req, res) {
             additionalRequests.push(Promise.resolve(null));
         }
 
-        // Fetch statistics (season stats)
+        // Fetch statistics log to get season-by-season stats
+        if (playerData.statisticslog?.$ref) {
+            additionalRequests.push(
+                fetch(playerData.statisticslog.$ref, {
+                    headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
+                }).then(r => r.json()).catch(() => null)
+            );
+        } else {
+            additionalRequests.push(Promise.resolve(null));
+        }
+
+        // Fetch career statistics
         if (playerData.statistics?.$ref) {
             additionalRequests.push(
                 fetch(playerData.statistics.$ref, {
@@ -66,31 +77,59 @@ export default async function handler(req, res) {
             })
         );
 
-        const [teamInfo, positionInfo, statistics, gameLogData] = await Promise.all(additionalRequests);
+        const [teamInfo, positionInfo, statisticsLog, careerStatistics, gameLogData] = await Promise.all(additionalRequests);
 
-        // Parse stats from the splits
-        let seasonStats = null;
-        let careerStats = null;
-
-        if (statistics?.splits?.categories && Array.isArray(statistics.splits.categories)) {
+        // Helper to extract all stats from splits.categories into a flat array
+        const extractStatsFromSplits = (statistics) => {
+            if (!statistics?.splits?.categories || !Array.isArray(statistics.splits.categories)) {
+                return [];
+            }
+            const allStats = [];
             statistics.splits.categories.forEach(category => {
-                if (category.name === 'general' && category.splits && Array.isArray(category.splits)) {
-                    category.splits.forEach(split => {
-                        if (split.name === 'regularSeason' && split.type === 'total') {
-                            seasonStats = split.stats;
-                        } else if (split.name === 'career' && split.type === 'career') {
-                            careerStats = split.stats;
-                        }
-                    });
+                if (category.stats && Array.isArray(category.stats)) {
+                    allStats.push(...category.stats);
                 }
             });
+            return allStats;
+        };
+
+        // Fetch current season stats from statisticslog
+        let seasonStats = null;
+        if (statisticsLog?.entries && Array.isArray(statisticsLog.entries) && statisticsLog.entries.length > 0) {
+            // Get the most recent season (first entry)
+            const currentSeasonEntry = statisticsLog.entries[0];
+            if (currentSeasonEntry?.statistics && Array.isArray(currentSeasonEntry.statistics)) {
+                // Find the total type statistics
+                const totalStats = currentSeasonEntry.statistics.find(s => s.type === 'total');
+                if (totalStats?.statistics?.$ref) {
+                    try {
+                        const seasonStatsResponse = await fetch(totalStats.statistics.$ref, {
+                            headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
+                        });
+                        const seasonStatsData = await seasonStatsResponse.json();
+                        seasonStats = extractStatsFromSplits(seasonStatsData);
+                    } catch (e) {
+                        console.error('Error fetching season stats:', e);
+                    }
+                }
+            }
         }
 
-        // Helper to get stat value
-        const getStat = (statsArray, abbr) => {
-            if (!statsArray) return null;
-            const stat = statsArray.find(s => s.abbreviation === abbr || s.name === abbr);
-            return stat?.displayValue || null;
+        // Extract career stats
+        const careerStats = extractStatsFromSplits(careerStatistics);
+
+        // Helper to get stat value by name or abbreviation
+        const getStat = (statsArray, ...searchTerms) => {
+            if (!statsArray || !Array.isArray(statsArray)) return null;
+            for (const term of searchTerms) {
+                const stat = statsArray.find(s => 
+                    s.abbreviation === term || 
+                    s.name === term || 
+                    s.shortDisplayName === term
+                );
+                if (stat?.displayValue) return stat.displayValue;
+            }
+            return null;
         };
 
         // Process Game Log
@@ -155,33 +194,33 @@ export default async function handler(req, res) {
                 color: teamInfo.color
             } : null,
             stats: {
-                season: seasonStats ? {
-                    gamesPlayed: getStat(seasonStats, 'GP'),
-                    avgMinutes: getStat(seasonStats, 'MPG'),
-                    fieldGoalPct: getStat(seasonStats, 'FG%'),
-                    threePointFieldGoalPct: getStat(seasonStats, '3P%'),
-                    freeThrowPct: getStat(seasonStats, 'FT%'),
-                    avgRebounds: getStat(seasonStats, 'RPG'),
-                    avgAssists: getStat(seasonStats, 'APG'),
-                    avgBlocks: getStat(seasonStats, 'BPG'),
-                    avgSteals: getStat(seasonStats, 'SPG'),
-                    avgPersonalFouls: getStat(seasonStats, 'PF'),
-                    avgTurnovers: getStat(seasonStats, 'TO'),
-                    avgPoints: getStat(seasonStats, 'PPG')
+                season: seasonStats && seasonStats.length > 0 ? {
+                    gamesPlayed: getStat(seasonStats, 'gamesPlayed', 'GP'),
+                    avgMinutes: getStat(seasonStats, 'avgMinutes', 'MIN', 'MPG'),
+                    fieldGoalPct: getStat(seasonStats, 'fieldGoalPct', 'FG%'),
+                    threePointFieldGoalPct: getStat(seasonStats, 'threePointFieldGoalPct', '3P%'),
+                    freeThrowPct: getStat(seasonStats, 'freeThrowPct', 'FT%'),
+                    avgRebounds: getStat(seasonStats, 'avgRebounds', 'REB', 'RPG'),
+                    avgAssists: getStat(seasonStats, 'avgAssists', 'AST', 'APG'),
+                    avgBlocks: getStat(seasonStats, 'avgBlocks', 'BLK', 'BPG'),
+                    avgSteals: getStat(seasonStats, 'avgSteals', 'STL', 'SPG'),
+                    avgPersonalFouls: getStat(seasonStats, 'avgFouls', 'avgPersonalFouls', 'PF'),
+                    avgTurnovers: getStat(seasonStats, 'avgTurnovers', 'TO', 'TOPG'),
+                    avgPoints: getStat(seasonStats, 'avgPoints', 'PTS', 'PPG')
                 } : null,
-                career: careerStats ? {
-                    gamesPlayed: getStat(careerStats, 'GP'),
-                    avgMinutes: getStat(careerStats, 'MPG'),
-                    fieldGoalPct: getStat(careerStats, 'FG%'),
-                    threePointFieldGoalPct: getStat(careerStats, '3P%'),
-                    freeThrowPct: getStat(careerStats, 'FT%'),
-                    avgRebounds: getStat(careerStats, 'RPG'),
-                    avgAssists: getStat(careerStats, 'APG'),
-                    avgBlocks: getStat(careerStats, 'BPG'),
-                    avgSteals: getStat(careerStats, 'SPG'),
-                    avgPersonalFouls: getStat(careerStats, 'PF'),
-                    avgTurnovers: getStat(careerStats, 'TO'),
-                    avgPoints: getStat(careerStats, 'PPG')
+                career: careerStats && careerStats.length > 0 ? {
+                    gamesPlayed: getStat(careerStats, 'gamesPlayed', 'GP'),
+                    avgMinutes: getStat(careerStats, 'avgMinutes', 'MIN', 'MPG'),
+                    fieldGoalPct: getStat(careerStats, 'fieldGoalPct', 'FG%'),
+                    threePointFieldGoalPct: getStat(careerStats, 'threePointFieldGoalPct', '3P%'),
+                    freeThrowPct: getStat(careerStats, 'freeThrowPct', 'FT%'),
+                    avgRebounds: getStat(careerStats, 'avgRebounds', 'REB', 'RPG'),
+                    avgAssists: getStat(careerStats, 'avgAssists', 'AST', 'APG'),
+                    avgBlocks: getStat(careerStats, 'avgBlocks', 'BLK', 'BPG'),
+                    avgSteals: getStat(careerStats, 'avgSteals', 'STL', 'SPG'),
+                    avgPersonalFouls: getStat(careerStats, 'avgFouls', 'avgPersonalFouls', 'PF'),
+                    avgTurnovers: getStat(careerStats, 'avgTurnovers', 'TO', 'TOPG'),
+                    avgPoints: getStat(careerStats, 'avgPoints', 'PTS', 'PPG')
                 } : null
             },
             recentGames: recentGames

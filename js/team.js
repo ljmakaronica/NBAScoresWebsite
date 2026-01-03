@@ -178,9 +178,9 @@ class TeamPage {
             const playerId = player.id;
 
             html += `
-                <div class="roster-item">
+                <div class="roster-item" data-player-id="${playerId}">
                     <span class="roster-jersey">#${jersey}</span>
-                    <span class="roster-name">${displayName}</span>
+                    <a href="/player.html?id=${playerId}" class="roster-name player-link">${displayName}</a>
                     <span class="roster-pos">${position}</span>
                 </div>
             `;
@@ -295,10 +295,10 @@ class TeamPage {
                 return `
                                     <tr>
                                         <td class="player-name sticky-col">
-                                            <span class="player-name-link">
+                                            <a href="/player.html?id=${p.id}" class="player-name-link">
                                                 <span class="name-full">${p.displayName}</span>
                                                 <span class="name-short">${p.shortName}</span>
-                                            </span>
+                                            </a>
                                         </td>
                                         <td class="stat-pts">${getStat('PTS')}</td>
                                         <td>${min}</td>

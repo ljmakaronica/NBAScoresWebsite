@@ -3498,50 +3498,6 @@ main {
   color: var(--color-text);
 }
 
-/* Last Game Stats */
-.last-game-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-top: 1rem;
-  text-align: center;
-  background: var(--color-row-bg);
-  padding: 1rem;
-  border-radius: var(--border-radius);
-}
-
-.last-game-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-value-lg {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--color-accent);
-}
-
-.stat-label-sm {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-}
-
-.last-game-details {
-  grid-column: 1 / -1;
-  margin-top: 0.5rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--color-border);
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-}
-
-.last-game-opp {
-  font-weight: 600;
-  color: var(--color-text);
-}
-
 /* Recent Games List */
 .recent-games-list {
   display: flex;

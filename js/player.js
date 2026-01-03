@@ -75,37 +75,55 @@ class PlayerPage {
 
     renderPlayerHeader() {
         const { player, team } = this.playerData;
+        const { stats } = this.playerData;
         
         // Check if player is injured (status is not 'Active')
         const isInjured = player.status && player.status !== 'Active';
         const injuryBadge = isInjured ? `
-            <span class="injury-badge" title="${player.status}">
+            <span class="player-injury-tag">
                 <i class="fas fa-kit-medical"></i>
-                <span class="injury-status">${player.status}</span>
+                ${player.status}
             </span>
         ` : '';
 
+        // Get key stats for the hero section
+        const keyStats = stats?.season || stats?.career;
+        const getStat = (key) => keyStats?.[key] || '--';
+
         this.playerHeader.innerHTML = `
-            <div class="player-header-content">
-                <div class="player-header-left">
-                    ${player.headshot ? `
-                        <img src="${player.headshot}" alt="${player.displayName}" class="player-headshot" onerror="this.style.display='none'">
-                    ` : `
-                        <div class="player-headshot-placeholder">
-                            <i class="fas fa-user"></i>
-                        </div>
-                    `}
-                    <div class="player-info-header">
-                        <h2 class="player-name-header">
-                            ${player.displayName}
+            <div class="player-hero">
+                <div class="player-hero-bg"></div>
+                <div class="player-hero-content">
+                    <div class="player-hero-photo">
+                        ${player.headshot ? `
+                            <img src="${player.headshot}" alt="${player.displayName}" onerror="this.parentElement.innerHTML='<div class=\\'player-hero-placeholder\\'><i class=\\'fas fa-user\\'></i></div>'">
+                        ` : `
+                            <div class="player-hero-placeholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        `}
+                    </div>
+                    <div class="player-hero-info">
+                        <div class="player-hero-number">#${player.jersey || '--'}</div>
+                        <h1 class="player-hero-name">${player.displayName}</h1>
+                        <div class="player-hero-details">
+                            <span class="player-hero-position">${player.position}</span>
+                            ${team ? `<span class="player-hero-team">${team.name}</span>` : ''}
                             ${injuryBadge}
-                        </h2>
-                        <div class="player-meta">
-                            <span class="player-jersey">#${player.jersey || '--'}</span>
-                            <span class="player-position-header">${player.position}</span>
-                            ${team ? `
-                                <span class="player-team-link">${team.name}</span>
-                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="player-hero-stats">
+                        <div class="hero-stat">
+                            <div class="hero-stat-value">${getStat('avgPoints')}</div>
+                            <div class="hero-stat-label">PTS</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-value">${getStat('avgRebounds')}</div>
+                            <div class="hero-stat-label">REB</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-value">${getStat('avgAssists')}</div>
+                            <div class="hero-stat-label">AST</div>
                         </div>
                     </div>
                 </div>
@@ -114,70 +132,128 @@ class PlayerPage {
     }
 
     async renderPlayerContent() {
+        const { player, stats } = this.playerData;
+
         this.playerContent.innerHTML = `
-            <div class="player-layout">
-                <div class="player-bio-section">
-                    <h3 class="section-title">Player Info</h3>
+            <div class="player-page-grid">
+                <div class="player-info-card">
+                    <div class="card-header">
+                        <span class="card-icon"><i class="fas fa-id-card"></i></span>
+                        <span class="card-title">Bio</span>
+                    </div>
                     ${this.renderPlayerBio()}
-                    
-                    <h3 class="section-title" style="margin-top: 2rem;">Last Game</h3>
-                    <div id="last-game-container">Loading last game stats...</div>
                 </div>
-                <div class="player-stats-section">
-                    <h3 class="section-title">Stats</h3>
-                    ${this.renderPlayerStats()}
-                    ${this.renderRecentGames()}
+
+                <div class="player-info-card">
+                    <div class="card-header">
+                        <span class="card-icon"><i class="fas fa-basketball"></i></span>
+                        <span class="card-title">Last Game</span>
+                    </div>
+                    <div id="last-game-container" class="last-game-loading">
+                        <div class="mini-loader"></div>
+                    </div>
+                </div>
+
+                <div class="player-stats-card">
+                    <div class="card-header">
+                        <span class="card-icon"><i class="fas fa-chart-simple"></i></span>
+                        <span class="card-title">Statistics</span>
+                    </div>
+                    ${this.renderStatsTable()}
                 </div>
             </div>
         `;
 
         // Fetch and render last game stats
         await this.renderLastGameStats();
-
-        // Adjust heights
-        setTimeout(() => this.adjustColumnHeights(), 0);
     }
 
     adjustColumnHeights() {
-        const bioSection = this.playerContent.querySelector('.player-bio-section');
-        const statsSection = this.playerContent.querySelector('.player-stats-section');
-
-        if (bioSection && statsSection) {
-            // Reset height
-            statsSection.style.height = 'auto';
-
-            // Only apply on desktop
-            if (window.innerWidth > 768) {
-                // const height = bioSection.offsetHeight;
-                // statsSection.style.height = `${height}px`;
-            } else {
-                statsSection.style.height = 'auto';
-            }
-        }
+        // No longer needed with new grid layout
     }
 
     renderPlayerBio() {
         const { player } = this.playerData;
 
         const bioItems = [
-            { label: 'Height', value: player.height || 'N/A' },
-            { label: 'Weight', value: player.weight || 'N/A' },
-            { label: 'Age', value: player.age || 'N/A' },
-            { label: 'Born', value: player.birthPlace || 'N/A' },
-            { label: 'College', value: player.college || 'N/A' },
-            { label: 'Experience', value: player.experience ? `${player.experience} years` : 'Rookie' }
+            { icon: 'ruler-vertical', label: 'Height', value: player.height || '--' },
+            { icon: 'weight-scale', label: 'Weight', value: player.weight || '--' },
+            { icon: 'calendar', label: 'Age', value: player.age || '--' },
+            { icon: 'map-marker-alt', label: 'From', value: player.birthPlace || '--' },
+            { icon: 'graduation-cap', label: 'College', value: player.college || '--' },
+            { icon: 'clock', label: 'Experience', value: player.experience ? `${player.experience} yrs` : 'Rookie' }
         ];
 
         return `
-            <div class="player-bio-grid">
+            <div class="bio-grid">
                 ${bioItems.map(item => `
-                    <div class="bio-item">
-                        <span class="bio-label">${item.label}</span>
-                        <span class="bio-value">${item.value}</span>
+                    <div class="bio-row">
+                        <div class="bio-row-label">
+                            <i class="fas fa-${item.icon}"></i>
+                            ${item.label}
+                        </div>
+                        <div class="bio-row-value">${item.value}</div>
                     </div>
                 `).join('')}
             </div>
         `;
+    }
+
+    renderStatsTable() {
+        const { stats } = this.playerData;
+
+        if (!stats || (!stats.season && !stats.career)) {
+            return '<p class="no-stats-message">No statistics available</p>';
+        }
+
+        const getStat = (statsObj, key) => statsObj?.[key] || '--';
+        const seasonStats = stats.season;
+        const careerStats = stats.career;
+
+        const statColumns = [
+            { key: 'gamesPlayed', label: 'GP' },
+            { key: 'avgMinutes', label: 'MIN' },
+            { key: 'avgPoints', label: 'PTS' },
+            { key: 'avgRebounds', label: 'REB' },
+            { key: 'avgAssists', label: 'AST' },
+            { key: 'fieldGoalPct', label: 'FG%' },
+            { key: 'threePointFieldGoalPct', label: '3P%' },
+            { key: 'freeThrowPct', label: 'FT%' },
+            { key: 'avgSteals', label: 'STL' },
+            { key: 'avgBlocks', label: 'BLK' }
+        ];
+
+        return `
+            <div class="stats-table-container">
+                <table class="modern-stats-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            ${statColumns.map(col => `<th>${col.label}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${seasonStats ? `
+                            <tr>
+                                <td class="row-label">Season</td>
+                                ${statColumns.map(col => `<td>${getStat(seasonStats, col.key)}</td>`).join('')}
+                            </tr>
+                        ` : ''}
+                        ${careerStats ? `
+                            <tr>
+                                <td class="row-label">Career</td>
+                                ${statColumns.map(col => `<td>${getStat(careerStats, col.key)}</td>`).join('')}
+                            </tr>
+                        ` : ''}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    renderRecentGames() {
+        // Removed - not needed in new layout
+        return '';
     }
 
     renderPlayerStats() {

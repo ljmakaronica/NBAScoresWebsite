@@ -45,6 +45,17 @@ export default async function handler(req, res) {
             additionalRequests.push(Promise.resolve(null));
         }
 
+        // Fetch college info if it's a ref
+        if (playerData.college?.$ref) {
+            additionalRequests.push(
+                fetch(playerData.college.$ref, {
+                    headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
+                }).then(r => r.json()).catch(() => null)
+            );
+        } else {
+            additionalRequests.push(Promise.resolve(null));
+        }
+
         // Fetch statistics log to get season-by-season stats
         if (playerData.statisticslog?.$ref) {
             additionalRequests.push(
@@ -77,7 +88,7 @@ export default async function handler(req, res) {
             })
         );
 
-        const [teamInfo, positionInfo, statisticsLog, careerStatistics, gameLogData] = await Promise.all(additionalRequests);
+        const [teamInfo, positionInfo, collegeInfo, statisticsLog, careerStatistics, gameLogData] = await Promise.all(additionalRequests);
 
         // Helper to extract all stats from splits.categories into a flat array
         const extractStatsFromSplits = (statistics) => {
@@ -181,7 +192,7 @@ export default async function handler(req, res) {
                 birthPlace: playerData.birthPlace?.city && playerData.birthPlace?.country
                     ? `${playerData.birthPlace.city}, ${playerData.birthPlace.country}`
                     : null,
-                college: playerData.college?.name || playerData.college || null,
+                college: collegeInfo?.name || (typeof playerData.college === 'string' ? playerData.college : null),
                 experience: playerData.experience?.years,
                 headshot: playerData.headshot?.href,
                 status: playerData.status?.name

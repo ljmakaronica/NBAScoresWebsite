@@ -156,7 +156,7 @@ class PlayerPage {
 
                 <div class="player-stats-card">
                     <div class="card-header">
-                        <span class="card-icon"><i class="fas fa-chart-simple"></i></span>
+                        <span class="card-icon"><i class="fas fa-chart-bar"></i></span>
                         <span class="card-title">Statistics</span>
                     </div>
                     ${this.renderStatsTable()}

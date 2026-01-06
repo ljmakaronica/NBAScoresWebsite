@@ -444,6 +444,8 @@ class PlayerPage {
                             // LIVE GAME - show live indicator and current score
                             const gameStatus = boxData.gameInfo?.status || teamGame.status;
                             const gameClock = boxData.gameInfo?.clock || '';
+                            // Only show clock separately if it's not already in the status
+                            const showClock = gameClock && !gameStatus.includes(gameClock);
                             
                             container.innerHTML = `
                                 <div class="last-game-stats live">
@@ -466,7 +468,7 @@ class PlayerPage {
                                         </div>
                                         <div class="last-game-opp">vs ${opponent || 'OPP'}</div>
                                         <div class="last-game-score-live">${teamScore} - ${oppScore}</div>
-                                        <div class="last-game-status">${gameStatus}${gameClock ? ` · ${gameClock}` : ''}</div>
+                                        <div class="last-game-status">${gameStatus}${showClock ? ` · ${gameClock}` : ''}</div>
                                     </div>
                                 </div>
                             `;

@@ -386,7 +386,7 @@ class PlayerPage {
 
         try {
             const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
+            const todayStr = today.toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
             
             // First check TODAY for live or completed games
             const todayGamesResponse = await fetch(`/api/scrape-games?date=${todayStr}&t=${Date.now()}`);
@@ -509,7 +509,7 @@ class PlayerPage {
             for (let daysBack = 1; daysBack <= 14; daysBack++) {
                 const searchDate = new Date(today);
                 searchDate.setDate(searchDate.getDate() - daysBack);
-                const dateStr = searchDate.toISOString().split('T')[0];
+                const dateStr = searchDate.toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
                 
                 const gamesResponse = await fetch(`/api/scrape-games?date=${dateStr}`);
                 if (!gamesResponse.ok) continue;

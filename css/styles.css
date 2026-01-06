@@ -1789,8 +1789,12 @@ main {
     justify-content: flex-start;
   }
 
-  .team-details {
+  .team-details h2 {
     display: none;
+  }
+
+  .team-record {
+    font-size: 0.625rem;
   }
 
   .team-logo-large {
@@ -2561,6 +2565,11 @@ main {
   padding: 1.25rem;
 }
 
+.player-info-card {
+  display: flex;
+  flex-direction: column;
+}
+
 .player-stats-card {
   grid-column: 1 / -1;
 }
@@ -2728,6 +2737,41 @@ main {
 
 .last-game-result.loss {
   color: var(--color-live);
+}
+
+/* Live Game Styles */
+.last-game-stats.live {
+  position: relative;
+}
+
+.last-game-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-live);
+  margin-bottom: 0.375rem;
+}
+
+.last-game-live-badge .live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-live);
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.last-game-score-live {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0.25rem 0;
+}
+
+.last-game-status {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
 }
 
 .no-data-text {

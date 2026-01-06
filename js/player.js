@@ -385,9 +385,127 @@ class PlayerPage {
         }
 
         try {
-            // Search last 14 days for games where this player actually played
             const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
             
+            // First check TODAY for live or completed games
+            const todayGamesResponse = await fetch(`/api/scrape-games?date=${todayStr}&t=${Date.now()}`);
+            if (todayGamesResponse.ok) {
+                const todayGamesData = await todayGamesResponse.json();
+                const todayGames = todayGamesData.data || [];
+                
+                // Find games involving this team (live OR completed today)
+                const teamGamesToday = todayGames.filter(g => 
+                    g.home_team?.full_name === team.name || g.visitor_team?.full_name === team.name
+                );
+                
+                for (const teamGame of teamGamesToday) {
+                    const isLive = teamGame.period_state === 'in' || 
+                        (teamGame.status && (teamGame.status.includes('Qtr') || teamGame.status.includes('Half') || teamGame.status.includes('OT')));
+                    const isCompleted = teamGame.status === 'Final' || teamGame.period_state === 'post';
+                    
+                    if (!isLive && !isCompleted) continue; // Skip scheduled games
+                    
+                    // Fetch box score
+                    const boxResponse = await fetch(`/api/game-details?gameId=${teamGame.id}&t=${Date.now()}`);
+                    if (!boxResponse.ok) continue;
+                    const boxData = await boxResponse.json();
+
+                    let playerStats = null;
+                    let statNames = [];
+
+                    const findPlayerInTeam = (teamData) => {
+                        if (!teamData?.players?.[0]?.athletes) return null;
+                        const statsGroup = teamData.players[0];
+                        statNames = statsGroup.names || [];
+                        return statsGroup.athletes.find(p => String(p.athlete.id) === String(player.id));
+                    };
+
+                    playerStats = findPlayerInTeam(boxData.homeTeam) || findPlayerInTeam(boxData.awayTeam);
+
+                    if (playerStats?.stats && playerStats.stats.length > 0) {
+                        const getStatByName = (name) => {
+                            const index = statNames.indexOf(name);
+                            return index !== -1 ? (playerStats.stats[index] || '--') : '--';
+                        };
+
+                        const pts = getStatByName('PTS');
+                        const reb = getStatByName('REB');
+                        const ast = getStatByName('AST');
+
+                        if (pts === '--' && reb === '--' && ast === '--') continue;
+
+                        const isHome = boxData.homeTeam?.info?.displayName === team.name;
+                        const teamScore = isHome ? parseInt(boxData.homeTeam?.score) || 0 : parseInt(boxData.awayTeam?.score) || 0;
+                        const oppScore = isHome ? parseInt(boxData.awayTeam?.score) || 0 : parseInt(boxData.homeTeam?.score) || 0;
+                        const opponent = isHome ? boxData.awayTeam?.info?.abbreviation : boxData.homeTeam?.info?.abbreviation;
+
+                        if (isLive) {
+                            // LIVE GAME - show live indicator and current score
+                            const gameStatus = boxData.gameInfo?.status || teamGame.status;
+                            const gameClock = boxData.gameInfo?.clock || '';
+                            
+                            container.innerHTML = `
+                                <div class="last-game-stats live">
+                                    <div class="last-game-stat">
+                                        <span class="stat-value-lg">${pts}</span>
+                                        <span class="stat-label-sm">PTS</span>
+                                    </div>
+                                    <div class="last-game-stat">
+                                        <span class="stat-value-lg">${reb}</span>
+                                        <span class="stat-label-sm">REB</span>
+                                    </div>
+                                    <div class="last-game-stat">
+                                        <span class="stat-value-lg">${ast}</span>
+                                        <span class="stat-label-sm">AST</span>
+                                    </div>
+                                    <div class="last-game-details">
+                                        <div class="last-game-live-badge">
+                                            <span class="live-dot"></span>
+                                            LIVE
+                                        </div>
+                                        <div class="last-game-opp">vs ${opponent || 'OPP'}</div>
+                                        <div class="last-game-score-live">${teamScore} - ${oppScore}</div>
+                                        <div class="last-game-status">${gameStatus}${gameClock ? ` · ${gameClock}` : ''}</div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // Auto-refresh every 30 seconds for live games
+                            if (this.liveRefreshTimeout) clearTimeout(this.liveRefreshTimeout);
+                            this.liveRefreshTimeout = setTimeout(() => this.renderLastGameStats(), 30000);
+                            return;
+                        } else {
+                            // Completed game today
+                            const result = teamScore > oppScore ? 'W' : 'L';
+                            container.innerHTML = `
+                                <div class="last-game-stats">
+                                    <div class="last-game-stat">
+                                        <span class="stat-value-lg">${pts}</span>
+                                        <span class="stat-label-sm">PTS</span>
+                                    </div>
+                                    <div class="last-game-stat">
+                                        <span class="stat-value-lg">${reb}</span>
+                                        <span class="stat-label-sm">REB</span>
+                                    </div>
+                                    <div class="last-game-stat">
+                                        <span class="stat-value-lg">${ast}</span>
+                                        <span class="stat-label-sm">AST</span>
+                                    </div>
+                                    <div class="last-game-details">
+                                        <div class="last-game-opp">vs ${opponent || 'OPP'}</div>
+                                        <div class="last-game-date">Today</div>
+                                        <div class="last-game-result ${result === 'W' ? 'win' : 'loss'}">${result} ${teamScore}-${oppScore}</div>
+                                    </div>
+                                </div>
+                            `;
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            // No live/completed game today, search past 14 days
             for (let daysBack = 1; daysBack <= 14; daysBack++) {
                 const searchDate = new Date(today);
                 searchDate.setDate(searchDate.getDate() - daysBack);
@@ -406,7 +524,6 @@ class PlayerPage {
                 );
                 
                 for (const teamGame of teamGames) {
-                    // Fetch box score and check if player has stats
                     const boxResponse = await fetch(`/api/game-details?gameId=${teamGame.id}`);
                     if (!boxResponse.ok) continue;
                     const boxData = await boxResponse.json();
@@ -423,7 +540,6 @@ class PlayerPage {
 
                     playerStats = findPlayerInTeam(boxData.homeTeam) || findPlayerInTeam(boxData.awayTeam);
 
-                    // Only show if player actually has stats
                     if (playerStats?.stats && playerStats.stats.length > 0) {
                         const getStatByName = (name) => {
                             const index = statNames.indexOf(name);
@@ -434,7 +550,6 @@ class PlayerPage {
                         const reb = getStatByName('REB');
                         const ast = getStatByName('AST');
 
-                        // Only show if at least one stat is not '--'
                         if (pts === '--' && reb === '--' && ast === '--') continue;
 
                         const isHome = boxData.homeTeam?.info?.displayName === team.name;
@@ -464,7 +579,7 @@ class PlayerPage {
                                 </div>
                             </div>
                         `;
-                        return; // Found a game where player played!
+                        return;
                     }
                 }
             }

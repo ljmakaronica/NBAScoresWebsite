@@ -1465,15 +1465,26 @@ main {
 
 .close-modal {
   color: var(--color-text-muted);
-  float: right;
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
   font-size: 28px;
   font-weight: bold;
   cursor: pointer;
   transition: color 0.2s ease;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  line-height: 1;
 }
 
 .close-modal:hover {
   color: var(--color-text);
+  background: var(--color-row-bg);
 }
 
 .box-score-header {
@@ -1767,6 +1778,11 @@ main {
 }
 
 @media (max-width: 768px) {
+  .modal {
+    /* Ensure modal covers full screen including safe areas */
+    padding-top: env(safe-area-inset-top);
+  }
+
   .modal-content {
     margin: 0;
     width: 100%;
@@ -1774,33 +1790,56 @@ main {
     max-width: none;
     border-radius: 0;
     padding: 1rem;
+    padding-top: calc(1rem + env(safe-area-inset-top));
+    display: flex;
+    flex-direction: column;
+  }
+
+  .close-modal {
+    top: calc(0.75rem + env(safe-area-inset-top));
+    right: 0.75rem;
+    width: 36px;
+    height: 36px;
+    font-size: 24px;
+    background: var(--color-row-bg);
+    border-radius: 50%;
   }
 
   .box-score-header {
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     justify-content: center;
     gap: 0.75rem;
     margin-bottom: 1rem;
     padding-bottom: 1rem;
+    padding-top: 0.25rem;
   }
 
-  .team-header {
+  /* Mobile box score: scores row */
+  .box-score-header .scores-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .box-score-header .team-header {
     flex-direction: row;
     align-items: center;
     gap: 0.5rem;
   }
 
-  .team-header.home {
+  .box-score-header .team-header.home {
     justify-content: flex-end;
+    flex-direction: row-reverse;
   }
 
-  .team-header.away {
+  .box-score-header .team-header.away {
     justify-content: flex-start;
   }
 
   .team-details h2 {
-    display: none;
+    font-size: 0.875rem;
   }
 
   .team-record {
@@ -1808,24 +1847,31 @@ main {
   }
 
   .team-logo-large {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
 
   .score-large {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
+    min-width: 40px;
   }
 
   .game-info-large {
     min-width: auto;
+    padding: 0;
   }
 
   .game-status-large {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
   }
 
   .game-clock-large {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
+  }
+
+  .broadcast-info-large {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
   }
 
   .box-score-tabs {
@@ -1838,6 +1884,12 @@ main {
     font-size: 0.8125rem;
     flex: 1;
     text-align: center;
+  }
+
+  .stats-container {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .stats-table {
@@ -1863,6 +1915,56 @@ main {
 
   .stats-table .sticky-col {
     box-shadow: 2px 0 4px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@media (max-width: 400px) {
+  .modal-content {
+    padding: 0.75rem;
+    padding-top: calc(0.75rem + env(safe-area-inset-top));
+  }
+
+  .close-modal {
+    top: calc(0.5rem + env(safe-area-inset-top));
+    right: 0.5rem;
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
+
+  .team-logo-large {
+    width: 32px;
+    height: 32px;
+  }
+
+  .score-large {
+    font-size: 1.5rem;
+    min-width: 36px;
+  }
+
+  .team-details h2 {
+    font-size: 0.75rem;
+  }
+
+  .team-record {
+    font-size: 0.5625rem;
+  }
+
+  .game-status-large {
+    font-size: 0.75rem;
+  }
+
+  .game-clock-large {
+    font-size: 0.625rem;
+  }
+
+  .broadcast-info-large {
+    font-size: 0.6875rem;
+  }
+
+  .tab-btn {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -3808,5 +3910,13 @@ main {
   body {
     /* Prevent overscroll/bounce */
     overscroll-behavior-y: none;
+  }
+
+  .modal-content {
+    padding-top: calc(1.5rem + env(safe-area-inset-top));
+  }
+
+  .close-modal {
+    top: calc(0.75rem + env(safe-area-inset-top));
   }
 }
